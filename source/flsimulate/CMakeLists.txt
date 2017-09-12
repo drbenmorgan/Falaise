@@ -24,7 +24,10 @@
 # Configure application
 # - Bit hacky for now
 find_package(Boost 1.60 REQUIRED program_options filesystem system)
-find_package(Geant4 REQUIRED)
+
+add_subdirectory(geant4_module)
+
+
 
 #-----------------------------------------------------------------------
 # Build command line app
@@ -40,10 +43,9 @@ target_include_directories(flsimulate_legacy PRIVATE
   )
 target_link_libraries(flsimulate_legacy
   Falaise
+  falaise_geant4_module
   Bayeux::Bayeux
-  Bayeux::Bayeux_mctools_geant4
   ${Boost_LIBRARIES}
-  ${Geant4_LIBRARIES}
   )
 target_clang_format(flsimulate_legacy)
 
@@ -88,10 +90,9 @@ target_include_directories(flsimulate PRIVATE
   )
 target_link_libraries(flsimulate
   Falaise
+  falaise_geant4_module
   Bayeux::Bayeux
-  Bayeux::Bayeux_mctools_geant4
   ${Boost_LIBRARIES}
-  ${Geant4_LIBRARIES}
   )
 target_clang_format(flsimulate)
 

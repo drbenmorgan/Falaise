@@ -58,11 +58,8 @@
 #include "bayeux/datatools/urn_query_service.h"
 #include "bayeux/dpp/output_module.h"
 #include "bayeux/geomtools/manager.h"
-#include "bayeux/mctools/g4/simulation_module.h"
-#include "bayeux/mctools/g4/manager_parameters.h"
 #include "bayeux/mygsl/random_utils.h"
 #include "bayeux/mygsl/seed_manager.h"
-
 // This Project
 #include "falaise/falaise.h"
 #include "falaise/version.h"
@@ -71,6 +68,10 @@
 #include "falaise/snemo/processing/services.h"
 #include "falaise/snemo/datamodels/data_model.h"
 #include "falaise/snemo/datamodels/event_header.h"
+
+#include "simulation_module.h"
+#include "manager_parameters.h"
+
 
 #include "FLSimulateArgs.h"
 // #include "FLSimulateCommandLine.h"

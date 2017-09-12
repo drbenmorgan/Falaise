@@ -88,7 +88,7 @@ option(FALAISE_WITH_DOCS "Build documentation for Falaise" ON)
 # - Geant4
 set(FALAISE_BAYEUX_MIN_VERSION 3.0.0)
 message( STATUS "Searching Bayeux ${FALAISE_BAYEUX_MIN_VERSION} ...")
-find_package(Bayeux ${FALAISE_BAYEUX_MIN_VERSION} REQUIRED geant4)
+find_package(Bayeux ${FALAISE_BAYEUX_MIN_VERSION} REQUIRED)
 # message( STATUS "Bayeux_VERSION          = '${Bayeux_VERSION}'")
 # message( STATUS "Bayeux_CMAKE_CONFIG_DIR = '${Bayeux_CMAKE_CONFIG_DIR}'")
 

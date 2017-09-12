@@ -61,7 +61,7 @@
 #include <mctools/g4/stepping_action.h>
 #include <mctools/g4/stacking_action.h>
 #include <mctools/g4/simulation_ctrl.h>
-#include <mctools/g4/data_libraries.h>
+#include "data_libraries.h"
 
 // G4 stuff:
 #include <globals.hh>
