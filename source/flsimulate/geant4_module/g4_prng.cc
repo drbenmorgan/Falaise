@@ -30,90 +30,72 @@
 
 namespace mctools {
 
-  namespace g4 {
+namespace g4 {
 
-    const int g4_prng::SEED_INVALID;
-    const int g4_prng::SEED_TIME;
+const int g4_prng::SEED_INVALID;
+const int g4_prng::SEED_TIME;
 
-    void g4_prng::set_random (mygsl::rng & rng_)
-    {
-      _random_ = &rng_;
-      return;
-    }
+void g4_prng::set_random(mygsl::rng& rng_) {
+  _random_ = &rng_;
+  return;
+}
 
-    g4_prng::g4_prng () : HepRandomEngine ()
-    {
-      _random_seed_ = SEED_INVALID;
-      _random_ = 0;
-      return;
-    }
+g4_prng::g4_prng() : HepRandomEngine() {
+  _random_seed_ = SEED_INVALID;
+  _random_ = 0;
+  return;
+}
 
-    g4_prng::g4_prng (mygsl::rng & rng_) : HepRandomEngine ()
-    {
-      _random_seed_ = SEED_INVALID;
-      _random_ = &rng_;
-      return;
-    }
+g4_prng::g4_prng(mygsl::rng& rng_) : HepRandomEngine() {
+  _random_seed_ = SEED_INVALID;
+  _random_ = &rng_;
+  return;
+}
 
-     g4_prng::~g4_prng ()
-    {
-      return;
-    }
+g4_prng::~g4_prng() { return; }
 
-    double g4_prng::flat ()
-    {
-      return _random_->uniform ();
-    }
+double g4_prng::flat() { return _random_->uniform(); }
 
-    void g4_prng::flatArray (const int size_, double* vect_)
-    {
-      for (int i = 0; i < size_; i++) {
-        vect_[i] = _random_->uniform ();
-      }
-      return;
-    }
+void g4_prng::flatArray(const int size_, double* vect_) {
+  for (int i = 0; i < size_; i++) {
+    vect_[i] = _random_->uniform();
+  }
+  return;
+}
 
-    void g4_prng::setSeed (long seed_, int /*dummy_*/)
-    {
-      _random_seed_ = seed_;
-      _random_->set_seed (seed_);
-      return;
-    }
+void g4_prng::setSeed(long seed_, int /*dummy_*/) {
+  _random_seed_ = seed_;
+  _random_->set_seed(seed_);
+  return;
+}
 
-    void g4_prng::setSeeds (const long * seeds_, int index_)
-    {
-      if (index_ != 0) {
-        DT_LOG_WARNING (datatools::logger::PRIO_WARNING, "Ignoring index value !");
-      }
-      _random_->set_seed (seeds_[0]);
-      return;
-    }
+void g4_prng::setSeeds(const long* seeds_, int index_) {
+  if (index_ != 0) {
+    DT_LOG_WARNING(datatools::logger::PRIO_WARNING, "Ignoring index value !");
+  }
+  _random_->set_seed(seeds_[0]);
+  return;
+}
 
-    void g4_prng::saveStatus (const char filename_[]) const
-    {
-      _random_->store (std::string (filename_));
-      return;
-    }
+void g4_prng::saveStatus(const char filename_[]) const {
+  _random_->store(std::string(filename_));
+  return;
+}
 
-    void g4_prng::restoreStatus (const char filename_[])
-    {
-      _random_->load (std::string (filename_));
-      return;
-    }
+void g4_prng::restoreStatus(const char filename_[]) {
+  _random_->load(std::string(filename_));
+  return;
+}
 
-    void g4_prng::showStatus () const
-    {
-      _random_->to_stream (std::clog);
-      std::clog << std::endl;
-      return;
-    }
+void g4_prng::showStatus() const {
+  _random_->to_stream(std::clog);
+  std::clog << std::endl;
+  return;
+}
 
-    std::string g4_prng::name () const
-    {
-      return "mctools::g4::g4_prng";
-    }
+std::string g4_prng::name() const { return "mctools::g4::g4_prng"; }
 
-  }  // end of namespace g4
+}  // end of namespace g4
 
 }  // end of namespace mctools
 

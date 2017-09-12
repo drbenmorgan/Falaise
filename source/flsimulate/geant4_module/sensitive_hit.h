@@ -25,39 +25,36 @@
 
 namespace mctools {
 
-  namespace g4 {
+namespace g4 {
 
-    /// \brief A sensitive hit using the Geant4 interface with an embedded base step hit
-    class sensitive_hit : public G4VHit
-    {
-    public:
+/// \brief A sensitive hit using the Geant4 interface with an embedded base step
+/// hit
+class sensitive_hit : public G4VHit {
+ public:
+  /// Return const reference to embedded base step hit
+  const mctools::base_step_hit& get_hit_data() const;
 
-      /// Return const reference to embedded base step hit
-      const mctools::base_step_hit & get_hit_data () const;
+  /// Return mutable reference to embedded base step hit
+  mctools::base_step_hit& grab_hit_data();
 
-      /// Return mutable reference to embedded base step hit
-      mctools::base_step_hit & grab_hit_data ();
+  /// Default constructor
+  sensitive_hit();
 
-      /// Default constructor
-      sensitive_hit ();
+  /// Destructor
+  virtual ~sensitive_hit();
 
-      /// Destructor
-      virtual ~sensitive_hit ();
+  /// Reset to default values
+  void reset();
 
-      /// Reset to default values
-      void reset ();
+ private:
+  mctools::base_step_hit _hit_data_;  //!< Basic MC step hit data
+};
 
-    private:
+}  // end of namespace g4
 
-      mctools::base_step_hit _hit_data_; //!< Basic MC step hit data
+}  // end of namespace mctools
 
-    };
-
-  } // end of namespace g4
-
-} // end of namespace mctools
-
-#endif // MCTOOLS_G4_SENSITIVE_HIT_H
+#endif  // MCTOOLS_G4_SENSITIVE_HIT_H
 
 /*
 ** Local Variables: --

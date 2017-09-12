@@ -41,10 +41,9 @@
 namespace {
 class geant4_data_library {
  public:
-
  public:
   geant4_data_library() : map_() {
-    boost::assign::insert(map_)@MCTOOLS_G4_DATA_ASSIGNMENTS@;
+    boost::assign::insert(map_) @MCTOOLS_G4_DATA_ASSIGNMENTS@;
   }
 
   ~geant4_data_library() {}
@@ -53,18 +52,18 @@ class geant4_data_library {
     DLMap::const_iterator iter(map_.begin());
     DLMap::const_iterator end(map_.end());
 
-    for(; iter!=end; ++iter) {
-      setenv((*iter).first.c_str(),(*iter).second.c_str(),0);
+    for (; iter != end; ++iter) {
+      setenv((*iter).first.c_str(), (*iter).second.c_str(), 0);
     }
   }
 
  private:
-  typedef std::map<std::string,std::string> DLMap;
+  typedef std::map<std::string, std::string> DLMap;
   DLMap map_;
 };
-}
+}  // namespace
 
-#endif // MCTOOLS_G4_DATA_LIBRARIES_H
+#endif  // MCTOOLS_G4_DATA_LIBRARIES_H
 
 /*
 ** Local Variables: --

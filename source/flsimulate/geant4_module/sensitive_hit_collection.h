@@ -25,45 +25,42 @@
 
 namespace mctools {
 
-  namespace g4 {
+namespace g4 {
 
-    class sensitive_hit;
+class sensitive_hit;
 
-    class sensitive_hit_collection : public G4VHitsCollection
-    {
-    public:
+class sensitive_hit_collection : public G4VHitsCollection {
+ public:
+  typedef std::vector<sensitive_hit*> hit_collection_type;
 
-      typedef std::vector<sensitive_hit*> hit_collection_type;
+  sensitive_hit_collection();
 
-      sensitive_hit_collection ();
+  sensitive_hit_collection(G4String a_detector_name,
+                           G4String a_collection_name);
 
-      sensitive_hit_collection (G4String a_detector_name, G4String a_collection_name);
+  virtual ~sensitive_hit_collection();
 
-      virtual ~sensitive_hit_collection ();
+  G4int operator==(const sensitive_hit_collection& right) const;
 
-      G4int operator==(const sensitive_hit_collection & right) const;
+  const hit_collection_type& get_hits() const;
 
-      const hit_collection_type & get_hits () const;
+  hit_collection_type& grab_hits();
 
-      hit_collection_type & grab_hits ();
+  // G4VHitsCollection Interface :
 
-      // G4VHitsCollection Interface :
+  virtual G4VHit* GetHit(size_t) const;
 
-      virtual G4VHit * GetHit(size_t) const;
+  virtual size_t GetSize() const;
 
-      virtual size_t GetSize() const;
+ protected:
+  hit_collection_type _hits;
+};
 
-    protected:
+}  // end of namespace g4
 
-      hit_collection_type _hits;
+}  // end of namespace mctools
 
-    };
-
-  } // end of namespace g4
-
-} // end of namespace mctools
-
-#endif // MCTOOLS_G4_SENSITIVE_HIT_COLLECTION_H
+#endif  // MCTOOLS_G4_SENSITIVE_HIT_COLLECTION_H
 
 /*
 ** Local Variables: --
