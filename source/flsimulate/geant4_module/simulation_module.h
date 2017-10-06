@@ -112,14 +112,8 @@ class simulation_module : public dpp::base_module {
   // Registration of the module :
   DPP_MODULE_REGISTRATION_INTERFACE(simulation_module)
 };
-
 }  // end of namespace g4
-
 }  // end of namespace mctools
-
-// Object configuration description (OCD) support :
-#include <datatools/ocd_macros.h>
-DOCD_CLASS_DECLARATION(mctools::g4::simulation_module)
 
 #endif  // MCTOOLS_G4_SIMULATION_MODULE_H
 

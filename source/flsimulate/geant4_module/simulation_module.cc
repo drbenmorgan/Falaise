@@ -402,37 +402,6 @@ int simulation_module::_simulate_event(datatools::things& workItem) {
 }  // end of namespace g4
 }  // end of namespace mctools
 
-// OCD support for class 'mctools::g4::simulation_module' :
-DOCD_CLASS_IMPLEMENT_LOAD_BEGIN(::mctools::g4::simulation_module, ocd_) {
-  ocd_.set_class_name("mctools::g4::simulation_module");
-  ocd_.set_class_library("mctools_g4");
-  ocd_.set_class_description(
-      "A module to generate Monte-Carlo events through the Geant4 library");
-
-  ocd_.set_configuration_hints(
-      "A ``mctools::g4::simulation_module`` object can be setup with the    \n"
-      "following syntax in a ``datatools::multi_properties`` configuration  \n"
-      "file, typically from a module manager object.                        \n"
-      "                                                                     \n"
-      "Example::                                                            \n"
-      "                                                                     \n"
-      "  #@description A module that generates raw data                     \n"
-      "  #@key_label   \"name\"                                             \n"
-      "  #@meta_label  \"type\"                                             \n"
-      "                                                                     \n"
-      "  [name=\"g4sim\" type=\"mctools::g4::simulation_module\"]           \n"
-      "  #@config A Geant4 simulation module                                \n"
-      "  foo : string = \"bar\"                                             \n"
-      "                                                                     "
-      "\n");
-
-  ocd_.set_validation_support(false);
-  ocd_.lock();
-  return;
-}
-DOCD_CLASS_IMPLEMENT_LOAD_END()
-DOCD_CLASS_SYSTEM_REGISTRATION(::mctools::g4::simulation_module,
-                               "mctools::g4::simulation_module")
 
 /*
 ** Local Variables: --
