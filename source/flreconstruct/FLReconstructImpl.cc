@@ -304,6 +304,7 @@ void do_postprocess_input_metadata(FLReconstructParams& flRecParameters) {
   if (datatools::logger::is_debug(flRecParameters.logLevel)) {
     flRecParameters.inputMetadata.tree_dump(std::cerr, "Input metadata: ", "[debug] ");
   }
+  flRecParameters.inputMetadata.tree_dump(std::cout, "== METADATA EXTRACTED FROM INPUTFILE ==", "[mdin]");
 
   // Input metadata of interest:
   falaise::app::metadata_input iMeta;

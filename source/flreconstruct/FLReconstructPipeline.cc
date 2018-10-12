@@ -33,6 +33,9 @@ namespace FLReconstruct {
 falaise::exit_code do_pipeline(const FLReconstructParams& flRecParameters) {
   DT_LOG_TRACE_ENTERING(flRecParameters.logLevel);
 
+  std::cout<< "== STARTING do_pipeline, WITH INPUT PARAMETERS ==:\n";
+  flRecParameters.print(std::cout);
+
   // Variants support:
   datatools::configuration::variant_service variantService;
   if (!flRecParameters.variantSubsystemParams.logging.empty()) {
@@ -41,6 +44,8 @@ falaise::exit_code do_pipeline(const FLReconstructParams& flRecParameters) {
   }
   try {
     if (flRecParameters.variantSubsystemParams.is_active()) {
+      std::cout << "== STARTING VARIANT SERVICE WITH INPUT PARAMS ==\n:";
+      flRecParameters.variantSubsystemParams.print(std::cout);
       variantService.configure(flRecParameters.variantSubsystemParams);
       // Start and lock the variant service:
       DT_LOG_DEBUG(flRecParameters.logLevel, "Starting the variants service...");
@@ -54,6 +59,8 @@ falaise::exit_code do_pipeline(const FLReconstructParams& flRecParameters) {
     std::cerr << e.what() << std::endl;
     return falaise::EXIT_UNAVAILABLE;
   }
+
+  variantService.get_repository().tree_dump(std::cout,"== VARIANT REPOSITORY SETTINGS == ", "[vrs]");
 
   // - Run:
   falaise::exit_code code = falaise::EXIT_OK;
@@ -88,6 +95,13 @@ falaise::exit_code do_pipeline(const FLReconstructParams& flRecParameters) {
       DT_THROW(std::logic_error, "Cannot start core services!");
       ;
     }
+
+    // What services do we have
+    recServices.tree_dump(std::cout, "== RECONSTITUTED CORE SERVICES ==","[rsc]");
+
+    // Must have the geometry manager, how was it configured?
+    auto& myGS = recServices.get<geomtools::geometry_service>("geometry");
+    myGS.get_geom_manager().tree_dump(std::cout, "== RECONSTITUTED GEOMETRY MANAGER ==", "[rsc]");
 
     // - Start up the module manager
     // Dual strategy here
