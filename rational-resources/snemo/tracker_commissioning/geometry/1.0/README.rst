@@ -63,7 +63,7 @@ Check the geometry:
       $ bxgeomtools_inspector \
           --datatools::logging "trace" \
           --datatools::resource-path "falaise@$(pwd)/resources" \
-          --manager-config "@falaise:config/snemo/tracker_commissioning/geometry/1.0/manager.conf"
+          --manager-config "@falaise:snemo/tracker_commissioning/geometry/1.0/manager.conf"
 
      where:
 
@@ -71,6 +71,6 @@ Check the geometry:
          registers  the   Falaise  resource  base  directory   in  the
          datatools' kernel for automated search for configuration file
          paths,
-       * ``--manager-config "@falaise:config/geometry/snemo/tracker_commissioning/1.0/manager.conf"``
+       * ``--manager-config "@falaise:geometry/snemo/tracker_commissioning/1.0/manager.conf"``
          indicates  the  main  configuration   file  of  the  geometry
          manager.

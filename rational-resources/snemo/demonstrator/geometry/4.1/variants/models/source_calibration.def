@@ -1,5 +1,5 @@
 # -*- mode: conf-unix -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/variants/models/source_calibration.def
+# @falaise:snemo/demonstrator/geometry/4.0/models/source_module/variants/models/source_calibration.def
 # Variant parameters for the source calibration (format: datatools::multi_properties):
 
 #@description The definitions for variant parameters related to the DBD source
@@ -139,4 +139,4 @@ parameters.active.model       : string = "source_calibration.off_on.PM"
 parameters.active.description : string = "The activation flag of the source calibration setup"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/variants/models/source_calibration.def
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/source_module/variants/models/source_calibration.def

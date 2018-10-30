@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_frame_vertical_beams.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_frame_vertical_beams.geom
 
 #########################################################
 #    Source frame vertical (left=y<0/right=y>0) beams   #
@@ -306,4 +306,4 @@ material.ref      : string = "lab_air"
 visibility.color   : string = "grey"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_frame_vertical_beams.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_frame_vertical_beams.geom

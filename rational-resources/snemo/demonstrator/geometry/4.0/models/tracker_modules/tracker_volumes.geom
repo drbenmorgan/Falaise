@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/tracker_module/tracker_volumes.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/tracker_module/tracker_volumes.geom
 
 
 ###################################################################
@@ -237,4 +237,4 @@ material.ref : string  = "tracking_gas"
 visibility.color  : string  = "cyan"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/tracker_module/tracker_volumes.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/tracker_module/tracker_volumes.geom

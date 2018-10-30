@@ -85,7 +85,7 @@ int main(int argc_, char **argv_) {
     }
 
     if (manager_config_file.empty()) {
-      manager_config_file = "@falaise:config/snemo/demonstrator/geometry/3.0/manager.conf";
+      manager_config_file = "@falaise:snemo/demonstrator/geometry/3.0/manager.conf";
     }
     datatools::fetch_path_with_env(manager_config_file);
     if (devel) {

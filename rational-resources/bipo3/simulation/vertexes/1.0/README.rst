@@ -39,8 +39,8 @@ List the available vertex generators
            --logging "warning" \
            --load-dll Falaise \
            --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-1.0.0/resources" \
-           --geometry-manager "@falaise:config/bipo3/geometry/2.0/manager.conf" \
-           --vertex-generator-manager "@falaise:config/bipo3/simulation/vertexes/1.0/manager.conf" \
+           --geometry-manager "@falaise:bipo3/geometry/2.0/manager.conf" \
+           --vertex-generator-manager "@falaise:bipo3/simulation/vertexes/1.0/manager.conf" \
            --list
         List of vertex generators :
         |-- reflector_bulk  : Generate vertex in the bulk of the scintillator entrance window reflector
@@ -62,8 +62,8 @@ From the Falaise build directory, run: ::
            --logging "warning" \
            --load-dll Falaise \
            --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-1.0.0/resources" \
-           --geometry-manager "@falaise:config/bipo3/geometry/2.0/manager.conf" \
-           --vertex-generator-manager "@falaise:config/bipo3/simulation/vertexes/1.0/manager.conf" \
+           --geometry-manager "@falaise:bipo3/geometry/2.0/manager.conf" \
+           --vertex-generator-manager "@falaise:bipo3/simulation/vertexes/1.0/manager.conf" \
            --shoot \
            --prng-seed 314159 \
            --number-of-vertices 10000 \

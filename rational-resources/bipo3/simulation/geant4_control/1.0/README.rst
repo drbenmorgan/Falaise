@@ -63,8 +63,8 @@ Usage
          --event-generator-seed 0 \
          --g4-manager-seed 0      \
          --shpf-seed 0            \
-         --config "@falaise:config/bipo3/simulation/control/1.0/manager.conf" \
-         --g4-macro "@falaise:config/bipo3/simulation/control/1.0/geant4_visualization.mac"
+         --config "@falaise:bipo3/simulation/control/1.0/manager.conf" \
+         --g4-macro "@falaise:bipo3/simulation/control/1.0/geant4_visualization.mac"
       Idle> /run/beamOn 10
       Idle> exit
 
@@ -89,7 +89,7 @@ Usage
          --output-prng-states-file "${BIPOMC_WORK_DIR}/g4_production.states" \
          --number-of-events 1000    \
          --number-of-events-modulo 100 \
-         --config "@falaise:config/bipo3/simulation/control/1.0/manager.conf" \
+         --config "@falaise:bipo3/simulation/control/1.0/manager.conf" \
          --output-data-file "${BIPOMC_WORK_DIR}/g4_production_0.brio" \
          > ${BIPOMC_WORK_DIR}/g4_production.log 2>&1
 

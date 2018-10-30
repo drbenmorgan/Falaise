@@ -51,7 +51,7 @@ Browse and edit primary event generation variant parameters and options
 
    $ bxvariant_inspector \
           --datatools::resource-path="falaise@$(pwd)/BuildProducts/share/Falaise-3.x.x/resources" \
-          --variant-config "@falaise:config/snemo/demonstrator/simulation/primary_events/1.4/variants/repository.conf" \
+          --variant-config "@falaise:snemo/demonstrator/simulation/primary_events/1.4/variants/repository.conf" \
 	  --action doc > flprimaries.rst
    $ rst2html flprimaries.rst > flprimaries.html
    $ xdg-open flprimaries.html &
@@ -72,7 +72,7 @@ or:
 
    $ bxvariant_inspector \
           --datatools::resource-path="falaise@$(pwd)/BuildProducts/share/Falaise-3.x.x/resources" \
-          --variant-config "@falaise:config/snemo/demonstrator/simulation/primary_events/1.4/variants/repository.conf" \
+          --variant-config "@falaise:snemo/demonstrator/simulation/primary_events/1.4/variants/repository.conf" \
           --variant-gui \
 	  --variant-store "myprofile.conf"
 ..
@@ -86,7 +86,7 @@ Without variants, from Falaise build directory, run:
 
    $ bxgenbb_inspector \
       --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.x.x/resources" \
-      --configuration "@falaise:config/snemo/demonstrator/simulation/primary_events/1.4/manager.conf" \
+      --configuration "@falaise:snemo/demonstrator/simulation/primary_events/1.4/manager.conf" \
       --action "list" \
       --list-print-mode "raw"
 ..
@@ -97,9 +97,9 @@ Using variants (there is no difference here):
 
    $ bxgenbb_inspector \
       --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.x.x/resources" \
-      --variant-config "@falaise:config/snemo/demonstrator/simulation/primary_events/1.4/variants/repository.conf" \
+      --variant-config "@falaise:snemo/demonstrator/simulation/primary_events/1.4/variants/repository.conf" \
       --variant-gui \
-      --configuration "@falaise:config/snemo/demonstrator/simulation/primary_events/1.4/manager.conf" \
+      --configuration "@falaise:snemo/demonstrator/simulation/primary_events/1.4/manager.conf" \
       --action "list" \
       --list-print-mode "raw"
 ..
@@ -113,7 +113,7 @@ From Falaise build directory, run:
 
    $ bxgenbb_inspector \
       --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.x.x/resources" \
-      --configuration "@falaise:config/snemo/demonstrator/simulation/primary_events/1.4/manager.conf" \
+      --configuration "@falaise:snemo/demonstrator/simulation/primary_events/1.4/manager.conf" \
       --action "shoot"  \
       --generator "Bi214_Po214" \
       --prng-seed 314159 \
@@ -149,10 +149,10 @@ From Falaise build directory, run:
 
    $ bxgenbb_inspector \
       --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.x.x/resources" \
-      --variant-config "@falaise:config/snemo/demonstrator/simulation/primary_events/1.4/variants/repository.conf" \
+      --variant-config "@falaise:snemo/demonstrator/simulation/primary_events/1.4/variants/repository.conf" \
       --variant-set "primary_events:generator=gamma.1MeV" \
       --variant-gui \
-      --configuration "@falaise:config/snemo/demonstrator/simulation/primary_events/1.4/manager.conf" \
+      --configuration "@falaise:snemo/demonstrator/simulation/primary_events/1.4/manager.conf" \
       --action "shoot"  \
       --prng-seed 314159 \
       --number-of-events 1000 \

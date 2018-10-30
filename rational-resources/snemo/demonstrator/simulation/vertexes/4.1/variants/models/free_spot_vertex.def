@@ -1,5 +1,5 @@
 # -*- mode: conf-unix -*-
-# @falaise:config/snemo/demonstrator/simulation/vertexes/4.1/variants/models/free_spot_vertex.def
+# @falaise:snemo/demonstrator/simulation/vertexes/4.1/variants/models/free_spot_vertex.def
 # Description of variants for the definition of the free spot vertex generation (format: datatools::multi_properties)
 
 #@description The definitions for variant parameters related to the free vertex generator
@@ -64,4 +64,4 @@ parameters.z.model       : string = "free_vertex.coordinate.PM"
 parameters.z.description : string = "The vertex Z coordinate"
 
 
-# end of @falaise:config/snemo/demonstrator/simulation/vertexes/4.1/variants/models/free_spot_vertex.def
+# end of @falaise:snemo/demonstrator/simulation/vertexes/4.1/variants/models/free_spot_vertex.def

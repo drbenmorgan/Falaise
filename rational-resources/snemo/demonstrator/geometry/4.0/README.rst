@@ -108,7 +108,7 @@ Browse and edit geometry variant parameters and options
 
    $ bxvariant_inspector \
           --datatools::resource-path="falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
-          --variant-config "@falaise:config/snemo/demonstrator/geometry/4.0/variants/repository.conf" \
+          --variant-config "@falaise:snemo/demonstrator/geometry/4.0/variants/repository.conf" \
 	  --action doc > flgeometry.rst
    $ rst2html flgeometry.rst > flgeometry.html
    $ xdg-open flgeometry.html &
@@ -129,7 +129,7 @@ Browse and edit geometry variant parameters and options
 
    $ bxvariant_inspector \
           --datatools::resource-path="falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
-          --variant-config "@falaise:config/snemo/demonstrator/geometry/4.0/variants/repository.conf" \
+          --variant-config "@falaise:snemo/demonstrator/geometry/4.0/variants/repository.conf" \
           --variant-gui \
 	  --variant-store "myprofile.conf"
 ..
@@ -167,10 +167,10 @@ Display the geometry
         bxgeomtools_inspector \
           --datatools::resource-path="falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
           --load-dll Falaise \
-          --variant-config "@falaise:config/snemo/demonstrator/geometry/4.0/variants/repository.conf" \
+          --variant-config "@falaise:snemo/demonstrator/geometry/4.0/variants/repository.conf" \
           --variant-gui \
 	  --variant-store  "myprofile.conf" \
-          --manager-config "@falaise:config/snemo/demonstrator/geometry/4.0/manager.conf"
+          --manager-config "@falaise:snemo/demonstrator/geometry/4.0/manager.conf"
 ..
 
      where:
@@ -180,7 +180,7 @@ Display the geometry
          datatools kernel for automated search for configuration file
          paths,
        * ``--manager-config
-         "@falaise:config/snemo/demonstrator/geometry/4.0/manager.conf"``
+         "@falaise:snemo/demonstrator/geometry/4.0/manager.conf"``
          indicates the main configuration file of the geometry manager.
        * ``--variant-config`` loads the main configuration file for variant support.
        * ``--variant-gui`` launched the GUI at start to select/change variant
@@ -194,9 +194,9 @@ Display the geometry
           --datatools::logging "warning" \
           --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
           --load-dll Falaise \
-          --variant-config "@falaise:config/snemo/demonstrator/geometry/4.0/variants/repository.conf" \
+          --variant-config "@falaise:snemo/demonstrator/geometry/4.0/variants/repository.conf" \
  	  --variant-load "myprofile.conf" \
-          --manager-config "@falaise:config/snemo/demonstrator/geometry/4.0/manager.conf"
+          --manager-config "@falaise:snemo/demonstrator/geometry/4.0/manager.conf"
 ..
 
 .. code:: sh
@@ -206,10 +206,10 @@ Display the geometry
           --datatools::logging "warning" \
           --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
           --load-dll Falaise \
-          --variant-config "@falaise:config/snemo/demonstrator/geometry/4.0/variants/repository.conf" \
+          --variant-config "@falaise:snemo/demonstrator/geometry/4.0/variants/repository.conf" \
           --variant-set "geometry:layout=HalfCommissioning" \
           --variant-set "magnetic_field:active=0" \
-          --manager-config "@falaise:config/snemo/demonstrator/geometry/4.0/manager.conf"
+          --manager-config "@falaise:snemo/demonstrator/geometry/4.0/manager.conf"
 ..
 
 
@@ -245,7 +245,7 @@ as designed by the LAPP group.   With this layout, you can change both
 the thickness  of the source  pads and the associated  material. These
 variant are defined in:
 
-``@falaise:config/snemo/demonstrator/geometry/4.0/variants/models/source_betabeta.def``
+``@falaise:snemo/demonstrator/geometry/4.0/variants/models/source_betabeta.def``
 
 - ``thickness`` ranges from 5 to 500 um (default is ``250 um``).
 - ``material`` is chosen from the following set:
@@ -255,7 +255,7 @@ variant are defined in:
   - ``Nd150``
 
 The                 geometry                model                 file
-``@falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/basic/source_pads.geom``
+``@falaise:snemo/demonstrator/geometry/4.0/models/source_module/basic/source_pads.geom``
 describes the source pads used in the geometry.
 
 The               ``source_external_pad.basic.model``              and
@@ -263,7 +263,7 @@ The               ``source_external_pad.basic.model``              and
 alias named ``bb_source_material.basic``.
 
 The   ``bb_source_material.basic``  material   alias  is   defined  in
-``@falaise:config/snemo/demonstrator/geometry/4.0/plugins/materials/material_aliases.def``. Depending
+``@falaise:snemo/demonstrator/geometry/4.0/plugins/materials/material_aliases.def``. Depending
 of  the  ``material``  variant  parameter selected  by  the  user,  it
 corresponds to one of the following value:
 
@@ -272,9 +272,9 @@ corresponds to one of the following value:
 - ``snemo::nd150::basic``: alias for the ``snemo::snemo::nd150::nemo3`` material
 
 These           materials           are           defined           in
-``@falaise:config/common/geometry/materials/2.0/materials.def``    and
+``@falaise:common/geometry/materials/2.0/materials.def``    and
 some        related        elements       are        defined        in
-``@falaise:config/common/geometry/materials/2.0/elements.def``.
+``@falaise:common/geometry/materials/2.0/elements.def``.
 
 
 

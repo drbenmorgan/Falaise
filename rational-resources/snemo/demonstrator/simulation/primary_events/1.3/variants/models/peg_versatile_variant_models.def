@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/simulation/primary_events/1.3/models/versatile_variant_models.def
+# @falaise:snemo/demonstrator/simulation/primary_events/1.3/models/versatile_variant_models.def
 # Description of variants for the primary event generation (format: datatools::multi_properties)
 
 #@description The definitions for variant parameters related to the primary event generation
@@ -95,4 +95,4 @@ parameters.energy.model         : string = "peg.generator.vspg.energy.PM"
 parameters.energy.description   : string = "The particle energy (monokinetic)"
 
 
-# end of @falaise:config/snemo/demonstrator/simulation/primary_events/1.3/models/3/models/versatile_variant_models.def
+# end of @falaise:snemo/demonstrator/simulation/primary_events/1.3/models/3/models/versatile_variant_models.def

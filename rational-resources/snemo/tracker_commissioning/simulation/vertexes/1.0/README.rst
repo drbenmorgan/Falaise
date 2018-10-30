@@ -51,8 +51,8 @@ From  Falaise build  directory (this  is preliminary),  run: ::
            --logging "warning" \
            --load-dll Falaise \
            --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-1.0.0/resources" \
-           --geometry-manager "@falaise:config/snemo/tracker_commissioning/geometry/1.0/manager.conf" \
-           --vertex-generator-manager "@falaise:config/snemo/tracker_commissioning/simulation/vertexes/1.0/manager.conf" \
+           --geometry-manager "@falaise:snemo/tracker_commissioning/geometry/1.0/manager.conf" \
+           --vertex-generator-manager "@falaise:snemo/tracker_commissioning/simulation/vertexes/1.0/manager.conf" \
            --list
         List of vertex generators :
         |-- anode_wire_bulk  : Generate vertex on the bulk volume of the anode wires
@@ -72,8 +72,8 @@ Run from the Falaise build directory (preliminary): ::
            --logging "warning" \
            --load-dll Falaise \
            --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-1.0.0/resources" \
-           --geometry-manager         "@falaise:config/snemo/tracker_commissioning/geometry/1.0/manager.conf" \
-           --vertex-generator-manager "@falaise:config/snemo/tracker_commissioning/simulation/vertexes/1.0/manager.conf" \
+           --geometry-manager         "@falaise:snemo/tracker_commissioning/geometry/1.0/manager.conf" \
+           --vertex-generator-manager "@falaise:snemo/tracker_commissioning/simulation/vertexes/1.0/manager.conf" \
            --shoot \
            --prng-seed 314159 \
            --number-of-vertices 10000 \

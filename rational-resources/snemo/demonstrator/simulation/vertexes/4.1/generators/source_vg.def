@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/simulation/vertexes/4.1/generators/source_vg.def
+# @falaise:snemo/demonstrator/simulation/vertexes/4.1/generators/source_vg.def
 # List of multi-properties (datatools::multi_properties):
 
 #@description A list of vertex generators
@@ -188,4 +188,4 @@ generators.source_pads_internal_surface.absolute_weight : real  = 4607.0 # 135.5
 # generators.source_all_pads_surface.activity  : real  = "10.0 uBq/m2"
 
 
-# end of @falaise:config/snemo/demonstrator/simulation/vertexes/4.1/generators/source_vg.def
+# end of @falaise:snemo/demonstrator/simulation/vertexes/4.1/generators/source_vg.def

@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/simulation/vertexes/4.1/generators/om_vg.def
+# @falaise:snemo/demonstrator/simulation/vertexes/4.1/generators/om_vg.def
 # List of multi-properties (datatools::multi_properties):
 
 #@description A list of vertex generators
@@ -285,4 +285,4 @@ generators.calo_5inch_back_scin_bulk.absolute_weight  : real = 9056.702036923 # 
 generators.calo_5inch_front_scin_bulk.absolute_weight : real = 2031.616 # cm3
 
 
-# end of @falaise:config/snemo/demonstrator/simulation/vertexes/4.1/generators/om_vg.def
+# end of @falaise:snemo/demonstrator/simulation/vertexes/4.1/generators/om_vg.def

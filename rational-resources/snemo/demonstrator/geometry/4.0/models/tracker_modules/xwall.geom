@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/tracker_module/xwall.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/tracker_module/xwall.geom
 
 
 #########################################################################
@@ -459,4 +459,4 @@ material.ref      : string = "lab_air"
 visibility.color  : string = "grey"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/tracker_module/xwall.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/tracker_module/xwall.geom

@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/tracker_module/gveto.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/tracker_module/gveto.geom
 
 
 #######################################################################
@@ -556,4 +556,4 @@ stacked.label_2   : string  = "inner"
 material.ref : string = "lab_air"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.1/models/tracker_module/gveto.geom
+# end of @falaise:snemo/demonstrator/geometry/4.1/models/tracker_module/gveto.geom

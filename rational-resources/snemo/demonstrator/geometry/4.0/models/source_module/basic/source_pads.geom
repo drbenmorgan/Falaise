@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/basic/source_pads.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/source_module/basic/source_pads.geom
 
 ###############
 # Source pads #
@@ -33,4 +33,4 @@ material.ref       : string  = "bb_source_material.basic"
 visibility.color   : string  = "magenta"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/basic/source_pads.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/source_module/basic/source_pads.geom

@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_module.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_module.geom
 # Author  : F. Mauger
 # Date    : 2012-04-03
 # Updated : 2016-04-19
@@ -260,4 +260,4 @@ visibility.hidden_envelope : boolean = true
 visibility.color          : string  = "grey"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_module.gom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_module.gom

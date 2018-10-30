@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_frame_horizontal_beams.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_frame_horizontal_beams.geom
 
 #########################################################
 #  Source frame horizontal (top=z<0/bottom=z>0) beams   #
@@ -404,4 +404,4 @@ stacked.label_4   : string = "interface1"
 material.ref      : string = "lab_air"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_frame_horizontal_beams.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_frame_horizontal_beams.geom

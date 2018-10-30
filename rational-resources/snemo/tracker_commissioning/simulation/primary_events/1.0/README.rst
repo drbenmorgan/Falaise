@@ -37,7 +37,7 @@ From the Falaise source directory: ::
 
    $ bxgenbb_inspector \
       --datatools::resource-path "falaise@$(pwd)/resources" \
-      --configuration "@falaise:config/snemo/tracker_commissioning/simulation/primary_events/1.0/manager.conf" \
+      --configuration "@falaise:snemo/tracker_commissioning/simulation/primary_events/1.0/manager.conf" \
       --action "list"
    List of particle generators:
    |-- Am241                          : genbb::wdecay0 (not initialized)
@@ -60,13 +60,13 @@ Preliminary method (considering the Falaise build directory): ::
      bxgenbb_inspector \
       --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-1.0.0/resources" \
       --load-dll "Falaise" \
-      --configuration "@falaise:config/snemo/tracker_commissioning/simulation/primary_events/1.0/manager.conf" \
+      --configuration "@falaise:snemo/tracker_commissioning/simulation/primary_events/1.0/manager.conf" \
       --action "shoot"  \
       --generator "muon.cosmic.sea_level.toy" \
       --prng-seed 314159 \
       --number-of-events 1000 \
       --modulo 100 \
-      --histo-def "@falaise:config/snemo/tracker_commissioning/simulation/primary_events/1.0/inspector_histos_cosmic.conf" \
+      --histo-def "@falaise:snemo/tracker_commissioning/simulation/primary_events/1.0/inspector_histos_cosmic.conf" \
       --prompt \
       --delayed \
       --prompt-time-limit 1 \

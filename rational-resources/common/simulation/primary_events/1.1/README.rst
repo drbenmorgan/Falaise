@@ -43,7 +43,7 @@ Browse and edit primary event generation variant parameters and options
 
    $ bxvariant_inspector \
           --datatools::resource-path="falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
-          --variant-config "@falaise:config/common/simulation/primary_events/1.1/variants/repository.conf" \
+          --variant-config "@falaise:common/simulation/primary_events/1.1/variants/repository.conf" \
           --variant-gui \
 	  --variant-store "myprofile.conf"
 ..
@@ -57,9 +57,9 @@ From  Falaise build  directory,  run:
 
    $ bxgenbb_inspector \
       --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
-      --variant-config "@falaise:config/common/simulation/primary_events/1.1/variants/repository.conf" \
+      --variant-config "@falaise:common/simulation/primary_events/1.1/variants/repository.conf" \
       --variant-gui \
-      --configuration "@falaise:config/common/simulation/primary_events/1.1/manager.conf" \
+      --configuration "@falaise:common/simulation/primary_events/1.1/manager.conf" \
       --action "list" \
       --list-print-mode "raw"
 
@@ -73,8 +73,8 @@ From  Falaise build  directory,  run:
 
    $ bxgenbb_inspector \
       --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
-      --variant-config "@falaise:config/common/simulation/primary_events/1.1/variants/repository.conf" \
-      --configuration "@falaise:config/common/simulation/primary_events/1.1/manager.conf" \
+      --variant-config "@falaise:common/simulation/primary_events/1.1/variants/repository.conf" \
+      --configuration "@falaise:common/simulation/primary_events/1.1/manager.conf" \
       --action "shoot"  \
       --generator "Bi214_Po214" \
       --prng-seed 314159 \

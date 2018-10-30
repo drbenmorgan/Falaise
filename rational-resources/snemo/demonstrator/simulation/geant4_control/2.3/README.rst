@@ -55,7 +55,7 @@ Browse and edit primary event generation variant parameters and options
 
    brewsh> bxvariant_inspector \
           --datatools::resource-path="falaise@$(pwd)/BuildProducts/share/Falaise-3.x.x/resources" \
-          --variant-config "@falaise:config/snemo/demonstrator/simulation/geant4_control/2.3/variants/repository.conf" \
+          --variant-config "@falaise:snemo/demonstrator/simulation/geant4_control/2.3/variants/repository.conf" \
 	  --action doc > flg4ctrl.rst
    brewsh> flg4ctrl.rst > flg4ctrl.html
    brewsh> xdg-open flg4ctrl.html &
@@ -75,7 +75,7 @@ or:
 
    brewsh> bxvariant_inspector \
 	  --datatools::resource-path="falaise@$(pwd)/BuildProducts/share/Falaise-3.x.x/resources" \
-	  --variant-config "@falaise:config/snemo/demonstrator/simulation/geant4_control/2.3/variants/repository.conf" \
+	  --variant-config "@falaise:snemo/demonstrator/simulation/geant4_control/2.3/variants/repository.conf" \
           --variant-gui \
 	  --variant-store "myprofile.conf"
 ..
@@ -95,7 +95,7 @@ the default geometry:
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.2.0/resources" \
      --logging-priority "debug" \
      --load-dll Falaise \
-     --config @falaise:config/snemo/demonstrator/simulation/geant4_control/2.3/manager.conf \
+     --config @falaise:snemo/demonstrator/simulation/geant4_control/2.3/manager.conf \
      --vertex-generator-name "source_pads_bulk"  \
      --vertex-generator-seed 0 \
      --event-generator-name "Tl208" \
@@ -125,10 +125,10 @@ variant geometry layout:
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.X.X/resources" \
      --logging-priority "debug" \
      --load-dll Falaise \
-     --variant-config "@falaise:config/snemo/demonstrator/simulation/geant4_control/2.3/variants/repository.conf" \
+     --variant-config "@falaise:snemo/demonstrator/simulation/geant4_control/2.3/variants/repository.conf" \
      --variant-gui \
      --variant-store "cfg1.conf" \
-     --config @falaise:config/snemo/demonstrator/simulation/geant4_control/2.3/manager.conf \
+     --config @falaise:snemo/demonstrator/simulation/geant4_control/2.3/manager.conf \
      --vertex-generator-seed 0 \
      --event-generator-seed 0  \
      --g4-manager-seed 0       \
@@ -153,10 +153,10 @@ Run in interactive mode:
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.X.X/resources" \
      --logging-priority "debug" \
      --load-dll Falaise \
-     --variant-config "@falaise:config/snemo/demonstrator/simulation/geant4_control/2.3/variants/repository.conf" \
+     --variant-config "@falaise:snemo/demonstrator/simulation/geant4_control/2.3/variants/repository.conf" \
      --variant-gui \
      --variant-store "cfg1.conf" \
-     --config @falaise:config/snemo/demonstrator/simulation/geant4_control/2.3/manager.conf \
+     --config @falaise:snemo/demonstrator/simulation/geant4_control/2.3/manager.conf \
      --vertex-generator-seed 0 \
      --event-generator-seed 0  \
      --g4-manager-seed 0       \
@@ -171,7 +171,7 @@ Run in interactive mode:
      --output-data-file "cfg1-source.xml" \
      --interactive \
      --g4-visu \
-     --g4-macro "@falaise:config/snemo/demonstrator/simulation/geant4_control/2.2/visu/visu_0.mac"
+     --g4-macro "@falaise:snemo/demonstrator/simulation/geant4_control/2.2/visu/visu_0.mac"
 ..
 
 

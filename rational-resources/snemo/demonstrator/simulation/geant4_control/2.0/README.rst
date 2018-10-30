@@ -52,11 +52,11 @@ Run from the Falaise build directory:
      --datatools::logging "warning" \
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-2.1.0/resources" \
      --load-dll Falaise \
-     --datatools::variant-config "@falaise:config/snemo/demonstrator/simulation/geant4_control/2.0/variants/repository.conf" \
+     --datatools::variant-config "@falaise:snemo/demonstrator/simulation/geant4_control/2.0/variants/repository.conf" \
      --datatools::variant-qt-gui \
      --datatools::variant-store "cfg1.conf" \
      --logging-priority "debug" \
-     --config @falaise:config/snemo/demonstrator/simulation/geant4_control/2.0/manager.conf \
+     --config @falaise:snemo/demonstrator/simulation/geant4_control/2.0/manager.conf \
      --vertex-generator-name "source_pads_bulk"  \
      --vertex-generator-seed 0 \
      --event-generator-name "Tl208" \
@@ -82,11 +82,11 @@ Run from the Falaise build directory:
      --datatools::logging "warning" \
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-2.1.0/resources" \
      --load-dll Falaise \
-     --datatools::variant-config "@falaise:config/snemo/demonstrator/simulation/geant4_control/2.0/variants/repository.conf" \
+     --datatools::variant-config "@falaise:snemo/demonstrator/simulation/geant4_control/2.0/variants/repository.conf" \
      --datatools::variant-qt-gui \
      --datatools::variant-store "cfg1.conf" \
      --logging-priority "debug" \
-     --config @falaise:config/snemo/demonstrator/simulation/geant4_control/2.0/manager.conf \
+     --config @falaise:snemo/demonstrator/simulation/geant4_control/2.0/manager.conf \
      --vertex-generator-name "source_pads_bulk"  \
      --vertex-generator-seed 0 \
      --event-generator-name "Tl208" \
@@ -103,4 +103,4 @@ Run from the Falaise build directory:
      --output-data-bank "SD" \
      --output-data-file "cfg1-Tl208-source.xml" \
      --g4-visu \
-     --g4-macro "@falaise:config/snemo/demonstrator/simulation/geant4_control/2.0/visu/visu_0.mac"
+     --g4-macro "@falaise:snemo/demonstrator/simulation/geant4_control/2.0/visu/visu_0.mac"

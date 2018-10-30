@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/simulation/vertexes/4.0/generators/scin_vg.lis
+# @falaise:snemo/demonstrator/simulation/vertexes/4.0/generators/scin_vg.lis
 # List of multi-properties (datatools::multi_properties):
 
 #@description A list of vertex generators
@@ -222,4 +222,4 @@ origin : string  = "category='calorimeter_block' module={*} side={*} column={*} 
 mode   : string  = "bulk"
 
 
-# end of @falaise:config/snemo/demonstrator/simulation/vertexes/4.0/generators/scin_vg.lis
+# end of @falaise:snemo/demonstrator/simulation/vertexes/4.0/generators/scin_vg.lis

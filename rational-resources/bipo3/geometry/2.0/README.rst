@@ -73,7 +73,7 @@ Check the geometry
           --datatools::logging "warning" \
           --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-1.0.0/resources" \
           --load-dll Falaise \
-          --manager-config "@falaise:config/bipo3/geometry/2.0/manager.conf"
+          --manager-config "@falaise:bipo3/geometry/2.0/manager.conf"
       ...
       geomtools> help
       ...
@@ -92,5 +92,5 @@ Check the geometry
          datatools' kernel for automated search for configuration file
          paths,
        * ``--manager-config
-         "@falaise:config/bipo3/geometry/2.0/manager.conf"`` indicates
+         "@falaise:bipo3/geometry/2.0/manager.conf"`` indicates
          the main configuration file of the geometry manager.

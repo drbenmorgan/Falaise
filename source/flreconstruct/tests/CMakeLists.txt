@@ -47,7 +47,7 @@ set_tests_properties(flreconstruct-standard-pipeline-script-urn PROPERTIES
 
 # - Non-URN internal scripts - "next/devel" pipeline
 add_test(NAME flreconstruct-standard-pipeline-develscript
-  COMMAND flreconstruct -i ${FLRECONSTRUCT_FIXTURE_FILE} -p "@falaise:config/snemo/demonstrator/reconstruction/official-2.0.0.conf"
+  COMMAND flreconstruct -i ${FLRECONSTRUCT_FIXTURE_FILE} -p "@falaise:snemo/demonstrator/reconstruction/official-2.0.0.conf"
   )
 set_tests_properties(flreconstruct-standard-pipeline-develscript PROPERTIES
   DEPENDS flreconstruct-fixture

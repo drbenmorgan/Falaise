@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/simulation/vertexes/4.0/generators/source_calibration_vg.lis
+# @falaise:snemo/demonstrator/simulation/vertexes/4.0/generators/source_calibration_vg.lis
 # List of multi-properties (datatools::multi_properties):
 
 #@description A list of vertex generators
@@ -29,4 +29,4 @@ origin : string  = "category='source_calibration_spot' module={*} track={*} posi
 mode   : string  = "bulk"
 
 
-# end of @falaise:config/snemo/demonstrator/simulation/vertexes/4.0/generators/source_calibration_vg.lis
+# end of @falaise:snemo/demonstrator/simulation/vertexes/4.0/generators/source_calibration_vg.lis

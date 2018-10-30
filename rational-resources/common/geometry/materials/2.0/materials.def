@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/common/geometry/materials/2.0/materials.def
+# @falaise:common/geometry/materials/2.0/materials.def
 # List of materials (format: datatools::multi_properties):
 
 #@description A list of materials for SuperNEMO experiment
@@ -312,4 +312,4 @@ composition.fraction_mass   : real[2]   =  0.02       0.98
 # composition/density: unknown.
 
 
-# end of @falaise:config/common/geometry/materials/2.0/materials.def
+# end of @falaise:common/geometry/materials/2.0/materials.def

@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_blocks.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_blocks.geom
 
 ###############
 # Source layer #
@@ -319,4 +319,4 @@ mapping.daughter_id.strip_34 : string = "[source_strip_path:strip=34]"
 mapping.daughter_id.strip_35 : string = "[source_strip_path:strip=35]"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_blocks.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_blocks.geom

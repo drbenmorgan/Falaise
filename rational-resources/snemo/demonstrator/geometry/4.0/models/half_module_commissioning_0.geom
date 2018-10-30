@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/half_module_commissioning.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/half_module_commissioning.geom
 
 
 #############################################################################
@@ -156,4 +156,4 @@ mapping.daughter_id.tracker_front_submodule     : string  = "[tracker_submodule:
 mapping.daughter_id.calorimeter_front_submodule : string  = "[calorimeter_submodule: side=1]"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/half_module_commissioning.model.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/half_module_commissioning.model.geom

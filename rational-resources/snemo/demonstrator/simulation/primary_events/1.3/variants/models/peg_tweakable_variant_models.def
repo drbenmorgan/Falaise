@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/simulation/primary_events/1.3/models/peg_tweakable_variant_models.def
+# @falaise:snemo/demonstrator/simulation/primary_events/1.3/models/peg_tweakable_variant_models.def
 # Description of variants for the primary event generation (format: datatools::multi_properties)
 
 #@description The definitions for variant parameters related to the primary event generation
@@ -333,4 +333,4 @@ parameters.direction_mode.model        : string = "peg.generator.tpg.direction_m
 parameters.direction_mode.description  : string = "The direction distribution mode"
 
 
-# end of @falaise:config/snemo/demonstrator/simulation/primary_events/1.3/models/tweakable_variant_models.def
+# end of @falaise:snemo/demonstrator/simulation/primary_events/1.3/models/tweakable_variant_models.def

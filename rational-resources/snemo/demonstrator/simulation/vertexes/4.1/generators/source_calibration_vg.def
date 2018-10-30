@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/simulation/vertexes/4.1/generators/source_calibration_vg.def
+# @falaise:snemo/demonstrator/simulation/vertexes/4.1/generators/source_calibration_vg.def
 # List of multi-properties (datatools::multi_properties):
 
 #@description A list of vertex generators
@@ -62,4 +62,4 @@ origin.address.position    : integer = \
 mode   : string  = "bulk"
 
 
-# end of @falaise:config/snemo/demonstrator/simulation/vertexes/4.1/generators/source_calibration_vg.def
+# end of @falaise:snemo/demonstrator/simulation/vertexes/4.1/generators/source_calibration_vg.def

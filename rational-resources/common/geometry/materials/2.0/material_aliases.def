@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/common/geometry/materials/2.0/material_aliases.def
+# @falaise:common/geometry/materials/2.0/material_aliases.def
 # List of material aliases (format: datatools::multi_properties):
 
 #@description A sample list of materials aliases
@@ -120,4 +120,4 @@ material : string = "snemo::air::lsm"
 material : string = "snemo::tracking_gas::nemo3"
 
 
-# end of @falaise:config/common/geometry/materials/2.0/material_aliases.def
+# end of @falaise:common/geometry/materials/2.0/material_aliases.def

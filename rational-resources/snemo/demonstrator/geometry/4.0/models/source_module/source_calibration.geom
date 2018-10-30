@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_calibration.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_calibration.geom
 
 # References:
 # - DocDB-2875
@@ -211,4 +211,4 @@ mapping.daughter_id.source_3 : string = "[source_calibration_carrier:position=3]
 #@variant_endif
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_calibration.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_calibration.geom

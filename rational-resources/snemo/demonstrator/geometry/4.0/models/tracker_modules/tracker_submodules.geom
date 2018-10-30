@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/tracker_module/tracker_submodules.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/tracker_module/tracker_submodules.geom
 
 
 ###############################################################################
@@ -74,4 +74,4 @@ visibility.color            : string  = "grey"
 # visibility.daughters.hidden : boolean = false
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/tracker_module/tracker_submodules.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/tracker_module/tracker_submodules.geom

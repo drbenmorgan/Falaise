@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/simulation/vertexes/4.2/generators/om_pmt_bulk_vg.def
+# @falaise:snemo/demonstrator/simulation/vertexes/4.2/generators/om_pmt_bulk_vg.def
 # List of multi-properties (datatools::multi_properties):
 
 #@description A list of vertex generators
@@ -80,4 +80,4 @@ generators.pmt_8inch_main_wall_glass_bulk.absolute_weight : real  = 1858882.4528
 #generators.generators.pmt_8inch_main_wall_glass_bulk.absolute_weight.activity : string  = "1.0 Bq/m3"
 
 
-# end of @falaise:config/snemo/demonstrator/simulation/vertexes/4.2/generators/om_pmt_bulk_vg.def
+# end of @falaise:snemo/demonstrator/simulation/vertexes/4.2/generators/om_pmt_bulk_vg.def

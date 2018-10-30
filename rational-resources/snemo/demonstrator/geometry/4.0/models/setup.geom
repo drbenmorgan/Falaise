@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/setup.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/setup.geom
 
 #####################
 # Experimental hall #
@@ -183,4 +183,4 @@ visibility.color            : string = "grey"
 mapping.daughter_id.setup : string = "[hall:hall=0]"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/setup.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/setup.geom

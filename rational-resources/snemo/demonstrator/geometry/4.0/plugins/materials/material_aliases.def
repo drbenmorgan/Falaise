@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/plugins/materials/material_aliases.def
+# @falaise:snemo/demonstrator/geometry/4.0/plugins/materials/material_aliases.def
 # List of material aliases (format: datatools::multi_properties):
 
 #@description A sample list of materials aliases
@@ -54,4 +54,4 @@ material : string = "snemo::nd150::basic"
 
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/plugins/materials/material_aliases.def
+# end of @falaise:snemo/demonstrator/geometry/4.0/plugins/materials/material_aliases.def

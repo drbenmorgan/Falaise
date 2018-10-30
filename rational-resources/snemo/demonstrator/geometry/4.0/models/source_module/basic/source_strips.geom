@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/basic/source_strips.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/source_module/basic/source_strips.geom
 
 
 #################
@@ -242,4 +242,4 @@ mapping.daughter_id.back_film  : string = "[source_strip_film:film=0]"
 mapping.daughter_id.front_film : string = "[source_strip_film:film=1]"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/basic/source_strips.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/source_module/basic/source_strips.geom

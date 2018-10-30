@@ -1,5 +1,5 @@
 # -*- mode: conf-unix -*-
-#  @falaise:config/snemo/demonstrator/geometry/4.0/variants/models/shielding.def
+#  @falaise:snemo/demonstrator/geometry/4.0/variants/models/shielding.def
 # Description of variants for the definition of the shielding (format: datatools::multi_properties)
 
 
@@ -63,4 +63,4 @@ parameters.active.model       : string = "shielding.on_off.PM"
 parameters.active.description : string = "The activation flag of the shielding"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/variants/models/shielding.def
+# end of @falaise:snemo/demonstrator/geometry/4.0/variants/models/shielding.def

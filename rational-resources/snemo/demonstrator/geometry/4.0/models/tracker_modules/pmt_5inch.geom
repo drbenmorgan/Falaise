@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/tracker_module/pmt_5inch.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/tracker_module/pmt_5inch.geom
 
 #################################################
 ### PMT HAMAMATSU R6594 (5")                  ###
@@ -50,7 +50,7 @@ shape_type  : string = "polycone"
 build_mode  : string = "datafile"
 
 #@description The polycone coordinates filename
-datafile    : string = "@falaise:config/common/geometry/pmt/1.0/hamamatsu_R6594/hamamatsu_R6594_shape.data"
+datafile    : string = "@falaise:common/geometry/pmt/1.0/hamamatsu_R6594/hamamatsu_R6594_shape.data"
 
 #@description The 'filled' mode to build the model
 filled_mode : string = "by_envelope"
@@ -95,4 +95,4 @@ visibility.daughters.hidden : boolean = true
 # internal_item.filled.model.dynodes     : string  = "tracker.PMT_HAMAMATSU_R6594.dynodes.model"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/tracker_module/pmt_5inch.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/tracker_module/pmt_5inch.geom

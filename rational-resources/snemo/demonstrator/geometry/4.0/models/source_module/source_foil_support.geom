@@ -1,5 +1,5 @@
 # -*- mode: conf-unix; -*-
-# @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_foil_support.geom
+# @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_foil_support.geom
 
 #############################################
 # Approximation of the total mass of Delrin #
@@ -59,4 +59,4 @@ material.ref      : string  = "tracking_gas"
 visibility.color  : string  = "cyan"
 
 
-# end of @falaise:config/snemo/demonstrator/geometry/4.0/models/source_module/source_foil_support.geom
+# end of @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_foil_support.geom
