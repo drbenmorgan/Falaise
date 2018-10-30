@@ -1,3 +1,17 @@
+Falaise resource bundle: rationalized....
+
+The bundle has an effective entry point in the file:
+
+- urn/db/snemo_setup_db.conf
+
+Everything else appears to flow from there.
+
+First rationalization: Strip urn files from uneeded comments,
+use whitespace to indent sections (such as they are).
+
+
+
+IGNORE BELOW HERE....
 ======================
 Falaise resource files
 ======================
