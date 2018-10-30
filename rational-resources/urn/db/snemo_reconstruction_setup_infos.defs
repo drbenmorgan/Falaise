@@ -1,5 +1,3 @@
-# -*- mode: conf-unix; -*-
-
 #@description Definition list of URNs associated to SuperNEMO reconstruction setups
 #@key_label  "urn"
 #@meta_label "category"
@@ -26,55 +24,31 @@
 #   - "urn:snemo:demonstrator:reconstruction:1.0.0:pipeline"
 #
 
-############################################################################
 [urn="urn:snemo:demonstrator:reconstruction:1.0.0" category="configuration"]
+  description : string = "SuperNEMO Demonstrator reconstruction setup (tag 1.0.0)"
+  topics : string[2] = \
+    "setup" \
+    "pipeline"
+  topic.setup.component      : string = "urn:snemo:demonstrator:setup:1.0"
+  topic.pipeline.component   : string = "urn:snemo:demonstrator:reconstruction:1.0.0:pipeline"
 
-#@config URN registration of the flreconstruct script for the SuperNEMO reconstruction (tag 1.0.0)
-
-description : string = "SuperNEMO Demonstrator reconstruction setup (tag 1.0.0)"
-
-topics : string[2] = "setup" "pipeline"
-
-topic.setup.component      : string = "urn:snemo:demonstrator:setup:1.0"
-topic.pipeline.component   : string = "urn:snemo:demonstrator:reconstruction:1.0.0:pipeline"
-
-
-################################################################################
 [urn="urn:snemo:demonstrator:reconstruction:1.0.0:pipeline" category="recsetup"]
-
-#@config URN registration of the processing pipeline modules for the SuperNEMO reconstruction (tag 1.0.0)
-
-description : string = "Processing pipeline modules for the SuperNEMO reconstruction setup (tag 1.0.0)"
+  description : string = "Processing pipeline modules for the SuperNEMO reconstruction setup (tag 1.0.0)"
 
 
 ######################
 # Half-Commissioning #
-######################
-
-###############################################################################
+#
 [urn="urn:snemo:demonstrator:reconstruction:hc-1.0.0" category="configuration"]
+  description : string = "SuperNEMO Demonstrator Half-Commissioning reconstruction setup (tag 1.0.0)"
+  topics : string[2] = \
+    "setup" \
+    "pipeline"
+  topic.setup.component    : string = "urn:snemo:demonstrator:setup:1.0"
+  topic.pipeline.component : string = "urn:snemo:demonstrator:reconstruction:hc-1.0.0:pipeline"
 
-#@config URN registration of the flreconstruct script for the SuperNEMO reconstruction (Half-Commissioning tag 1.0.0)
-
-description : string = "SuperNEMO Demonstrator Half-Commissioning reconstruction setup (tag 1.0.0)"
-
-topics : string[2] = "setup" "pipeline"
-
-topic.setup.component    : string = "urn:snemo:demonstrator:setup:1.0"
-topic.pipeline.component : string = "urn:snemo:demonstrator:reconstruction:hc-1.0.0:pipeline"
-
-
-###################################################################################
 [urn="urn:snemo:demonstrator:reconstruction:hc-1.0.0:pipeline" category="recsetup"]
+  description             : string = "Processing pipeline modules for the SuperNEMO reconstruction setup (Half-Commissioning tag 1.0.0)"
+  topics                  : string[1] = "profile"
+  topic.profile.component : string = "urn:snemo:demonstrator:setup:1.0:variants:profiles:hc-1.0.0"
 
-#@config URN registration of the processing pipeline modules for the SuperNEMO reconstruction (Half-Commissioning tag 1.0.0)
-
-description : string = "Processing pipeline modules for the SuperNEMO reconstruction setup (Half-Commissioning tag 1.0.0)"
-
-# Only works with Half-Commissioning geometry setup variant profile
-topics : string[1] = "profile"
-
-topic.profile.component  : string = "urn:snemo:demonstrator:setup:1.0:variants:profiles:hc-1.0.0"
-
-
-# end
