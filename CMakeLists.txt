@@ -103,7 +103,7 @@ find_package(Bayeux ${FALAISE_BAYEUX_MIN_VERSION} REQUIRED geant4)
 #
 add_subdirectory(utilities)
 add_subdirectory(source)
-add_subdirectory(resources)
+#add_subdirectory(resources)
 
 if(FALAISE_WITH_DOCS)
   add_subdirectory(documentation)
