@@ -1,5 +1,5 @@
 ================================
-SuperNEMO Demonstrator setup 1.0
+SuperNEMO Demonstrator setup
 ================================
 
 This experimental setup model is built on top of
@@ -8,7 +8,7 @@ a single core service, namely a *geometry* service.
 Files:
 
 * ``README.rst`` : This file.
-* ``variants/repository.conf`` : Configuration of variant service.
+* ``variants.conf`` : Configuration of variant service.
 * ``services.conf`` : Configuration of the service manager.
   Embedded services are:
 
