@@ -13,6 +13,7 @@
   # boolean.true.variant : string = "is_active"
   # boolean.false.variant : string = "is_inactive"
 
+
 [name="shielding.VM" type="variant"]
   #@config A variant model describing the parameters for the shielding
   display_name       : string = "Shielding"
