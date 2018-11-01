@@ -1,7 +1,4 @@
-# -*- mode: conf-unix; -*-
-# @falaise:snemo/demonstrator/geometry/4.0/models/source_geom_models.lis
 # List of geometry models definition files for the SuperNEMO Demonstrator source module
-
 # Source frame layout:
 @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_calibration.geom
 @falaise:snemo/demonstrator/geometry/4.0/models/source_module/basic/source_pads.geom
@@ -12,5 +9,3 @@
 @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_foil_support.geom
 @falaise:snemo/demonstrator/geometry/4.0/models/source_module/source_module.geom
 
-
-# end of @falaise:snemo/demonstrator/geometry/4.0/models/source_geom_models.lis
