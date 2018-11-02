@@ -15,7 +15,7 @@
     string.enumerated_2.value : string = "positron"
     string.enumerated_3.value : string = "alpha"
     string.enumerated_4.value : string = "neutron"
-  string.default : string = "positron"
+  string.default : string = "gamma"
 
 
 [name="peg.generator.vspg.energy.PM" type="parameter"]
