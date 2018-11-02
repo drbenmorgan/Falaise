@@ -3,26 +3,25 @@
 #@meta_label "type"
 
 [name="peg.generator.PM" type="parameter"]
-#@config A variant parameter describing the primary event generator
-display_name        : string = "Primary event generator"
-terse_description   : string = "The primary event generator"
-type                : string = "string"
-mutability          : string = "variable"
-variable.mode       : string = "enumeration"
-  string.enumerated.csv_file : string as path = \
-    "@falaise:snemo/demonstrator/simulation/primary_events/1.3/variants/models/peg_generators.csv"
-  string.enumerated.csv_file.separators : string = ":"
-  string.default : string = "electron.1MeV"
-variants : string[3] = "if_versatile" "if_flat_versatile" "if_tweakable"
-  variants.if_versatile.model : string = "peg.generator.vspg.VM"
-  variants.if_versatile.description : string = "Set of parameters for the monokinetic particle versatile primary event generator"
-  variants.if_flat_versatile.model : string = "peg.generator.fvspg.VM"
-  variants.if_flat_versatile.description : string = "Set of parameters for the flat energy particle versatile primary event generator"
-  variants.if_tweakable.model : string = "peg.generator.tpg.VM"
-  variants.if_tweakable.description : string = "Set of parameters for the tweakable primary event generator"
-string.enumerated.versatile_generator.variant : string = "if_versatile"
-string.enumerated.flat_versatile_generator.variant : string = "if_flat_versatile"
-string.enumerated.tweakable_generator.variant : string = "if_tweakable"
+  #@config A variant parameter describing the primary event generator
+  display_name        : string = "Primary event generator"
+  terse_description   : string = "The primary event generator"
+  type                : string = "string"
+  mutability          : string = "variable"
+  variable.mode       : string = "enumeration"
+    string.enumerated.csv_file : string as path = "@falaise:genbb/GenBB.csv"
+    string.enumerated.csv_file.separators : string = ":"
+    string.default : string = "electron.1MeV"
+  variants : string[3] = "if_versatile" "if_flat_versatile" "if_tweakable"
+    variants.if_versatile.model : string = "peg.generator.vspg.VM"
+    variants.if_versatile.description : string = "Set of parameters for the monokinetic particle versatile primary event generator"
+    variants.if_flat_versatile.model : string = "peg.generator.fvspg.VM"
+    variants.if_flat_versatile.description : string = "Set of parameters for the flat energy particle versatile primary event generator"
+    variants.if_tweakable.model : string = "peg.generator.tpg.VM"
+    variants.if_tweakable.description : string = "Set of parameters for the tweakable primary event generator"
+  string.enumerated.versatile_generator.variant : string = "if_versatile"
+  string.enumerated.flat_versatile_generator.variant : string = "if_flat_versatile"
+  string.enumerated.tweakable_generator.variant : string = "if_tweakable"
 
 
 [name="peg.VM" type="variant"]

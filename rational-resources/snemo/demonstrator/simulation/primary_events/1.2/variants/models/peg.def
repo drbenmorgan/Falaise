@@ -48,7 +48,7 @@
   type                : string = "string"
   mutability          : string = "variable"
   variable.mode       : string = "enumeration"
-  string.enumerated.csv_file : string as path = "@falaise:snemo/demonstrator/simulation/primary_events/1.2/variants/models/peg_generators.csv"
+  string.enumerated.csv_file : string as path = "@falaise:genbb/GenBB.csv"
   string.enumerated.csv_file.separators : string = ":"
   string.default : string = "gamma.1MeV"
   variants : string[1] = "if_versatile"
