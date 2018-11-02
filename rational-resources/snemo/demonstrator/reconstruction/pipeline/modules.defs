@@ -1,19 +1,10 @@
-#@description SuperNEMO demonstrator official reconstruction pipeline (version 1.0.0)
+#@description Sample SuperNEMO Demonstrator Reconstruction Pipeline
 #@key_label  "name"
 #@meta_label "type"
 
-[name="flreconstruct.plugins" type=""]
-  # - Module load section
-  # Falaise_CAT, TrackFit, Falaise_TrackFit and Falaise_ChargedParticleTracking
-  # need to be loaded.
-  plugins : string[4] = \
-    "Falaise_CAT" \
-    "TrackFit" \
-    "Falaise_TrackFit" \
-    "Falaise_ChargedParticleTracking"
-
 [name="pipeline" type="dpp::chain_module"]
   #@config The main pipeline
+  # Must define "pipeline" as this is the module flreconstruct will use
   # Define the main chain of modules in the pipeline:
   # 1. Mock digitize and mock calibrate
   # 2. CAT clusterization of tracker hits
@@ -65,22 +56,16 @@
   TPC.processing_prompt_hits : boolean = 1
   TPC.processing_delayed_hits : boolean = 0
   TPC.split_chamber : boolean = 0
-  #@variant_if    geometry:layout/if_basic/magnetic_field/is_active|true
-    #@variant_only geometry:layout/if_basic/magnetic_field/is_active/type/is_uniform_vertical|true
-      CAT.magnetic_field : real = @variant(geometry:layout/if_basic/magnetic_field/is_active/type/is_uniform_vertical/magnitude|25 gauss)
-  #@variant_endif geometry:layout/if_basic/magnetic_field/is_active
-
-  #@variant_if    geometry:layout/if_basic/magnetic_field/is_inactive|false
-    CAT.magnetic_field : real = 0 gauss
-  #@variant_endif geometry:layout/if_basic/magnetic_field/is_inactive
+  CAT.magnetic_field        : real    = 25 gauss
 
 [name="TrackFit" type="snemo::reconstruction::trackfit_tracker_fitting_module"]
+  #@config Parameters for the TrackFit algorithm
   Geo_label : string  = "geometry"
   maximum_number_of_fits : integer = 0
   drift_time_calibration_label : string = "snemo"
   fitting_models : string[2] = "helix" "line"
     line.only_guess  : string[4] = "BB" "BT" "TB" "TT"
-    helix.guess.fit_delay_cluster : boolean = 0
+    line.guess.fit_delayed_clusters : boolean = 1
     helix.only_guess : string[8] = "BBB" "BBT" "BTB" "BTT" "TBB" "TBT" "TTB" "TTT"
 
 [name="ChargedParticleTracker" type="snemo::reconstruction::charged_particle_tracking_module"]
