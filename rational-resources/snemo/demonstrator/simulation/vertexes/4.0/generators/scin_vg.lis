@@ -28,7 +28,7 @@
   logging.priority : string = "warning"
   origin : string  = "category='calorimeter_wrapper' module={*} side={*} column={*} row={*}"
   mode   : string  = "surface"
-  mode.surface.top  : boolean = 1
+    mode.surface.top  : boolean = 1
 
 
 [name="xcalo_wrapper_surface" type="genvtx::box_model_vg"]

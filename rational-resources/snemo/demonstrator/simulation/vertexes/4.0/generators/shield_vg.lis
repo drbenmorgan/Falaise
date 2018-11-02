@@ -4,7 +4,7 @@
 
 [name="shielding_bottom_bulk" type="genvtx::box_model_vg"]
   #@variant_section_only geometry:layout/if_basic/shielding/is_on|false
-  #@config Vertex generation from the bulk of the bottom shielding wall
+  #@config Vertex generation from the bulk volume of the bottom shielding wall
   logging.priority : string = "notice"
   origin : string  = "category='external_shield' side={4}"
   mode : string  = "bulk"
@@ -12,7 +12,7 @@
 
 [name="shielding_top_bulk" type="genvtx::box_model_vg"]
   #@variant_section_only geometry:layout/if_basic/shielding/is_on|false
-  #@config Vertex generation from the bulk of the top shielding wall
+  #@config Vertex generation from the bulk volume of the top shielding wall
   logging.priority : string = "notice"
   origin : string  = "category='external_shield' side={5}"
   mode : string  = "bulk"
@@ -20,7 +20,7 @@
 
 [name="shielding_left_right_bulk" type="genvtx::box_model_vg"]
   #@variant_section_only geometry:layout/if_basic/shielding/is_on|false
-  #@config Vertex generation from all internal surfaces of the left/right shielding walls
+  #@config Vertex generation from the bulk volume of the left/right shielding walls
   logging.priority : string = "notice"
   origin : string  = "category='external_shield' side={2;3}"
   mode : string  = "bulk"
@@ -28,7 +28,7 @@
 
 [name="shielding_back_front_bulk" type="genvtx::box_model_vg"]
   #@variant_section_only geometry:layout/if_basic/shielding/is_on|false
-  #@config Vertex generation from all internal surfaces of the back/front shielding walls
+  #@config Vertex generation from the bulk volume of the back/front shielding walls
   logging.priority : string = "notice"
   origin : string  = "category='external_shield' side={0;1}"
   mode : string  = "bulk"
@@ -36,7 +36,7 @@
 
 [name="shielding_all_bulk" type="genvtx::combined_vg"]
   #@variant_section_only geometry:layout/if_basic/shielding/is_on|false
-  #@config Vertex generation from the bulk of all shielding walls
+  #@config Vertex generation from the bulk volume of all shielding walls
   logging.priority : string = "notice"
   generators : string[4] = \
     "shielding_top_bulk" \
@@ -88,7 +88,6 @@
 [name="shielding_all_internal_surfaces" type="genvtx::combined_vg"]
   #@variant_section_only geometry:layout/if_basic/shielding/is_on|false
   #@config Vertex generation from internal surfaces of the all shielding  walls
-  #@description Logging priority
   logging.priority : string = "notice"
   generators : string[4] = \
     "shielding_top_internal_surface" \
