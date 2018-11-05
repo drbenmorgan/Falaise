@@ -1,3 +1,17 @@
+Falaise resource bundle: rationalized....
+
+The bundle has an effective entry point in the file:
+
+- urn/db/snemo_setup_db.conf
+
+Everything else appears to flow from there.
+
+First rationalization: Strip urn files from uneeded comments,
+use whitespace to indent sections (such as they are).
+
+
+
+IGNORE BELOW HERE....
 ======================
 Falaise resource files
 ======================
@@ -28,12 +42,12 @@ Contents:
    utilities    (``datatools::fetch_path_with_env``...)    with    the
    following syntax: ::
 
-     "@falaise:config/topic/subtopic/.../version/filename"
+     "@falaise:topic/subtopic/.../version/filename"
 
    Example  for   the  main  configuration  file   for  the  SuperNEMO
    demonstrator module virtual geometry: ::
 
-     "@falaise:config/geometry/snemo/demonstrator/3.0/manager.conf"
+     "@falaise:geometry/snemo/demonstrator/3.0/manager.conf"
 
  * ``modules``  :  the  top  directory  for  all  configuration  files
    associated  to plugin  modules.  A  module with  name ``Foo``  must

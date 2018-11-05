@@ -103,11 +103,18 @@ find_package(Bayeux ${FALAISE_BAYEUX_MIN_VERSION} REQUIRED geant4)
 #
 add_subdirectory(utilities)
 add_subdirectory(source)
-#add_subdirectory(resources)
 
 if(FALAISE_WITH_DOCS)
   add_subdirectory(documentation)
 endif()
+
+#-----------------------------------------------------------------------
+# Install resources
+#
+install(DIRECTORY resources/
+  DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_RESOURCE_DIR}"
+  PATTERN "_deprecated" EXCLUDE
+  )
 
 #-----------------------------------------------------------------------
 # - CMake Support files
