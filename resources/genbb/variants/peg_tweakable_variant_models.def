@@ -6,27 +6,26 @@
 #@config A variant parameter describing the energy spectrum mode
   display_name        : string = "Energy spectrum mode"
   terse_description   : string = "The energy spectrum mode"
-  type                : string = "string"
-  mutability          : string = "variable"
-  variable.mode       : string = "enumeration"
-  string.enumerated.size : integer = 2
-    string.enumerated_0.value : string = "tabulated_function"
-    string.enumerated_0.documentation : string = "Tabulated energy spectrum"
-    string.enumerated_1.value : string = "histogram_pdf"
-    string.enumerated_1.documentation : string = "Energy spectrum built from a histogram p.d.f."
-  string.default : string = "tabulated_function"
+  mutability : string = "variable"
+    variable.mode : string = "enumeration"
+  type : string = "string"
+    string.default : string = "tabulated_function"
+    string.enumerated.size : integer = 2
+      string.enumerated_0.value : string = "tabulated_function"
+      string.enumerated_0.documentation : string = "Tabulated energy spectrum"
+      string.enumerated_1.value : string = "histogram_pdf"
+      string.enumerated_1.documentation : string = "Energy spectrum built from a histogram p.d.f."
 
 
 [name="peg.generator.tpg.energy_mode.spectrum.file.PM" type="parameter"]
   #@config A variant parameter describing the energy spectrum input file
   display_name        : string = "Energy spectrum file"
   terse_description   : string = "The energy spectrum input data file"
-  type                : string = "string"
-  path                : boolean = true
-  path.io             : string = "input"
-  mutability          : string = "variable"
-  variable.mode       : string = "free"
-
+  mutability : string = "variable"
+    variable.mode : string = "free"
+  type : string = "string"
+  path : boolean = true
+    path.io : string = "input"
 
 [name="peg.generator.tpg.energy_mode.spectrum.VM" type="variant"]
   #@config A variant parameter describing the spectrum energy mode of a primary particle generator
@@ -74,10 +73,11 @@
   #@config A variant parameter describing the energy mode of a primary particle generator
   display_name        : string = "Energy mode"
   terse_description   : string = "The primary particle energy generation mode"
-  type                : string = "string"
-  mutability          : string = "variable"
-  variable.mode       : string = "enumeration"
-  string.enumerated.size : integer = 4
+  mutability : string = "variable"
+    variable.mode : string = "enumeration"
+  type : string = "string"
+    string.default : string = "monokinetic"
+    string.enumerated.size : integer = 4
     string.enumerated_0.value         : string = "monokinetic"
     string.enumerated_0.documentation : string = "Monokinetic energy"
     string.enumerated_0.variant       : string = "if_monokinetic"
@@ -90,7 +90,6 @@
     string.enumerated_3.value         : string = "spectrum"
     string.enumerated_3.documentation : string = "Energy spectrum"
     string.enumerated_3.variant       : string = "if_spectrum"
-  string.default : string = "monokinetic"
   variants : string[4] = "if_monokinetic" "if_gaussian" "if_flat" "if_spectrum"
     variants.if_monokinetic.model : string = "peg.generator.tpg.energy_mode.monokinetic.VM"
     variants.if_monokinetic.description : string = "Set of parameters for the monokinetic energy mode"
@@ -100,6 +99,7 @@
     variants.if_flat.description : string = "Set of parameters for the flat range energy mode"
     variants.if_spectrum.model : string = "peg.generator.tpg.energy_mode.spectrum.VM"
     variants.if_spectrum.description : string = "Set of parameters for the spectrum energy mode"
+
 
 [name="peg.generator.tpg.direction_mode.cone.VM" type="variant"]
   #@config A variant model describing the parameters for a cone direction generation mode
@@ -113,20 +113,21 @@
     parameters.angle_max.model       : string = "peg.colatitude.PM"
     parameters.angle_max.description : string = "The maximum angle with respect to the cone's axis"
 
+
 [name="peg.generator.tpg.direction_mode.PM" type="parameter"]
   #@config A variant parameter describing the direction mode of a primary particle generator
   display_name        : string = "Direction mode"
   terse_description   : string = "The primary particle direction generation mode"
-  type                : string = "string"
-  mutability          : string = "variable"
-  variable.mode       : string = "enumeration"
-  string.enumerated.size : integer = 2
-    string.enumerated_0.value         : string = "randomized"
-    string.enumerated_0.documentation : string = "Randomized direction in 4.pi"
-    string.enumerated_1.value         : string = "cone"
-    string.enumerated_1.documentation : string = "Emission direction in a cone"
-    string.enumerated_1.variant       : string = "if_cone"
-  string.default : string = "randomized"
+  mutability : string = "variable"
+    variable.mode : string = "enumeration"
+  type : string = "string"
+    string.default : string = "randomized"
+    string.enumerated.size : integer = 2
+      string.enumerated_0.value         : string = "randomized"
+      string.enumerated_0.documentation : string = "Randomized direction in 4.pi"
+      string.enumerated_1.value         : string = "cone"
+      string.enumerated_1.documentation : string = "Emission direction in a cone"
+      string.enumerated_1.variant       : string = "if_cone"
   variants : string[1] = "if_cone"
     variants.if_cone.model : string = "peg.generator.tpg.direction_mode.cone.VM"
     variants.if_cone.description : string = "Set of parameters for the cone direction mode"

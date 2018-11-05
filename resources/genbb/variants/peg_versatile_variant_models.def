@@ -6,29 +6,29 @@
   #@config A variant parameter describing the name of a primary particle
   display_name      : string = "Particle name"
   terse_description : string = "The primary particle name"
-  type              : string = "string"
-  mutability        : string = "variable"
-  variable.mode     : string = "enumeration"
-  string.enumerated.size : integer = 5
-    string.enumerated_0.value : string = "gamma"
-    string.enumerated_1.value : string = "electron"
-    string.enumerated_2.value : string = "positron"
-    string.enumerated_3.value : string = "alpha"
-    string.enumerated_4.value : string = "neutron"
-  string.default : string = "positron"
+  mutability : string = "variable"
+    variable.mode : string = "enumeration"
+  type : string = "string"
+    string.default : string = "positron"
+    string.enumerated.size : integer = 5
+      string.enumerated_0.value : string = "gamma"
+      string.enumerated_1.value : string = "electron"
+      string.enumerated_2.value : string = "positron"
+      string.enumerated_3.value : string = "alpha"
+      string.enumerated_4.value : string = "neutron"
 
 
 [name="peg.generator.vspg.energy.PM" type="parameter"]
   #@config A variant parameter describing the energy of a primary particle
   display_name        : string = "Particle energy"
   terse_description   : string = "The primary particle energy"
-  type                : string = "real"
-  real.unit_label     : string = "energy"
-  real.preferred_unit : string = "keV"
-  mutability          : string = "variable"
-  variable.mode       : string = "interval"
-  real.domain         : string = "[1.0 keV, 10 MeV]"
-  real.default        : real as energy = 1.0 MeV
+  mutability : string = "variable"
+    variable.mode : string = "interval"
+  type : string = "real"
+    real.unit_label     : string = "energy"
+    real.preferred_unit : string = "keV"
+    real.domain         : string = "[1.0 keV, 10 MeV]"
+    real.default        : real as energy = 1.0 MeV
 
 
 [name="peg.generator.vspg.VM" type="variant"]
