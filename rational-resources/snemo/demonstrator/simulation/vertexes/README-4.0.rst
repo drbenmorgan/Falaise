@@ -69,7 +69,7 @@ From  Falaise build  directory (this  is preliminary),  run:
 	 --logging "fatal" \
 	 --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
 	 --load-dll Falaise \
-	 --geometry-manager         "@falaise:snemo/demonstrator/geometry/4.0/manager.conf" \
+	 --geometry-manager         "@falaise:snemo/demonstrator/geometry/manager.conf" \
 	 --vertex-generator-manager "@falaise:snemo/demonstrator/simulation/vertexes/4.0/manager.conf" \
 	 --variant-config           "@falaise:snemo/demonstrator/simulation/vertexes/4.0/variants/repository.conf" \
 	 --variant-gui \
@@ -87,7 +87,7 @@ Run from the Falaise build directory (preliminary):
      --logging "fatal" \
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
      --load-dll Falaise \
-     --geometry-manager         "@falaise:snemo/demonstrator/geometry/4.0/manager.conf" \
+     --geometry-manager         "@falaise:snemo/demonstrator/geometry/manager.conf" \
      --vertex-generator-manager "@falaise:snemo/demonstrator/simulation/vertexes/4.0/manager.conf" \
      --shoot \
      --prng-seed 314159 \
@@ -116,7 +116,7 @@ Run from the Falaise build directory (preliminary):
      --logging "fatal" \
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
      --load-dll Falaise \
-     --geometry-manager         "@falaise:snemo/demonstrator/geometry/4.0/manager.conf" \
+     --geometry-manager         "@falaise:snemo/demonstrator/geometry/manager.conf" \
      --vertex-generator-manager "@falaise:snemo/demonstrator/simulation/vertexes/4.0/manager.conf" \
      --shoot \
      --prng-seed 314159 \
@@ -146,7 +146,7 @@ Run from the Falaise build directory (preliminary):
      --logging "fatal" \
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
      --load-dll Falaise \
-     --geometry-manager         "@falaise:snemo/demonstrator/geometry/4.0/manager.conf" \
+     --geometry-manager         "@falaise:snemo/demonstrator/geometry/manager.conf" \
      --vertex-generator-manager "@falaise:snemo/demonstrator/simulation/vertexes/4.0/manager.conf" \
      --shoot \
      --prng-seed 314159 \
@@ -176,7 +176,7 @@ Run from the Falaise build directory (preliminary):
      --logging "fatal" \
      --load-dll Falaise \
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-3.0.0/resources" \
-     --geometry-manager         "@falaise:snemo/demonstrator/geometry/4.0/manager.conf" \
+     --geometry-manager         "@falaise:snemo/demonstrator/geometry/manager.conf" \
      --vertex-generator-manager "@falaise:snemo/demonstrator/simulation/vertexes/4.0/manager.conf" \
      --shoot \
      --prng-seed 314159 \
@@ -201,7 +201,7 @@ Run from the Falaise build directory (preliminary):
      --logging "warning" \
      --load-dll Falaise \
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-2.1.0/resources" \
-     --manager-config           "@falaise:snemo/demonstrator/geometry/4.0/manager.conf" \
+     --manager-config           "@falaise:snemo/demonstrator/geometry/manager.conf" \
      --datatools::variant-config "@falaise:snemo/demonstrator/simulation/vertexes/4.0/variants/repository.conf" \
      --datatools::variant-load "profile.conf"
    geomtools> ldd vtx vertices-visu-dd.data.gz
@@ -222,7 +222,7 @@ Vertex generator from calibration source with basic layout:
      --logging "warning" \
      --load-dll Falaise \
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-2.1.0/resources" \
-     --geometry-manager         "@falaise:snemo/demonstrator/geometry/4.0/manager.conf" \
+     --geometry-manager         "@falaise:snemo/demonstrator/geometry/manager.conf" \
      --vertex-generator-manager "@falaise:snemo/demonstrator/simulation/vertexes/4.0/manager.conf" \
      --shoot \
      --prng-seed 314159 \
@@ -249,7 +249,7 @@ Vertex generator from calibration source with basic layout:
      --logging "warning" \
      --load-dll Falaise \
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-2.1.0/resources" \
-     --manager-config           "@falaise:snemo/demonstrator/geometry/4.0/manager.conf" \
+     --manager-config           "@falaise:snemo/demonstrator/geometry/manager.conf" \
      --datatools::variant-config "@falaise:snemo/demonstrator/simulation/vertexes/4.0/variants/repository.conf" \
      --datatools::variant-load "calib_profile.rep"
    geomtools> ldd vtx calib_vertices-visu-dd.data.gz
@@ -276,7 +276,7 @@ Vertex generator with half-commissioning layout:
      --datatools::variant-set "vertexes.commissioning:type/if_single_slot/row=1" \
      --datatools::variant-qt-gui \
      --datatools::variant-store "hc_profile.rep" \
-     --geometry-manager         "@falaise:snemo/demonstrator/geometry/4.0/manager.conf" \
+     --geometry-manager         "@falaise:snemo/demonstrator/geometry/manager.conf" \
      --vertex-generator-manager "@falaise:snemo/demonstrator/simulation/vertexes/4.0/manager.conf" \
      --shoot \
      --prng-seed 314159 \
@@ -305,7 +305,7 @@ Other available generator in half-commissioning layout:
      --logging "warning" \
      --load-dll Falaise \
      --datatools::resource-path "falaise@$(pwd)/BuildProducts/share/Falaise-2.1.0/resources" \
-     --manager-config           "@falaise:snemo/demonstrator/geometry/4.0/manager.conf" \
+     --manager-config           "@falaise:snemo/demonstrator/geometry/manager.conf" \
      --datatools::variant-config "@falaise:snemo/demonstrator/simulation/vertexes/4.0/variants/repository.conf" \
      --datatools::variant-load "hc_profile.rep"
    geomtools> ldd vtx hc_vertices-visu-dd.data.gz

@@ -1,4 +1,4 @@
-# @falaise:snemo/demonstrator/geometry/4.0/models/tracker_module/gveto.geom
+# @falaise:snemo/demonstrator/geometry/models/tracker_module/gveto.geom
 [name="gveto_line_left.model" type="geomtools::replicated_boxed_model"]
   replicated.axis            : string  = "y"
   replicated.number_of_items : integer = 8
