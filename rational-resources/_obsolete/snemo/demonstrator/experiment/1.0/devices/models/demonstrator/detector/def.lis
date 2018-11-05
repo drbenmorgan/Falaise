@@ -1,9 +1,0 @@
-# List of device models related to the description of the detector:
-
-@falaise:snemo/demonstrator/experiment/1.0/models/demonstrator/detector/common/om.def
-@falaise:snemo/demonstrator/experiment/1.0/models/demonstrator/detector/calorimeter/calorimeter.def
-@falaise:snemo/demonstrator/experiment/1.0/models/demonstrator/detector/tracker/drift_cell.def
-@falaise:snemo/demonstrator/experiment/1.0/models/demonstrator/detector/tracker/tracker.def
-@falaise:snemo/demonstrator/experiment/1.0/models/demonstrator/detector/detector.def
-
-# end
