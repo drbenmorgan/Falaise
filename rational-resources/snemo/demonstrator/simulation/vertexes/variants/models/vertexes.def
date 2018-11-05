@@ -11,7 +11,7 @@
   mutability          : string = "variable"
   variable.mode       : string = "enumeration"
   string.enumerated.csv_file : string as path = \
-    "@falaise:snemo/demonstrator/simulation/vertexes/4.1/variants/models/vertexes_generators.csv"
+    "@falaise:snemo/demonstrator/simulation/vertexes/variants/models/vertexes_generators.csv"
   string.default : string = "free_spot"
   variants : string[3] = \
     "if_half_commissioning_single_spot" \
