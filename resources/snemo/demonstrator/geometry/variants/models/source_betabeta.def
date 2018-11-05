@@ -6,13 +6,13 @@
   #@config A parameter model describing the thickness of a DBD source foil
   display_name       : string = "Source foil thickness"
   terse_description  : string = "The thickness of the source foil"
-  type               : string = "real"
-  real.unit_label    : string = "length"
-  real.preferred_unit : string = "um"
-  mutability         : string = "variable"
-  variable.mode      : string = "interval"
-  real.domain        : string = "[5 um, 500 um]"
-  real.default       : real as length = 250 um
+  mutability : string = "variable"
+    variable.mode : string = "interval"
+  type : string = "real"
+    real.unit_label    : string = "length"
+    real.preferred_unit : string = "um"
+    real.domain : string = "[5 um, 500 um]"
+    real.default : real as length = 250 um
 
 
 [name="source_betabeta.basic.ca48.VM" type="variant"]
@@ -30,16 +30,21 @@
   #@config A parameter model describing the material a source foil is made of
   display_name       : string = "Source material"
   terse_description  : string = "The source foil material"
-  type               : string = "string"
-  mutability         : string = "variable"
-  variable.mode      : string = "enumeration"
-  string.enumerated.size    : integer = 5
-    string.enumerated_0.value : string = "Ca48"
-    string.enumerated_1.value : string = "Se82"
-    string.enumerated_2.value : string = "Nd150"
-    string.enumerated_3.value : string = "Mo100"
-    string.enumerated_4.value : string = "Sn124"
+  mutability : string = "variable"
+    variable.mode : string = "enumeration"
+  type : string = "string"
     string.default : string = "Se82"
+    string.enumerated.size    : integer = 5
+      string.enumerated_0.value : string = "Ca48"
+      string.enumerated_0.variant : string = "if_ca48"
+      string.enumerated_1.value : string = "Se82"
+      string.enumerated_1.variant : string = "if_se82"
+      string.enumerated_2.value : string = "Nd150"
+      string.enumerated_2.variant : string = "if_nd150"
+      string.enumerated_3.value : string = "Mo100"
+      string.enumerated_3.variant : string = "if_mo100"
+      string.enumerated_4.value : string = "Sn124"
+  string.enumerated_4.variant : string = "if_sn124"
   variants : string[5] = "if_ca48" "if_se82" "if_nd150" "if_mo100" "if_sn124"
     variants.if_ca48.model        : string = "source_betabeta.basic.ca48.VM"
     variants.if_ca48.description  : string = "Set of parameters for Ca48 beta-beta source layout"
@@ -51,11 +56,6 @@
     variants.if_mo100.description : string = "Set of parameters for Mo100 beta-beta source layout"
     variants.if_sn124.model       : string = "source_betabeta.basic.sn124.VM"
     variants.if_sn124.description : string = "Set of parameters for Sn124 beta-beta source layout"
-  string.enumerated_0.variant : string = "if_ca48"
-  string.enumerated_1.variant : string = "if_se82"
-  string.enumerated_2.variant : string = "if_nd150"
-  string.enumerated_3.variant : string = "if_mo100"
-  string.enumerated_4.variant : string = "if_sn124"
 
 
 [name="source_betabeta.basic.VM" type="variant"]
@@ -73,14 +73,14 @@
   #@config A parameter model describing the layout of the DBD source foil
   display_name       : string = "Source layout"
   terse_description  : string = "The source foil layout"
-  type               : string = "string"
-  mutability         : string = "variable"
-  variable.mode      : string = "enumeration"
-  string.enumerated.size    : integer = 1
-    string.enumerated_0.value : string = "Basic"
-    string.enumerated_0.variant : string = "if_basic"
-  string.default            : string = "Basic"
-  variants                  : string[1] = "if_basic"
+  mutability : string = "variable"
+    variable.mode : string = "enumeration"
+  type : string = "string"
+    string.default : string = "Basic"
+    string.enumerated.size : integer = 1
+      string.enumerated_0.value : string = "Basic"
+      string.enumerated_0.variant : string = "if_basic"
+  variants : string[1] = "if_basic"
     variants.if_basic.model       : string = "source_betabeta.basic.VM"
     variants.if_basic.description : string = "Set of parameters for basic beta-beta source layout"
 
