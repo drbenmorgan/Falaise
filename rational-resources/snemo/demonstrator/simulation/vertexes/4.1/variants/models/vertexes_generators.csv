@@ -1,3 +1,6 @@
+pmt_5inch_main_wall_glass_bulk : Vertex generation from the bulk of the PMT 5 inch (main_wall) glass wrapper : OpticalModule : 
+pmt_8inch_main_wall_glass_bulk : Vertex generation from the bulk of the PMT 8inch (main_wall) glass wrapper : OpticalModule : 
+pmt_main_wall_glass_bulk : Vertex generation from the bulk volume of all source pads : OpticalModule : 
 anode_wire_bulk : Vertex generation from the bulk volume of all anode wires : Tracker : 
 anode_wire_surface : Vertex generation from the surface of all anode wires : Tracker : 
 field_wire_bulk : Vertex generation from the bulk volume of all field wires : Tracker : 
