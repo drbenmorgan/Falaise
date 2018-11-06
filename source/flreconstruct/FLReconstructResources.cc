@@ -84,11 +84,11 @@ ExperimentLookup::Table constructLookupVariantsDefaultProfileTable() {
   ExperimentLookup::Table a;
   boost::assign::insert(a)(
       "",
-      "config/snemo/demonstrator/geant4_control/variants/profiles/default.profile")(
+      "snemo/demonstrator/profiles/demonstrator-simulation.profile")(
       "default",
-      "config/snemo/demonstrator/geant4_control/variants/profiles/default.profile")(
+      "snemo/demonstrator/profiles/demonstrator-simulation.profile")(
       "demonstrator",
-      "config/snemo/demonstrator/geant4_control/variants/profiles/default.profile")(
+      "snemo/demonstrator/profiles/demonstrator-simulation.profile")(
       "bipo3", "");
   ;
   return a;
