@@ -301,7 +301,7 @@
 				<string_values>
 					<count>1</count>
 					<item_version>0</item_version>
-          <item>@falaise:snemo/demonstrator/vertexes/VertexGeneratorManager.conf</item>
+          <item>@falaise:snemo/demonstrator/geometry/VertexGeneratorManager.conf</item>
 				</string_values>
 			</second>
 		</item>

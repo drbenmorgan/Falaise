@@ -1,4 +1,4 @@
-# @falaise:snemo/demonstrator/geometry/models/source_module/source_calibration.geom
+# @falaise:snemo/demonstrator/geometry/GeometryModels/source_module/source_calibration.geom
 # References:
 # - DocDB-2875
 
