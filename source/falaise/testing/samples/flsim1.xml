@@ -177,7 +177,7 @@
 				<string_values>
 					<count>1</count>
 					<item_version>0</item_version>
-					<item>@falaise:snemo/demonstrator/geometry/manager.conf</item>
+					<item>@falaise:snemo/demonstrator/geometry/GeometryManager.conf</item>
 				</string_values>
 			</second>
 		</item>
