@@ -45,9 +45,9 @@ struct ExperimentLookup {
 ExperimentLookup::Table constructLookupTable() {
   ExperimentLookup::Table a;
   boost::assign::insert(a)("",
-                           "config/snemo/demonstrator/simulation/geant4_control/manager.conf")(
-      "default", "config/snemo/demonstrator/simulation/geant4_control/manager.conf")(
-      "demonstrator", "config/snemo/demonstrator/simulation/geant4_control/manager.conf")
+                           "config/snemo/demonstrator/geant4_control/manager.conf")(
+      "default", "config/snemo/demonstrator/geant4_control/manager.conf")(
+      "demonstrator", "config/snemo/demonstrator/geant4_control/manager.conf")
       // ("bipo3",
       //  "config/bipo3/simulation/geant4_control/1.0/manager.conf")
       ;
@@ -59,10 +59,10 @@ ExperimentLookup::Table constructLookupTable() {
 ExperimentLookup::Table constructLookupVariantsConfigTable() {
   ExperimentLookup::Table a;
   boost::assign::insert(a)(
-      "", "config/snemo/demonstrator/simulation/geant4_control/variants/repository.conf")(
-      "default", "config/snemo/demonstrator/simulation/geant4_control/variants/repository.conf")(
+      "", "config/snemo/demonstrator/geant4_control/variants/repository.conf")(
+      "default", "config/snemo/demonstrator/geant4_control/variants/repository.conf")(
       "demonstrator",
-      "config/snemo/demonstrator/simulation/geant4_control/variants/repository.conf")
+      "config/snemo/demonstrator/geant4_control/variants/repository.conf")
       // ("bipo3",
       //  "")
       ;

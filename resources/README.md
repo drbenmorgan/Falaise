@@ -39,10 +39,10 @@ detector.
   - full Bayeux/geomtools model for the detector
 - snemo/demonstrator/reconstruction
   - current flreconstruct pipelines for reconstruction
-- snemo/demonstrator/simulation/vertexes
+- snemo/demonstrator/vertexes
   - Bayeux/genvtx definitions for vertex generation in the detector
   - Effectively coupled to snemo/demonstrator/geometry
-- snemo/demonstrator/simulation/geant4_control
+- snemo/demonstrator/geant4_control
   - Geant4 configuration for the detector, used in flsimulate
   - Uses geometry, vertexes, genbb and materials either directly
     or via other clients using them.
