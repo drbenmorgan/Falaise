@@ -24,6 +24,17 @@
 #include <falaise/snemo/datamodels/data_model.h>
 #include <falaise/snemo/services/services.h>
 
+namespace {
+  // Get object stored at key, adding it if not found§ 
+  template <typename T>
+  T& getOrAdd(std::string const& key, datatools::things& event) {
+    if (event.has(key)) {
+      return event.grab<T>(key);
+    }
+    return event.add<T>(key);
+  }
+}
+
 namespace snemo {
 
 namespace processing {
@@ -99,28 +110,18 @@ dpp::base_module::process_status mock_calorimeter_s2c_module::process(datatools:
   DT_THROW_IF(!is_initialized(), std::logic_error,
               "Module '" << get_name() << "' is not initialized !");
 
-  // Check simulated data
-  // check if some 'simulated_data' are available in the data model:
+  // Check Input simulated data exists, or fail
   if (!event.has(sdInputTag)) {
     throw std::logic_error("Missing simulated data to be processed !");
     return dpp::base_module::PROCESS_ERROR;
   }
-  // grab the 'simulated_data' entry from the data model :
   auto& the_simulated_data = event.get<mctools::simulated_data>(sdInputTag);
 
   // check if some 'calibrated_data' are available in the data model:
   // Calibrated Data is a single object with each hit collection
   // May, or may not, have it depending on if we run before or after
   // other calibrators
-
-  snemo::datamodel::calibrated_data* ptr_calib_data = 0;
-
-  if (event.has(cdOutputTag)) {
-    ptr_calib_data = &(event.grab<snemo::datamodel::calibrated_data>(cdOutputTag));
-  } else {
-    ptr_calib_data = &(event.add<snemo::datamodel::calibrated_data>(cdOutputTag));
-  }
-  auto& the_calibrated_data = *ptr_calib_data;
+  auto& the_calibrated_data = getOrAdd<snemo::datamodel::calibrated_data>(cdOutputTag, event);
 
   // Always rewrite hits....
   the_calibrated_data.calibrated_calorimeter_hits().clear();
