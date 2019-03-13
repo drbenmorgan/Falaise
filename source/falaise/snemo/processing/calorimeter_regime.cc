@@ -15,6 +15,9 @@
 // - Bayeux/mygsl:
 #include <mygsl/rng.h>
 
+namespace {
+  const double fwhm2sig{1.0 / (2 * sqrt(2 * log(2.0)))}; 
+}
 
 namespace snemo {
 
@@ -70,9 +73,6 @@ double CalorimeterModel::randomize_energy(mygsl::rng& ran_, const double energy_
 }
 
 double CalorimeterModel::get_sigma_energy(const double energy_) const {
-
-  const double fwhm2sig = 1.0 / (2 * sqrt(2 * log(2.0)));
-
   return energyResolution * fwhm2sig * sqrt(energy_ / CLHEP::MeV);
 }
 
@@ -83,32 +83,21 @@ double CalorimeterModel::quench_alpha_energy(const double energy_) const {
   const double quenching_factor =
       -alphaQuenching_0 * (std::pow(mod_energy, alphaQuenching_2) - std::pow(mod_energy, alphaQuenching_2 / 2.0));
 
-  const double quenched_energy = energy / quenching_factor;
-
-  return quenched_energy;
+  return energy / quenching_factor;
 }
 
 double CalorimeterModel::randomize_time(mygsl::rng& ran_, const double time_,
                                           const double energy_) const {
   const double sigma_time = get_sigma_time(energy_);
-  const double spread_time = ran_.gaussian(time_, sigma_time);
-
-  // Negative time are physical since start time does not have
-  // physical sense: return (spread_time < 0.0 ? 0.0 : spread_time);
-  return spread_time;
+  // Negative time are physical since input time is relative
+  return ran_.gaussian(time_, sigma_time);
 }
 
-double CalorimeterModel::get_sigma_time(const double energy_) const {
+double CalorimeterModel::get_sigma_time(const double energy) const {
   // Have a look inside Gregoire Pichenot thesis(NEMO2) and
   // L. Simard parametrization for NEMO3 simulation
-  const double scin_time = relaxationTime;
-
-  const double fwhm2sig = 1.0 / (2 * sqrt(2 * log(2.0)));
   const double sigma_e = energyResolution * fwhm2sig;
-
-  const double sigma_time = scin_time * sigma_e / sqrt(energy_ / CLHEP::MeV);
-
-  return sigma_time;
+  return relaxationTime * sigma_e / sqrt(energy / CLHEP::MeV);
 }
 
 bool CalorimeterModel::is_high_threshold(const double energy_) const {
@@ -118,7 +107,6 @@ bool CalorimeterModel::is_high_threshold(const double energy_) const {
 bool CalorimeterModel::is_low_threshold(const double energy_) const {
   return (energy_ >= lowEnergyThreshold);
 }
-
 
 }  // end of namespace processing
 

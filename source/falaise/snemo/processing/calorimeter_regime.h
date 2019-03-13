@@ -66,14 +66,14 @@ class CalorimeterModel {
   bool is_low_threshold(const double energy_) const;
 
  private:
-  double highEnergyThreshold {150.*CLHEP::keV};                //!< High energy threshold
-  double lowEnergyThreshold {50.*CLHEP::keV};                 //!< Low energy threshold
+  double highEnergyThreshold {150.*CLHEP::keV}; //!< High energy threshold
+  double lowEnergyThreshold {50.*CLHEP::keV};   //!< Low energy threshold
 
-  double energyResolution {8.*CLHEP::perCent};                    //!< Energy resolution for electrons at 1 MeV
-  double alphaQuenching_0 {77.4};             //!< Parameter 0 for alpha quenching
-  double alphaQuenching_1 {0.639};             //!< Parameter 1 for alpha quenching
-  double alphaQuenching_2 {2.34};             //!< Parameter 2 for alpha quenching
-  double relaxationTime {6.*CLHEP::ns};  //!< Scintillator relaxation time
+  double energyResolution {8.*CLHEP::perCent};  //!< Energy resolution for electrons at 1 MeV
+  double alphaQuenching_0 {77.4};               //!< Parameter 0 for alpha quenching
+  double alphaQuenching_1 {0.639};              //!< Parameter 1 for alpha quenching
+  double alphaQuenching_2 {2.34};               //!< Parameter 2 for alpha quenching
+  double relaxationTime {6.*CLHEP::ns};         //!< Scintillator relaxation time
 };
 
 }  // end of namespace processing
