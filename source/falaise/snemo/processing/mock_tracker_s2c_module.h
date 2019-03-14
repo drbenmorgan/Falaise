@@ -52,23 +52,14 @@ class mock_tracker_s2c_module : public dpp::base_module {
   /// Collection of raw tracker hit Intermediate :
   typedef std::list<snemo::datamodel::mock_raw_tracker_hit> raw_tracker_hit_col_type;
 
-  /// Constructor
-  mock_tracker_s2c_module(datatools::logger::priority = datatools::logger::PRIO_FATAL);
   // Because dpp::base_module is insane
   virtual ~mock_tracker_s2c_module() {this->reset();}
-
-  /// Set the geometry manager
-  void set_geom_manager(const geomtools::manager& gmgr_);
-
-  /// Getting geometry manager
-  const geomtools::manager& get_geom_manager() const;
 
   /// Return the drift time threshold for peripheral Geiger hits (far from the anode wire)
   double get_peripheral_drift_time_threshold() const;
 
   /// Return the drift time threshold for delayed Geiger hits
   double get_delayed_drift_time_threshold() const;
-
 
   /// Initialization
   virtual void initialize(const datatools::properties& setup_,
@@ -82,15 +73,12 @@ class mock_tracker_s2c_module : public dpp::base_module {
   virtual process_status process(datatools::things& data_);
 
  protected:
-  /// Set default attributes values
-  void _set_defaults();
-
   /// Digitize tracker hits
-  void _process_tracker_digitization(const mctools::simulated_data& simulated_data_,
+  void _digitizeHits(const mctools::simulated_data& simulated_data_,
                                      raw_tracker_hit_col_type& raw_tracker_hits_);
 
   /// Calibrate tracker hits (longitudinal and transverse spread)
-  void _process_tracker_calibration(
+  void _calibrateHits(
       const raw_tracker_hit_col_type& raw_tracker_hits_,
       snemo::datamodel::calibrated_data::tracker_hit_collection_type& calibrated_tracker_hits_);
 
@@ -100,18 +88,18 @@ class mock_tracker_s2c_module : public dpp::base_module {
       snemo::datamodel::calibrated_data::tracker_hit_collection_type& calibrated_tracker_hits_);
 
  private:
-  const geomtools::manager* _geom_manager_;  //!< The geometry manager
-  std::string _module_category_;             //!< The geometry category of the SuperNEMO module
-  std::string _hit_category_;                //!< The category of the input Geiger hits
-  geiger_regime _geiger_;                    //!< Geiger regime tools
-  mygsl::rng RNG_;                       //!< internal PRN generator
-  double _peripheral_drift_time_threshold_;  //!< Peripheral drift time threshold
-  double _delayed_drift_time_threshold_;     //!< Delayed drift time threshold
-  std::string _SD_label_;                    //!< The label of the simulated data bank
-  std::string _CD_label_;                    //!< The label of the calibrated data bank
-  std::string _Geo_label_;                   //!< The label of the geometry service
-  bool _store_mc_hit_id_;                    //!< Flag to store the MC true hit ID
-  bool _store_mc_truth_track_ids_;  //!< The flag to reference the MC engine track and parent track
+  std::string geoServiceTag {};                   //!< The label of the geometry service
+  const geomtools::manager* geoManager {nullptr};  //!< The geometry manager
+  std::string _module_category_ {};             //!< The geometry category of the SuperNEMO module
+  std::string _hit_category_ {};                //!< The category of the input Geiger hits
+  geiger_regime _geiger_ {};                    //!< Geiger regime tools
+  mygsl::rng RNG_ {};                       //!< internal PRN generator
+  double _peripheral_drift_time_threshold_ {datatools::invalid_real_double()};  //!< Peripheral drift time threshold
+  double _delayed_drift_time_threshold_ {datatools::invalid_real_double()};     //!< Delayed drift time threshold
+  std::string sdInputTag {};                    //!< The label of the simulated data bank
+  std::string cdOutputTag {};                    //!< The label of the calibrated data bank
+  bool _store_mc_hit_id_ {false};                    //!< Flag to store the MC true hit ID
+  bool _store_mc_truth_track_ids_ {false};  //!< The flag to reference the MC engine track and parent track
                                     //!< IDs associated to this calibrated Geiger hit
 
   // Macro to automate the registration of the module :
