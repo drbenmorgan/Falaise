@@ -58,15 +58,6 @@ class mock_tracker_s2c_module : public dpp::base_module {
   /// Getting geometry manager
   const geomtools::manager& get_geom_manager() const;
 
-  /// Set the external PRNG
-  void set_external_random(mygsl::rng& rng_);
-
-  /// Reset the external PRNG
-  void reset_external_random();
-
-  /// Check if the module use an external PRNG
-  bool has_external_random() const;
-
   /// Return the drift time threshold for peripheral Geiger hits (far from the anode wire)
   double get_peripheral_drift_time_threshold() const;
 
@@ -94,9 +85,6 @@ class mock_tracker_s2c_module : public dpp::base_module {
   /// Set default attributes values
   void _set_defaults();
 
-  /// Getting random number generator
-  mygsl::rng& _get_random();
-
   /// Digitize tracker hits
   void _process_tracker_digitization(const mctools::simulated_data& simulated_data_,
                                      raw_tracker_hit_col_type& raw_tracker_hits_);
@@ -116,8 +104,7 @@ class mock_tracker_s2c_module : public dpp::base_module {
   std::string _module_category_;             //!< The geometry category of the SuperNEMO module
   std::string _hit_category_;                //!< The category of the input Geiger hits
   geiger_regime _geiger_;                    //!< Geiger regime tools
-  mygsl::rng _random_;                       //!< internal PRN generator
-  mygsl::rng* _external_random_;             //!< external PRN generator
+  mygsl::rng RNG_;                       //!< internal PRN generator
   double _peripheral_drift_time_threshold_;  //!< Peripheral drift time threshold
   double _delayed_drift_time_threshold_;     //!< Delayed drift time threshold
   std::string _SD_label_;                    //!< The label of the simulated data bank

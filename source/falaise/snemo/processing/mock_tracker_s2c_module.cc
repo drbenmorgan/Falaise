@@ -39,22 +39,6 @@ double mock_tracker_s2c_module::get_delayed_drift_time_threshold() const {
   return _delayed_drift_time_threshold_;
 }
 
-bool mock_tracker_s2c_module::has_external_random() const { return _external_random_ != 0; }
-
-void mock_tracker_s2c_module::reset_external_random() {
-  DT_THROW_IF(is_initialized(), std::logic_error,
-              "Module '" << get_name() << "' is already initialized ! ");
-  _external_random_ = 0;
-  return;
-}
-
-void mock_tracker_s2c_module::set_external_random(mygsl::rng& rng_) {
-  DT_THROW_IF(is_initialized(), std::logic_error,
-              "Module '" << get_name() << "' is already initialized ! ");
-  _external_random_ = &rng_;
-  return;
-}
-
 void mock_tracker_s2c_module::set_geom_manager(const geomtools::manager& gmgr_) {
   DT_THROW_IF(is_initialized(), std::logic_error,
               "Module '" << get_name() << "' is already initialized ! ");
@@ -143,18 +127,16 @@ void mock_tracker_s2c_module::initialize(const datatools::properties& setup_,
     _hit_category_ = "gg";
   }
 
-  if (!has_external_random()) {
-    int random_seed = 12345;
-    if (setup_.has_key("random.seed")) {
-      random_seed = setup_.fetch_integer("random.seed");
-    }
-    std::string random_id = "mt19937";
-    if (setup_.has_key("random.id")) {
-      random_id = setup_.fetch_string("random.id");
-    }
-    // Initialize the embedded random number generator:
-    _random_.init(random_id, random_seed);
+  int random_seed = 12345;
+  if (setup_.has_key("random.seed")) {
+    random_seed = setup_.fetch_integer("random.seed");
   }
+  std::string random_id = "mt19937";
+  if (setup_.has_key("random.id")) {
+    random_id = setup_.fetch_string("random.id");
+  }
+  // Initialize the embedded random number generator:
+  RNG_.init(random_id, random_seed);
 
   // Initialize the Geiger regime utility:
   _geiger_.initialize(setup_);
@@ -206,11 +188,9 @@ void mock_tracker_s2c_module::reset() {
 
   this->base_module::_set_initialized(false);
 
-  if (!has_external_random()) {
-    // Reset the random number generator:
-    _random_.reset();
-  }
-  _external_random_ = 0;
+  // Reset the random number generator:
+  RNG_.reset();
+
   // Reset the Geiger regime utility:
   _geiger_.reset();
   _set_defaults();
@@ -224,7 +204,6 @@ void mock_tracker_s2c_module::reset() {
 void mock_tracker_s2c_module::_set_defaults() {
   _module_category_.clear();
   _hit_category_.clear();
-  _external_random_ = 0;
   _geom_manager_ = 0;
   _SD_label_.clear();
   _CD_label_.clear();
@@ -240,15 +219,12 @@ void mock_tracker_s2c_module::_set_defaults() {
 mock_tracker_s2c_module::mock_tracker_s2c_module(datatools::logger::priority logging_priority_)
     : dpp::base_module(logging_priority_) {
   _geom_manager_ = 0;
-  _external_random_ = 0;
   _set_defaults();
-  return;
 }
 
 // Destructor :
 mock_tracker_s2c_module::~mock_tracker_s2c_module() {
   if (is_initialized()) mock_tracker_s2c_module::reset();
-  return;
 }
 
 // Processing :
@@ -299,10 +275,6 @@ dpp::base_module::process_status mock_tracker_s2c_module::process(
   return dpp::base_module::PROCESS_SUCCESS;
 }
 
-mygsl::rng& mock_tracker_s2c_module::_get_random() {
-  if (has_external_random()) return *_external_random_;
-  return _random_;
-}
 
 /**
  * Here collect the Geiger raw hits from the simulation data source
@@ -312,7 +284,6 @@ mygsl::rng& mock_tracker_s2c_module::_get_random() {
 void mock_tracker_s2c_module::_process_tracker_digitization(
     const mctools::simulated_data& simulated_data_,
     mock_tracker_s2c_module::raw_tracker_hit_col_type& raw_tracker_hits_) {
-  DT_LOG_DEBUG(get_logging_priority(), "Entering...");
 
   if (!simulated_data_.has_step_hits(_hit_category_)) {
     // Nothing to do.
@@ -380,10 +351,9 @@ void mock_tracker_s2c_module::_process_tracker_digitization(
     // true drift distance:
     const double drift_distance = (avalanche_impact_world_pos - ionization_world_pos).mag();
     const double anode_efficiency = _geiger_.get_anode_efficiency(drift_distance);
-    const double r = _get_random().uniform();
+    const double r = RNG_.uniform();
     if (r > anode_efficiency) {
       // This hit is lost due to anode signal inefficiency:
-      DT_LOG_DEBUG(get_logging_priority(), "Geiger cell efficiency below anode efficiency !");
       continue;
     }
 
@@ -393,7 +363,7 @@ void mock_tracker_s2c_module::_process_tracker_digitization(
     /*** Anode TDC ***/
     // randomize the expected Geiger drift time:
     const double expected_drift_time =
-        _geiger_.randomize_drift_time_from_drift_distance(_get_random(), drift_distance);
+        _geiger_.randomize_drift_time_from_drift_distance(RNG_, drift_distance);
     const double anode_time = ionization_time + expected_drift_time;
     const double sigma_anode_time = _geiger_.get_sigma_anode_time(anode_time);
 
@@ -405,22 +375,22 @@ void mock_tracker_s2c_module::_process_tracker_digitization(
     datatools::invalidate(top_cathode_time);
     const double sigma_cathode_time = _geiger_.get_sigma_cathode_time();
     size_t missing_cathodes = 2;
-    const double r1 = _get_random().uniform();
+    const double r1 = RNG_.uniform();
     if (r1 < cathode_efficiency) {
       const double l_bottom = longitudinal_position + 0.5 * _geiger_.get_cell_length();
       const double mean_bottom_cathode_time = l_bottom / _geiger_.get_plasma_longitudinal_speed();
       const double sigma_bottom_cathode_time = 0.0;
       bottom_cathode_time =
-          _get_random().gaussian(mean_bottom_cathode_time, sigma_bottom_cathode_time);
+          RNG_.gaussian(mean_bottom_cathode_time, sigma_bottom_cathode_time);
       if (bottom_cathode_time < 0.0) bottom_cathode_time = 0.0;
       missing_cathodes--;
     }
-    const double r2 = _get_random().uniform();
+    const double r2 = RNG_.uniform();
     if (r2 < cathode_efficiency) {
       const double l_top = 0.5 * _geiger_.get_cell_length() - longitudinal_position;
       const double mean_top_cathode_time = l_top / _geiger_.get_plasma_longitudinal_speed();
       const double sigma_top_cathode_time = 0.0;
-      top_cathode_time = _get_random().gaussian(mean_top_cathode_time, sigma_top_cathode_time);
+      top_cathode_time = RNG_.gaussian(mean_top_cathode_time, sigma_top_cathode_time);
       if (top_cathode_time < 0.0) top_cathode_time = 0.0;
       missing_cathodes--;
     }
@@ -627,21 +597,21 @@ void mock_tracker_s2c_module::_process_tracker_calibration(
       missing_cathodes = 1;
       const double mean_z = 0.5 * _geiger_.get_cell_length() - t2 * plasma_propagation_speed;
       sigma_z = _geiger_.get_sigma_z(mean_z, missing_cathodes);
-      z = _geiger_.randomize_z(_get_random(), mean_z, sigma_z);
+      z = _geiger_.randomize_z(RNG_, mean_z, sigma_z);
       the_calibrated_tracker_hit.set_bottom_cathode_missing(true);
     } else if (datatools::is_valid(t1) && !datatools::is_valid(t2)) {
       // missing top cathode signal:
       missing_cathodes = 1;
       const double mean_z = t1 * plasma_propagation_speed - 0.5 * _geiger_.get_cell_length();
       sigma_z = _geiger_.get_sigma_z(mean_z, missing_cathodes);
-      z = _geiger_.randomize_z(_get_random(), mean_z, sigma_z);
+      z = _geiger_.randomize_z(RNG_, mean_z, sigma_z);
       the_calibrated_tracker_hit.set_top_cathode_missing(true);
     } else {
       missing_cathodes = 0;
       const double plasma_propagation_speed_2 = _geiger_.get_cell_length() / (t1 + t2);
       const double mean_z = 0.5 * _geiger_.get_cell_length() - t2 * plasma_propagation_speed_2;
       sigma_z = _geiger_.get_sigma_z(mean_z, missing_cathodes);
-      z = _geiger_.randomize_z(_get_random(), mean_z, sigma_z);
+      z = _geiger_.randomize_z(RNG_, mean_z, sigma_z);
     }
 
     // set values in the calibrated tracker hit:
