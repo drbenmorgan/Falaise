@@ -115,19 +115,19 @@ dpp::base_module::process_status mock_calorimeter_s2c_module::process(datatools:
     throw std::logic_error("Missing simulated data to be processed !");
     return dpp::base_module::PROCESS_ERROR;
   }
-  auto& the_simulated_data = event.get<mctools::simulated_data>(sdInputTag);
+  auto& simulatedData = event.get<mctools::simulated_data>(sdInputTag);
 
   // check if some 'calibrated_data' are available in the data model:
   // Calibrated Data is a single object with each hit collection
   // May, or may not, have it depending on if we run before or after
   // other calibrators
-  auto& the_calibrated_data = getOrAdd<snemo::datamodel::calibrated_data>(cdOutputTag, event);
+  auto& calibratedData = getOrAdd<snemo::datamodel::calibrated_data>(cdOutputTag, event);
 
   // Always rewrite hits....
-  the_calibrated_data.calibrated_calorimeter_hits().clear();
+  calibratedData.calibrated_calorimeter_hits().clear();
 
   // Main processing method :
-  _process(the_simulated_data, the_calibrated_data.calibrated_calorimeter_hits());
+  _process(simulatedData, calibratedData.calibrated_calorimeter_hits());
 
   return dpp::base_module::PROCESS_SUCCESS;
 }
@@ -142,40 +142,39 @@ void mock_calorimeter_s2c_module::_digitizeHits(
   uint32_t calibrated_calorimeter_hit_id = 0;
 
   // Loop over all 'calorimeter hit' categories:
-  for (const auto& category : caloTypes) {
-    if (!simulated_data_.has_step_hits(category)) {
+  for (const auto& calo : caloModels) {
+    auto& theCaloID = calo.first;
+
+    if (!simulated_data_.has_step_hits(theCaloID)) {
       continue;
     }
 
-    auto& mcHits = simulated_data_.get_step_hits(category);
+    // Loop over per-category hits
+    auto& mcHits = simulated_data_.get_step_hits(theCaloID);
+    auto& theCaloModel = calo.second;
 
     for (auto& mcHitHandle : mcHits) {
       auto& a_calo_mc_hit = mcHitHandle.get();
 
-      // Extract the corresponding geom ID:
-      const geomtools::geom_id& gid = a_calo_mc_hit.get_geom_id();
+      // Quench energy if it's an Alpha particle
+      double energyDeposit = a_calo_mc_hit.get_energy_deposit();
+
+      if (a_calo_mc_hit.get_particle_name() == "alpha" && quenchAlphas) {
+        energyDeposit = theCaloModel.quench_alpha_energy(energyDeposit);
+      }
 
       // Get the step hit time start:
       const double step_hit_time_start = a_calo_mc_hit.get_time_start();
 
-      // Get the step hit energy deposit:
-      double step_hit_energy_deposit = a_calo_mc_hit.get_energy_deposit();
-
-      // Quench the alpha particle energy:
-      if (a_calo_mc_hit.get_particle_name() == "alpha" && quenchAlphas) {
-        const CalorimeterModel& the_calo_regime = caloModels.at(category);
-        const double quenched_energy = the_calo_regime.quench_alpha_energy(step_hit_energy_deposit);
-
-        step_hit_energy_deposit = quenched_energy;
-      }
+      // Extract the corresponding geom ID:
+      auto& geomID = a_calo_mc_hit.get_geom_id();
       using CCHitHdl = snemo::datamodel::calibrated_calorimeter_hit::collection_type::value_type;
 
       auto found = std::find_if(outputHits.rbegin(), outputHits.rend(),
-                                [&gid](CCHitHdl const& x) { return x.get().get_geom_id() == gid; });
+                                [&geomID](CCHitHdl const& x) { return x.get().get_geom_id() == geomID; });
 
       if (found == outputHits.rend()) {
-        // This geom_id is not used by any previous calorimeter hit:
-        // we create a new calorimeter hit !
+        // Then it's a new hit
         snemo::datamodel::calibrated_data::calorimeter_hit_handle_type newHandle(
             new snemo::datamodel::calibrated_calorimeter_hit);
         auto& newHit = newHandle.grab();
@@ -188,7 +187,7 @@ void mock_calorimeter_s2c_module::_digitizeHits(
         newHit.set_energy(step_hit_energy_deposit);
 
         // Add a properties to ease the final calibration
-        newHit.grab_auxiliaries().store("category", category);
+        newHit.grab_auxiliaries().store("category", theCaloID);
 
         // 2012-09-17 FM : support reference to the MC true hit ID
         if (assocMCHitId) {
