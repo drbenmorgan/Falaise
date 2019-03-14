@@ -52,6 +52,11 @@ class mock_tracker_s2c_module : public dpp::base_module {
   /// Collection of raw tracker hit Intermediate :
   typedef std::list<snemo::datamodel::mock_raw_tracker_hit> raw_tracker_hit_col_type;
 
+  /// Constructor
+  mock_tracker_s2c_module(datatools::logger::priority = datatools::logger::PRIO_FATAL);
+  // Because dpp::base_module is insane
+  virtual ~mock_tracker_s2c_module() {this->reset();}
+
   /// Set the geometry manager
   void set_geom_manager(const geomtools::manager& gmgr_);
 
@@ -64,11 +69,6 @@ class mock_tracker_s2c_module : public dpp::base_module {
   /// Return the drift time threshold for delayed Geiger hits
   double get_delayed_drift_time_threshold() const;
 
-  /// Constructor
-  mock_tracker_s2c_module(datatools::logger::priority = datatools::logger::PRIO_FATAL);
-
-  /// Destructor
-  virtual ~mock_tracker_s2c_module();
 
   /// Initialization
   virtual void initialize(const datatools::properties& setup_,

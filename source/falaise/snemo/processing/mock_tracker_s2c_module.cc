@@ -163,9 +163,6 @@ void mock_tracker_s2c_module::initialize(const datatools::properties& setup_,
   if (!datatools::is_valid(_delayed_drift_time_threshold_)) {
     _delayed_drift_time_threshold_ = _geiger_.get_tcut();
   }
-  DT_LOG_DEBUG(get_logging_priority(), "delayed_drift_time_threshold = "
-               << _delayed_drift_time_threshold_ / CLHEP::microsecond
-               << " us");
 
   // 2012-07-26 FM : support reference to the MC true hit ID
   if (setup_.has_flag("store_mc_hit_id")) {
@@ -179,13 +176,9 @@ void mock_tracker_s2c_module::initialize(const datatools::properties& setup_,
   }
 
   this->base_module::_set_initialized(true);
-  return;
 }
 
 void mock_tracker_s2c_module::reset() {
-  DT_THROW_IF(!is_initialized(), std::logic_error,
-              "Module '" << get_name() << "' is not initialized !");
-
   this->base_module::_set_initialized(false);
 
   // Reset the random number generator:
@@ -198,7 +191,6 @@ void mock_tracker_s2c_module::reset() {
   _hit_category_.clear();
   _store_mc_hit_id_ = false;
   _store_mc_truth_track_ids_ = false;
-  return;
 }
 
 void mock_tracker_s2c_module::_set_defaults() {
@@ -212,7 +204,6 @@ void mock_tracker_s2c_module::_set_defaults() {
   datatools::invalidate(_delayed_drift_time_threshold_);
   _store_mc_hit_id_ = false;
   _store_mc_truth_track_ids_ = false;
-  return;
 }
 
 // Constructor :
@@ -220,11 +211,6 @@ mock_tracker_s2c_module::mock_tracker_s2c_module(datatools::logger::priority log
     : dpp::base_module(logging_priority_) {
   _geom_manager_ = 0;
   _set_defaults();
-}
-
-// Destructor :
-mock_tracker_s2c_module::~mock_tracker_s2c_module() {
-  if (is_initialized()) mock_tracker_s2c_module::reset();
 }
 
 // Processing :
@@ -284,7 +270,6 @@ dpp::base_module::process_status mock_tracker_s2c_module::process(
 void mock_tracker_s2c_module::_process_tracker_digitization(
     const mctools::simulated_data& simulated_data_,
     mock_tracker_s2c_module::raw_tracker_hit_col_type& raw_tracker_hits_) {
-
   if (!simulated_data_.has_step_hits(_hit_category_)) {
     // Nothing to do.
     return;
@@ -482,9 +467,6 @@ void mock_tracker_s2c_module::_process_tracker_digitization(
       }
     }
   }
-
-  DT_LOG_DEBUG(get_logging_priority(), "Exiting.");
-  return;
 }
 
 /** Calibrate tracker hits from digitization informations:
@@ -492,8 +474,6 @@ void mock_tracker_s2c_module::_process_tracker_digitization(
 void mock_tracker_s2c_module::_process_tracker_calibration(
     const mock_tracker_s2c_module::raw_tracker_hit_col_type& raw_tracker_hits_,
     snemo::datamodel::calibrated_data::tracker_hit_collection_type& calibrated_tracker_hits_) {
-  DT_LOG_DEBUG(get_logging_priority(), "Entering...");
-
   // pickup the ID mapping from the geometry manager:
   const geomtools::mapping& the_mapping = _geom_manager_->get_mapping();
   const geomtools::id_mgr& the_id_mgr = _geom_manager_->get_id_mgr();
@@ -651,18 +631,11 @@ void mock_tracker_s2c_module::_process_tracker_calibration(
 
     calibrated_tracker_hit_id++;
   }  // loop over raw tracker hits
-
-  DT_LOG_DEBUG(get_logging_priority(), "Exiting.");
-  return;
 }
 
 void mock_tracker_s2c_module::_process(
     const mctools::simulated_data& simulated_data_,
     snemo::datamodel::calibrated_data::tracker_hit_collection_type& calibrated_tracker_hits_) {
-  DT_LOG_DEBUG(get_logging_priority(), "Entering...");
-
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
-
   // temporary raw tracker hits to be constructed:
   raw_tracker_hit_col_type the_raw_tracker_hits;
 
@@ -671,9 +644,6 @@ void mock_tracker_s2c_module::_process(
 
   // process digitized tracker(simulated) hits and calibrate geometry informations:
   _process_tracker_calibration(the_raw_tracker_hits, calibrated_tracker_hits_);
-
-  DT_LOG_DEBUG(get_logging_priority(), "Exiting.");
-  return;
 }
 
 }  // end of namespace processing

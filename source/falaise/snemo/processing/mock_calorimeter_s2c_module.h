@@ -49,6 +49,8 @@ namespace processing {
 /// \brief A mock calibration for SuperNEMO calorimeter hits
 class mock_calorimeter_s2c_module : public dpp::base_module {
  public:
+  // Because dpp::base_module is insane
+  virtual ~mock_calorimeter_s2c_module() {this->reset();}
 
   /// Initialization
   virtual void initialize(const datatools::properties& setup_,
