@@ -184,7 +184,7 @@ void mock_calorimeter_s2c_module::_digitizeHits(
 
         // sigma time and sigma energy are computed later
         newHit.set_time(step_hit_time_start);
-        newHit.set_energy(step_hit_energy_deposit);
+        newHit.set_energy(energyDeposit);
 
         // Add a properties to ease the final calibration
         newHit.grab_auxiliaries().store("category", theCaloID);
@@ -222,7 +222,7 @@ void mock_calorimeter_s2c_module::_digitizeHits(
         if (delta_time < -timeWindow) {
           cc_prop.update_flag("pile_up");
           existingHit.set_time(step_hit_time_start);
-          existingHit.set_energy(step_hit_energy_deposit);
+          existingHit.set_energy(energyDeposit);
           continue;
         }
 
@@ -231,7 +231,7 @@ void mock_calorimeter_s2c_module::_digitizeHits(
         existingHit.set_time(calo_time);
 
         // Sum energies
-        const double calo_energy = step_hit_energy_deposit + existingHit.get_energy();
+        const double calo_energy = energyDeposit + existingHit.get_energy();
         existingHit.set_energy(calo_energy);
       }
     }  // loop over hits
