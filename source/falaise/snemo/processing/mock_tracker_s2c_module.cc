@@ -233,10 +233,8 @@ void mock_tracker_s2c_module::_digitizeHits(
 
     /*** Cathodes TDCs ***/
     const double cathode_efficiency = _geiger_.get_cathode_efficiency();
-    double bottom_cathode_time;
-    double top_cathode_time;
-    datatools::invalidate(bottom_cathode_time);
-    datatools::invalidate(top_cathode_time);
+    double bottom_cathode_time{datatools::invalid_real_double()};
+    double top_cathode_time{datatools::invalid_real_double()};
     const double sigma_cathode_time = _geiger_.get_sigma_cathode_time();
     size_t missing_cathodes = 2;
     const double r1 = RNG_.uniform();
@@ -393,10 +391,8 @@ void mock_tracker_s2c_module::_calibrateHits(
     const double anode_time = the_raw_tracker_hit.get_drift_time();
 
     // Calibrate the transverse drift distance:
-    double radius;
-    double sigma_radius;
-    datatools::invalidate(radius);
-    datatools::invalidate(sigma_radius);
+    double radius{datatools::invalid_real_double()};
+    double sigma_radius{datatools::invalid_real_double()};
 
     if (datatools::is_valid(anode_time)) {
       if (anode_time <= _delayed_drift_time_threshold_) {
@@ -404,20 +400,15 @@ void mock_tracker_s2c_module::_calibrateHits(
         _geiger_.calibrate_drift_radius_from_drift_time(anode_time, radius, sigma_radius);
         the_calibrated_tracker_hit->set_anode_time(anode_time);
         if (anode_time > _peripheral_drift_time_threshold_) {
-          DT_LOG_TRACE(get_logging_priority(), "Peripheral Geiger hit with anode time = "
-                                                   << anode_time / CLHEP::microsecond << " us");
           the_calibrated_tracker_hit->set_peripheral(true);
         }
       } else {
-        DT_LOG_TRACE(get_logging_priority(), "Delayed Geiger hit with anode time = "
-                                                 << anode_time / CLHEP::microsecond << " us");
         // 2012-03-29 FM : store the anode_time as the reference delayed time
         the_calibrated_tracker_hit->set_delayed_time(anode_time,
                                                     _geiger_.get_sigma_anode_time(anode_time));
       }
     } else {
       the_calibrated_tracker_hit->set_noisy(true);
-      DT_LOG_DEBUG(get_logging_priority(), "Geiger cell is noisy");
     }
     if (datatools::is_valid(radius)) the_calibrated_tracker_hit->set_r(radius);
     if (datatools::is_valid(sigma_radius)) the_calibrated_tracker_hit->set_sigma_r(sigma_radius);
