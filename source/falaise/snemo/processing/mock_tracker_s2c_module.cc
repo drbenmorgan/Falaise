@@ -24,16 +24,16 @@
 #include <falaise/snemo/services/services.h>
 
 namespace {
-  // Get object stored at key, adding it if not found§
-  template <typename T>
-  T& getOrAdd(std::string const& key, datatools::things& event) {
-    if (event.has(key)) {
-      return event.grab<T>(key);
-    }
-    return event.add<T>(key);
+// Get object stored at key, adding it if not found§
+template <typename T>
+T& getOrAdd(std::string const& key, datatools::things& event) {
+  if (event.has(key)) {
+    return event.grab<T>(key);
   }
-
+  return event.add<T>(key);
 }
+
+}  // namespace
 
 namespace snemo {
 
@@ -43,13 +43,6 @@ namespace processing {
 DPP_MODULE_REGISTRATION_IMPLEMENT(mock_tracker_s2c_module,
                                   "snemo::processing::mock_tracker_s2c_module")
 
-double mock_tracker_s2c_module::get_peripheral_drift_time_threshold() const {
-  return _peripheral_drift_time_threshold_;
-}
-
-double mock_tracker_s2c_module::get_delayed_drift_time_threshold() const {
-  return _delayed_drift_time_threshold_;
-}
 
 void mock_tracker_s2c_module::initialize(const datatools::properties& setup_,
                                          datatools::service_manager& service_manager_,
@@ -76,15 +69,15 @@ void mock_tracker_s2c_module::initialize(const datatools::properties& setup_,
 
   geoManager = nullptr;
   DT_THROW_IF(!service_manager_.has(geoServiceTag) ||
-              !service_manager_.is_a<geomtools::geometry_service>(geoServiceTag),
+                  !service_manager_.is_a<geomtools::geometry_service>(geoServiceTag),
               std::logic_error,
               "Module '" << get_name() << "' has no '" << geoServiceTag << "' service !");
   auto& Geo = service_manager_.get<geomtools::geometry_service>(geoServiceTag);
   geoManager = &(Geo.get_geom_manager());
   const std::string& setup_label = geoManager->get_setup_label();
   DT_THROW_IF(
-    !(setup_label == "snemo::demonstrator" || setup_label == "snemo::tracker_commissioning"),
-    std::logic_error, "Setup label '" << setup_label << "' is not supported !");
+      !(setup_label == "snemo::demonstrator" || setup_label == "snemo::tracker_commissioning"),
+      std::logic_error, "Setup label '" << setup_label << "' is not supported !");
 
   // Module geometry category:
   _module_category_ = "module";
@@ -142,14 +135,10 @@ void mock_tracker_s2c_module::initialize(const datatools::properties& setup_,
   this->base_module::_set_initialized(true);
 }
 
-void mock_tracker_s2c_module::reset() {
-  this->base_module::_set_initialized(false);
-}
-
+void mock_tracker_s2c_module::reset() { this->base_module::_set_initialized(false); }
 
 // Processing :
-dpp::base_module::process_status mock_tracker_s2c_module::process(
-    datatools::things& event) {
+dpp::base_module::process_status mock_tracker_s2c_module::process(datatools::things& event) {
   DT_THROW_IF(!is_initialized(), std::logic_error,
               "Module '" << get_name() << "' is not initialized !");
 
@@ -165,7 +154,6 @@ dpp::base_module::process_status mock_tracker_s2c_module::process(
 
   return dpp::base_module::PROCESS_SUCCESS;
 }
-
 
 /**
  * Here collect the Geiger raw hits from the simulation data source
@@ -242,8 +230,7 @@ void mock_tracker_s2c_module::_digitizeHits(
       const double l_bottom = longitudinal_position + 0.5 * _geiger_.get_cell_length();
       const double mean_bottom_cathode_time = l_bottom / _geiger_.get_plasma_longitudinal_speed();
       const double sigma_bottom_cathode_time = 0.0;
-      bottom_cathode_time =
-          RNG_.gaussian(mean_bottom_cathode_time, sigma_bottom_cathode_time);
+      bottom_cathode_time = RNG_.gaussian(mean_bottom_cathode_time, sigma_bottom_cathode_time);
       if (bottom_cathode_time < 0.0) bottom_cathode_time = 0.0;
       missing_cathodes--;
     }
@@ -363,7 +350,8 @@ void mock_tracker_s2c_module::_calibrateHits(
   int32_t calibrated_tracker_hit_id = 0;
   // Loop on raw tracker hits:
   for (auto& the_raw_tracker_hit : raw_tracker_hits_) {
-    auto the_calibrated_tracker_hit = datatools::make_handle<snemo::datamodel::calibrated_tracker_hit>();
+    auto the_calibrated_tracker_hit =
+        datatools::make_handle<snemo::datamodel::calibrated_tracker_hit>();
 
     // extract the corresponding geom ID:
     const geomtools::geom_id& gid = the_raw_tracker_hit.get_geom_id();
@@ -405,7 +393,7 @@ void mock_tracker_s2c_module::_calibrateHits(
       } else {
         // 2012-03-29 FM : store the anode_time as the reference delayed time
         the_calibrated_tracker_hit->set_delayed_time(anode_time,
-                                                    _geiger_.get_sigma_anode_time(anode_time));
+                                                     _geiger_.get_sigma_anode_time(anode_time));
       }
     } else {
       the_calibrated_tracker_hit->set_noisy(true);
@@ -416,8 +404,8 @@ void mock_tracker_s2c_module::_calibrateHits(
     // Calibrate the longitudinal drift distance:
     const double t1 = the_raw_tracker_hit.get_bottom_time();
     const double t2 = the_raw_tracker_hit.get_top_time();
-    double z {datatools::invalid_real_double()};
-    double sigma_z {datatools::invalid_real_double()};
+    double z{datatools::invalid_real_double()};
+    double sigma_z{datatools::invalid_real_double()};
 
     const double plasma_propagation_speed = _geiger_.get_plasma_longitudinal_speed();
     size_t missing_cathodes = 0;
@@ -468,7 +456,7 @@ void mock_tracker_s2c_module::_calibrateHits(
         const int true_tracker_hit_id = the_raw_tracker_hit.get_auxiliaries().fetch_integer(
             mctools::hit_utils::HIT_MC_HIT_ID_KEY);
         the_calibrated_tracker_hit->grab_auxiliaries().update(mctools::hit_utils::HIT_MC_HIT_ID_KEY,
-                                                             true_tracker_hit_id);
+                                                              true_tracker_hit_id);
       }
     }
 
