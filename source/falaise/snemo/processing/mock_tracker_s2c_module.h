@@ -23,10 +23,9 @@
 #include <vector>
 
 // Third party:
-// - Bayeux/mygsl:
-#include <mygsl/rng.h>
-// - Bayeux/dpp:
-#include <dpp/base_module.h>
+#include <bayeux/dpp/base_module.h>
+#include <bayeux/mctools/simulated_data.h>
+#include <bayeux/mygsl/rng.h>
 
 // This project :
 #include <falaise/snemo/datamodels/calibrated_data.h>
@@ -35,10 +34,6 @@
 
 namespace geomtools {
 class manager;
-}
-
-namespace mctools {
-class simulated_data;
 }
 
 namespace snemo {
@@ -53,33 +48,29 @@ class mock_tracker_s2c_module : public dpp::base_module {
   virtual ~mock_tracker_s2c_module() { this->reset(); }
 
   /// Initialization
-  virtual void initialize(const datatools::properties& setup_,
-                          datatools::service_manager& service_manager_,
-                          dpp::module_handle_dict_type& module_dict_);
+  virtual void initialize(datatools::properties const& ps, datatools::service_manager& services,
+                          dpp::module_handle_dict_type&) override;
 
   /// Reset
-  virtual void reset();
+  virtual void reset() override;
 
   /// Data record processing
-  virtual process_status process(datatools::things& data_);
+  virtual process_status process(datatools::things& data_) override;
 
  private:
-  /// Collection of raw tracker hit Intermediate :
-  typedef std::list<snemo::datamodel::mock_raw_tracker_hit> raw_tracker_hit_col_type;
+  // Rationalized typenames
+  using sim_tracker_hit_col_t = mctools::simulated_data::hit_handle_collection_type;
+  using raw_tracker_hit_col_t = std::list<snemo::datamodel::mock_raw_tracker_hit>;
+  using cal_tracker_hit_col_t = snemo::datamodel::calibrated_data::tracker_hit_collection_type;
 
   /// Digitize tracker hits
-  void _digitizeHits(const mctools::simulated_data& simulated_data_,
-                     raw_tracker_hit_col_type& raw_tracker_hits_);
+  raw_tracker_hit_col_t digitizeHits_(const sim_tracker_hit_col_t& steps);
 
   /// Calibrate tracker hits (longitudinal and transverse spread)
-  void _calibrateHits(
-      const raw_tracker_hit_col_type& raw_tracker_hits_,
-      snemo::datamodel::calibrated_data::tracker_hit_collection_type& calibrated_tracker_hits_);
+  cal_tracker_hit_col_t calibrateHits_(const raw_tracker_hit_col_t& digits);
 
   /// Main process function
-  void _process(
-      const mctools::simulated_data& simulated_data_,
-      snemo::datamodel::calibrated_data::tracker_hit_collection_type& calibrated_tracker_hits_);
+  cal_tracker_hit_col_t process_(const sim_tracker_hit_col_t& hits);
 
   std::string geoServiceTag{};                    //!< The label of the geometry service
   const geomtools::manager* geoManager{nullptr};  //!< The geometry manager
