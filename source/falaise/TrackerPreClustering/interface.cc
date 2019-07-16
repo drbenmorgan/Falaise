@@ -13,23 +13,6 @@ const std::string& setup_data::get_last_error_message() const { return _last_err
 
 void setup_data::set_last_error_message(const std::string& message_) {
   _last_error_message = message_;
-  return;
-}
-
-setup_data::setup_data() {
-  reset();
-  return;
-}
-
-void setup_data::reset() {
-  logging = datatools::logger::PRIO_WARNING;
-  cell_size = std::numeric_limits<double>::quiet_NaN();
-  delayed_hit_cluster_time = std::numeric_limits<double>::quiet_NaN();
-  processing_prompt_hits = true;
-  processing_delayed_hits = true;
-  split_chamber = false;
-  _last_error_message.clear();
-  return;
 }
 
 bool setup_data::check() const {

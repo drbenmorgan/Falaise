@@ -48,31 +48,24 @@ namespace TrackerPreClustering {
 
 /// \brief Setup data for the TrackerPreClustering algorithm
 struct setup_data {
-  /// Return the last error message
-  const std::string &get_last_error_message() const;
-
-  /// Set the last error message
-  void set_last_error_message(const std::string &message_);
-
-  /// Default constructor
-  setup_data();
-
-  /// Reset
-  void reset();
-
   /// Check the setup data
   bool check() const;
 
+  /// Return the last error message
+  std::string const& get_last_error_message() const;
+
+  /// Set the last error message
+  void set_last_error_message(std::string const& message_);
+
   // Attributes:
-  datatools::logger::priority logging;  //!< Logging flag
-  double cell_size;                     //!< The dimension of a cell
-  double delayed_hit_cluster_time;      //!< Delayed hit cluster time
-  bool processing_prompt_hits;          //!< Flag for processing of prompt hits
-  bool processing_delayed_hits;         //!< Flag for processing of delayed hits
-  bool split_chamber;                   //!< Flag to split the chamber
+  double cell_size = std::numeric_limits<double>::quiet_NaN();                 //!< The dimension of a cell
+  double delayed_hit_cluster_time =  std::numeric_limits<double>::quiet_NaN(); //!< Delayed hit cluster time
+  bool processing_prompt_hits = true;  //!< Flag for processing of prompt hits
+  bool processing_delayed_hits = true; //!< Flag for processing of delayed hits
+  bool split_chamber = false;          //!< Flag to split the chamber
 
  protected:
-  std::string _last_error_message;  /// The last error message
+  std::string _last_error_message = "";  /// The last error message
 };
 
 /// \brief Input data structure
@@ -82,20 +75,62 @@ struct input_data {
   typedef Hit hit_type;
   typedef std::vector<const hit_type *> hit_collection_type;
 
+  /// Check
+  bool check() const {
+    input_data* mutable_this = const_cast<input_data*>(this);
+    hit_collection_type tags;
+    tags.reserve(hits.size());
+    for (const hit_type* a_hit : hits) {
+      //const hit_type* a_hit = hits.at(i);
+      if (a_hit == nullptr) {
+        std::ostringstream message;
+        message << "TrackerPreClustering::input_data<>::check: "
+            << "Null hit !";
+        mutable_this->set_last_error_message(message.str());
+        return false;
+      }
+      if (std::find(tags.begin(), tags.end(), a_hit) != tags.end()) {
+        std::ostringstream message;
+        message << "TrackerPreClustering::input_data<>::check: "
+            << "Double referenced hit !";
+        mutable_this->set_last_error_message(message.str());
+        return false;
+      }
+      tags.push_back(a_hit);
+      if (!a_hit->has_geom_id()) {
+        std::ostringstream message;
+        message << "TrackerPreClustering::input_data<>::check: "
+            << "Missing GID !";
+        mutable_this->set_last_error_message(message.str());
+        return false;
+      }
+      if (!a_hit->has_xy()) {
+        std::ostringstream message;
+        message << "TrackerPreClustering::input_data<>::check: "
+            << "Missing XY position !";
+        mutable_this->set_last_error_message(message.str());
+        return false;
+      }
+      if (a_hit->is_delayed() && !a_hit->has_delayed_time()) {
+        std::ostringstream message;
+        message << "TrackerPreClustering::input_data<>::check: "
+            << "Missing delayed time !";
+        mutable_this->set_last_error_message(message.str());
+        return false;
+      }
+    }
+    return true;
+  }
+
   /// Return the last error message
-  const std::string &get_last_error_message() const;
+  std::string const& get_last_error_message() const {
+    return _last_error_message;
+  }
 
   /// Set the last error message
-  void set_last_error_message(const std::string &message_);
-
-  /// Default constructor
-  input_data();
-
-  /// Reset
-  void reset();
-
-  /// Check
-  bool check() const;
+  void set_last_error_message(std::string const& message_) {
+    _last_error_message = message_;
+  }
 
   // Attributes:
   hit_collection_type hits;  //!< Collection of Geiger hits
@@ -112,128 +147,35 @@ struct output_data {
   typedef std::vector<const hit_type *> hit_collection_type;
   typedef std::vector<hit_collection_type> cluster_collection_type;
 
-  /// Default constructor
-  output_data();
-
-  /// Reset
-  void reset();
-
   /// Print
-  void dump(std::ostream &out_) const;
+  void dump(std::ostream &out_) const {
+    out_ << "TrackerPreClustering::output_data: " << std::endl;
+    out_ << "|-- Ignored hits : " << ignored_hits.size() << std::endl;
+    out_ << "|-- Prompt clusters: " << prompt_clusters.size() << std::endl;
+    for (unsigned int i = 0; i < prompt_clusters.size(); i++) {
+      if (i < prompt_clusters.size() - 1) {
+        out_ << "|   |-- ";
+      } else {
+        out_ << "|   `-- ";
+      }
+      out_ << "Prompt cluster #" << i << "  size : " << prompt_clusters.at(i).size() << std::endl;
+    }
+    out_ << "`-- Delayed clusters: " << delayed_clusters.size() << std::endl;
+    for (unsigned int i = 0; i < delayed_clusters.size(); i++) {
+      if (i < delayed_clusters.size() - 1) {
+        out_ << "    |-- ";
+      } else {
+        out_ << "    `-- ";
+      }
+      out_ << "Delayed cluster #" << i << "  size : " << delayed_clusters.at(i).size() << std::endl;
+    }
+  }
 
   // Attributes:
   hit_collection_type ignored_hits;          //!< Collection of ignored hits
   cluster_collection_type prompt_clusters;   //!< Collection of prompt clusters
   cluster_collection_type delayed_clusters;  //!< Collection of delayed clusters
 };
-template <class Hit>
-const std::string& input_data<Hit>::get_last_error_message() const {
-  return _last_error_message;
-}
-
-template <class Hit>
-void input_data<Hit>::set_last_error_message(const std::string& message_) {
-  _last_error_message = message_;
-  return;
-}
-
-template <class Hit>
-input_data<Hit>::input_data() {
-  return;
-}
-
-template <class Hit>
-void input_data<Hit>::reset() {
-  hits.clear();
-  _last_error_message.clear();
-  return;
-}
-
-template <class Hit>
-bool input_data<Hit>::check() const {
-  input_data* mutable_this = const_cast<input_data*>(this);
-  hit_collection_type tags;
-  tags.reserve(hits.size());
-  for (unsigned int i = 0; i < hits.size(); i++) {
-    const hit_type* a_hit = hits.at(i);
-    if (a_hit == 0) {
-      std::ostringstream message;
-      message << "TrackerPreClustering::input_data<>::check: "
-              << "Null hit !";
-      mutable_this->set_last_error_message(message.str());
-      return false;
-    }
-    if (std::find(tags.begin(), tags.end(), a_hit) != tags.end()) {
-      std::ostringstream message;
-      message << "TrackerPreClustering::input_data<>::check: "
-              << "Double referenced hit !";
-      mutable_this->set_last_error_message(message.str());
-      return false;
-    }
-    tags.push_back(a_hit);
-    if (!a_hit->has_geom_id()) {
-      std::ostringstream message;
-      message << "TrackerPreClustering::input_data<>::check: "
-              << "Missing GID !";
-      mutable_this->set_last_error_message(message.str());
-      return false;
-    }
-    if (!a_hit->has_xy()) {
-      std::ostringstream message;
-      message << "TrackerPreClustering::input_data<>::check: "
-              << "Missing XY position !";
-      mutable_this->set_last_error_message(message.str());
-      return false;
-    }
-    if (a_hit->is_delayed() && !a_hit->has_delayed_time()) {
-      std::ostringstream message;
-      message << "TrackerPreClustering::input_data<>::check: "
-              << "Missing delayed time !";
-      mutable_this->set_last_error_message(message.str());
-      return false;
-    }
-  }
-  return true;
-}
-
-template <class Hit>
-output_data<Hit>::output_data() {
-  return;
-}
-
-template <class Hit>
-void output_data<Hit>::reset() {
-  ignored_hits.clear();
-  prompt_clusters.clear();
-  delayed_clusters.clear();
-  return;
-}
-
-template <class Hit>
-void output_data<Hit>::dump(std::ostream& out_) const {
-  out_ << "TrackerPreClustering::output_data: " << std::endl;
-  out_ << "|-- Ignored hits : " << ignored_hits.size() << std::endl;
-  out_ << "|-- Prompt clusters: " << prompt_clusters.size() << std::endl;
-  for (unsigned int i = 0; i < prompt_clusters.size(); i++) {
-    if (i < prompt_clusters.size() - 1) {
-      out_ << "|   |-- ";
-    } else {
-      out_ << "|   `-- ";
-    }
-    out_ << "Prompt cluster #" << i << "  size : " << prompt_clusters.at(i).size() << std::endl;
-  }
-  out_ << "`-- Delayed clusters: " << delayed_clusters.size() << std::endl;
-  for (unsigned int i = 0; i < delayed_clusters.size(); i++) {
-    if (i < delayed_clusters.size() - 1) {
-      out_ << "    |-- ";
-    } else {
-      out_ << "    `-- ";
-    }
-    out_ << "Delayed cluster #" << i << "  size : " << delayed_clusters.at(i).size() << std::endl;
-  }
-
-  return;
-}
 
 }  // end of namespace TrackerPreClustering
 

@@ -114,7 +114,7 @@ void base_tracker_clusterizer::_initialize(const datatools::properties &setup_) 
   }
 
   // Default value for the TrackerPreClustering :
-  _tpc_setup_data_.logging = get_logging_priority();
+  //_tpc_setup_data_.logging = get_logging_priority();
   _tpc_setup_data_.delayed_hit_cluster_time = 10.0 * CLHEP::microsecond;
   _tpc_setup_data_.cell_size = get_gg_locator().get_cell_diameter();
   _tpc_setup_data_.processing_prompt_hits = true;
@@ -163,7 +163,7 @@ void base_tracker_clusterizer::_reset() {
 
   // Clear working arrays:
   _clear_working_arrays();
-  _tpc_setup_data_.reset();
+  //_tpc_setup_data_.reset();
   _pc_.reset();
   _cell_id_selector_.reset();
 
