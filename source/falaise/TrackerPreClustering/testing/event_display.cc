@@ -1,7 +1,7 @@
 /// \file falaise/TrackerPreClustering/event_display.cc
 
 // Ourselves:
-#include "falaise/TrackerPreClustering/event_display.h"
+#include "event_display.h"
 
 // Standard library:
 #include <cmath>

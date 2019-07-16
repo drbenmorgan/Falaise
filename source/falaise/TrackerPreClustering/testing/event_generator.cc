@@ -2,7 +2,7 @@
 /// \file falaise/TrackerPreClustering/event_generator.cc
 
 // Ourselves:
-#include "falaise/TrackerPreClustering/event_generator.h"
+#include "event_generator.h"
 
 // Standard library:
 #include <algorithm>
