@@ -1,7 +1,7 @@
 // \file falaise/snemo/reconstruction/mock_tracker_clustering_module.cc
 
 // Ourselves:
-#include <snemo/reconstruction/mock_tracker_clustering_module.h>
+#include "MockTrackerClusterizer/mock_tracker_clustering_module.h"
 
 // Standard library:
 #include <sstream>
@@ -21,7 +21,7 @@
 #include <falaise/snemo/services/services.h>
 
 // This plugin (MockTrackerClusterizer):
-#include <snemo/reconstruction/mock_tracker_clustering_driver.h>
+#include "MockTrackerClusterizer/mock_tracker_clustering_driver.h"
 
 namespace snemo {
 
@@ -35,7 +35,6 @@ void mock_tracker_clustering_module::set_cd_label(const std::string& cdl_) {
   DT_THROW_IF(is_initialized(), std::logic_error,
               "Module '" << get_name() << "' is already initialized ! ");
   _CD_label_ = cdl_;
-  return;
 }
 
 const std::string& mock_tracker_clustering_module::get_cd_label() const { return _CD_label_; }
@@ -44,7 +43,6 @@ void mock_tracker_clustering_module::set_tcd_label(const std::string& tcdl_) {
   DT_THROW_IF(is_initialized(), std::logic_error,
               "Module '" << get_name() << "' is already initialized ! ");
   _TCD_label_ = tcdl_;
-  return;
 }
 
 const std::string& mock_tracker_clustering_module::get_tcd_label() const { return _TCD_label_; }
@@ -62,7 +60,6 @@ void mock_tracker_clustering_module::set_geometry_manager(const geomtools::manag
   const std::string& setup_label = _geometry_manager_->get_setup_label();
   DT_THROW_IF(setup_label != "snemo::demonstrator" && setup_label != "snemo::tracker_commissioning",
               std::logic_error, "Setup label '" << setup_label << "' is not supported !");
-  return;
 }
 
 // Constructor :
@@ -70,13 +67,11 @@ mock_tracker_clustering_module::mock_tracker_clustering_module(
     datatools::logger::priority logging_priority_)
     : dpp::base_module(logging_priority_) {
   _set_defaults();
-  return;
 }
 
 // Destructor :
 mock_tracker_clustering_module::~mock_tracker_clustering_module() {
   if (is_initialized()) mock_tracker_clustering_module::reset();
-  return;
 }
 
 void mock_tracker_clustering_module::_set_defaults() {
@@ -84,7 +79,6 @@ void mock_tracker_clustering_module::_set_defaults() {
   _CD_label_.clear();
   _TCD_label_.clear();
   _driver_.reset(0);
-  return;
 }
 
 void mock_tracker_clustering_module::reset() {
@@ -99,7 +93,6 @@ void mock_tracker_clustering_module::reset() {
     _driver_.reset();
   }
   _set_defaults();
-  return;
 }
 
 void mock_tracker_clustering_module::initialize(const datatools::properties& setup_,
@@ -161,7 +154,6 @@ void mock_tracker_clustering_module::initialize(const datatools::properties& set
   _driver_.get()->initialize(setup_);
 
   _set_initialized(true);
-  return;
 }
 
 // Processing :
@@ -230,7 +222,6 @@ void mock_tracker_clustering_module::_process(
                           calib_data_.calibrated_calorimeter_hits(), clustering_data_);
 
   DT_LOG_TRACE(get_logging_priority(), "Exiting.");
-  return;
 }
 
 }  // namespace reconstruction
