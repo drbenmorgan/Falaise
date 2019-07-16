@@ -52,7 +52,7 @@ void sultan_driver::set_magfield_direction(double dir_) {
 double sultan_driver::get_magfield_direction() const { return _magfield_dir_; }
 
 sultan_driver::sultan_driver()
-    : ::snemo::processing::base_tracker_clusterizer(sultan_driver::SULTAN_ID) {
+    : ::snemo::processing::base_tracker_clusterizer() {
   _set_defaults();
   return;
 }
@@ -241,7 +241,6 @@ void sultan_driver::initialize(const datatools::properties& setup_) {
          ip != plugins.end(); ip++) {
       const std::string& plugin_name = ip->first;
       if (geo_mgr.is_plugin_a<snemo::geometry::locator_plugin>(plugin_name)) {
-        DT_LOG_DEBUG(get_logging_priority(), "Find locator plugin with name = " << plugin_name);
         locator_plugin_name = plugin_name;
         break;
       }
@@ -250,22 +249,12 @@ void sultan_driver::initialize(const datatools::properties& setup_) {
   // Access to a given plugin by name and type :
   if (geo_mgr.has_plugin(locator_plugin_name) &&
       geo_mgr.is_plugin_a<snemo::geometry::locator_plugin>(locator_plugin_name)) {
-    DT_LOG_NOTICE(get_logging_priority(),
-                  "Found locator plugin named '" << locator_plugin_name << "'");
     const snemo::geometry::locator_plugin& lp =
         geo_mgr.get_plugin<snemo::geometry::locator_plugin>(locator_plugin_name);
     // Set the calo cell locator :
     _calo_locator_ = &(lp.get_calo_locator());
     _xcalo_locator_ = &(lp.get_xcalo_locator());
     _gveto_locator_ = &(lp.get_gveto_locator());
-  }
-  if (get_logging_priority() >= datatools::logger::PRIO_DEBUG) {
-    DT_LOG_DEBUG(get_logging_priority(), "Calo locator :");
-    _calo_locator_->tree_dump(std::clog, "", "[debug]: ");
-    DT_LOG_DEBUG(get_logging_priority(), "X-calo locator :");
-    _xcalo_locator_->tree_dump(std::clog, "", "[debug]: ");
-    DT_LOG_DEBUG(get_logging_priority(), "G-veto locator :");
-    _gveto_locator_->tree_dump(std::clog, "", "[debug]: ");
   }
 
   // Geometry description :
@@ -363,7 +352,6 @@ int sultan_driver::_process_algo(
                 "Calibrated tracker hit can not be located inside detector !");
 
     if (!gg_locator.is_drift_cell_volume_in_current_module(gg_hit_gid)) {
-      DT_LOG_DEBUG(get_logging_priority(), "Current Geiger cell is not in the module!");
       continue;
     }
 
@@ -438,9 +426,6 @@ int sultan_driver::_process_algo(
     // Store mapping info between both data models :
     gg_hits_mapping[c.id()] = gg_handle;
 
-    DT_LOG_DEBUG(get_logging_priority(), "Geiger cell #"
-                                             << snemo_gg_hit.get_id() << " has been added "
-                                             << "to SULTAN input data with id number #" << c.id());
   }
 
   // Take into account calo hits:
@@ -527,15 +512,11 @@ int sultan_driver::_process_algo(
       // Store mapping info between both data models :
       calo_hits_mapping[c.id()] = calo_handle;
 
-      DT_LOG_DEBUG(get_logging_priority(),
-                   "Calo_cell #" << sncore_calo_hit.get_hit_id() << " has been added "
-                                 << "to SULTAN input data with id number #" << c.id());
     }
   }
 
   // Validate the input data :
   if (!_SULTAN_input_.check()) {
-    DT_LOG_ERROR(get_logging_priority(), "Invalid SULTAN input data !");
     return 1;
   }
 
@@ -554,7 +535,6 @@ int sultan_driver::_process_algo(
 
   // Analyse the Sultan output: scenarios made of sequences
   const std::vector<st::scenario>& tss = _SULTAN_output_.tracked_data.get_scenarios();
-  DT_LOG_DEBUG(get_logging_priority(), "Number of scenarios = " << tss.size());
 
   for (std::vector<st::scenario>::const_iterator iscenario = tss.begin(); iscenario != tss.end();
        ++iscenario) {
@@ -567,7 +547,6 @@ int sultan_driver::_process_algo(
         sdm::tracker_clustering_data::clusterizer_id_key(), SULTAN_ID);
 
     const std::vector<st::sequence>& the_sequences = iscenario->sequences();
-    DT_LOG_DEBUG(get_logging_priority(), "Number of sequences = " << the_sequences.size());
 
     for (std::vector<st::sequence>::const_iterator isequence = the_sequences.begin();
          isequence != the_sequences.end(); ++isequence) {
@@ -601,7 +580,6 @@ int sultan_driver::_process_algo(
         const st::node& a_node = a_sequence.nodes()[i];
         int hit_id = a_node.c().id();
         cluster_handle.grab().grab_hits().push_back(gg_hits_mapping[hit_id]);
-        DT_LOG_DEBUG(get_logging_priority(), "Add tracker hit with id #" << hit_id);
 
         const double xt = a_node.ep().x().value();
         const double yt = a_node.ep().y().value();

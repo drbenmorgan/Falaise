@@ -27,21 +27,17 @@ namespace snemo {
 
 namespace reconstruction {
 
-const std::string mock_tracker_clustering_driver::MTC_ID = "Mock";
-
 mock_tracker_clustering_driver::mock_tracker_clustering_driver()
-    : ::snemo::processing::base_tracker_clusterizer(mock_tracker_clustering_driver::MTC_ID) {
+    : ::snemo::processing::base_tracker_clusterizer() {
   _max_row_distance_ = 2;
   _max_layer_distance_ = 2;
   _max_sum_distance_ = 0;
-  return;
 }
 
 mock_tracker_clustering_driver::~mock_tracker_clustering_driver() {
   if (is_initialized()) {
     this->mock_tracker_clustering_driver::reset();
   }
-  return;
 }
 
 // Initialize the driver through configuration properties
@@ -71,7 +67,6 @@ void mock_tracker_clustering_driver::initialize(const datatools::properties& set
               "At least one maximum layer/row/sum distance must be non zero !");
 
   _set_initialized(true);
-  return;
 }
 
 // Reset the clusterizer
@@ -83,20 +78,7 @@ void mock_tracker_clustering_driver::reset() {
   _max_layer_distance_ = 2;
   _max_sum_distance_ = 0;
   this->snemo::processing::base_tracker_clusterizer::_reset();
-  return;
 }
-
-// int mock_tracker_clustering_driver::_prepare_process (const
-// base_tracker_clusterizer::hit_collection_type & gg_hits_,
-//                                                       const
-//                                                       base_tracker_clusterizer::calo_hit_collection_type
-//                                                       & calo_hits_,
-//                                                       snemo::datamodel::tracker_clustering_data &
-//                                                       clustering_)
-// {
-//   base_tracker_clusterizer::_prepare_process(gg_hits_, calo_hits_, clustering_);
-//   return 0;
-// }
 
 // Main clustering method
 int mock_tracker_clustering_driver::_process_algo(
@@ -108,8 +90,9 @@ int mock_tracker_clustering_driver::_process_algo(
   // Filling a unique tracker clustering solution:
   sdm::tracker_clustering_solution::handle_type htcs(new sdm::tracker_clustering_solution);
   sdm::tracker_clustering_solution& tc_solution = htcs.grab();
-  tc_solution.grab_auxiliaries().update_string(sdm::tracker_clustering_data::clusterizer_id_key(),
-                                               MTC_ID);
+  // DONT FING CARE
+  //tc_solution.grab_auxiliaries().update_string(sdm::tracker_clustering_data::clusterizer_id_key(),
+  //                                             MTC_ID);
 
   // GG hit loop :
   sdm::calibrated_tracker_hit previous_gg_hit = gg_hits_.begin()->get();
@@ -123,12 +106,10 @@ int mock_tracker_clustering_driver::_process_algo(
                 "Calibrated tracker hit can not be located inside detector !");
 
     if (!gg_locator.is_drift_cell_volume_in_current_module(gg_hit_gid)) {
-      DT_LOG_DEBUG(get_logging_priority(), "Current Geiger cell is not in the module!");
       continue;
     }
 
     if (!are_neighbours(a_gg_hit.get_geom_id(), previous_gg_hit.get_geom_id())) {
-      DT_LOG_TRACE(get_logging_priority(), "New track found !");
       // Create a tracker cluster handle:
       sdm::tracker_cluster::handle_type ht_cluster(new sdm::tracker_cluster);
       ht_cluster.grab().set_cluster_id(tc_solution.get_clusters().size());
@@ -137,8 +118,6 @@ int mock_tracker_clustering_driver::_process_algo(
 
     // Continue to fill the current track
     sdm::tracker_cluster::handle_type& cluster_handle = tc_solution.grab_clusters().back();
-    DT_LOG_TRACE(get_logging_priority(),
-                 "Current cluster id " << cluster_handle.get().get_cluster_id());
     cluster_handle.grab().grab_hits().push_back(*igg);
     // hits_ids.insert(a_gg_hit.get_hit_id());
     previous_gg_hit = a_gg_hit;
@@ -146,9 +125,6 @@ int mock_tracker_clustering_driver::_process_algo(
 
   // Set a unique Id to this solution:
   tc_solution.set_solution_id(clustering_.get_number_of_solutions());
-
-  if (get_logging_priority() >= datatools::logger::PRIO_TRACE)
-    tc_solution.tree_dump(std::clog, "Mock Tracker Clustering solution: ", "DEVEL: ");
 
   // Add the solution as the default one:
   clustering_.add_solution(htcs, true);

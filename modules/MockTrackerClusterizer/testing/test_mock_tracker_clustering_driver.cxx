@@ -79,7 +79,6 @@ int main(int argc_, char** argv_) {
 
     // The MTC driver:
     snemo::reconstruction::mock_tracker_clustering_driver MTC;
-    MTC.set_logging_priority(logging);
     MTC.set_geometry_manager(Geo);
     MTC.initialize(MTCconfig);
 

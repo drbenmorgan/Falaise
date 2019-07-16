@@ -85,7 +85,6 @@ int main(int argc_, char** argv_) {
 
     // The CAT driver:
     snemo::reconstruction::cat_driver CAT;
-    CAT.set_logging_priority(logging);
     CAT.set_geometry_manager(Geo);
     CAT.initialize(CATconfig);
 

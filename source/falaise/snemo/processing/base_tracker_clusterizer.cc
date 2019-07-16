@@ -24,22 +24,24 @@ namespace snemo {
 
 namespace processing {
 
-datatools::logger::priority base_tracker_clusterizer::get_logging_priority() const {
-  return _logging_priority;
+// Constructor
+base_tracker_clusterizer::base_tracker_clusterizer() {
+  _set_initialized(false);
+  _set_defaults();
 }
 
-void base_tracker_clusterizer::set_logging_priority(datatools::logger::priority priority_) {
-  _logging_priority = priority_;
-  return;
+base_tracker_clusterizer::~base_tracker_clusterizer() {
+  if (_initialized_) {
+    _reset();
+  }
 }
 
-const std::string &base_tracker_clusterizer::get_id() const { return _id_; }
+
 
 bool base_tracker_clusterizer::is_initialized() const { return _initialized_; }
 
 void base_tracker_clusterizer::_set_initialized(bool i_) {
   _initialized_ = i_;
-  return;
 }
 
 const snemo::geometry::gg_locator &base_tracker_clusterizer::get_gg_locator() const {
@@ -56,12 +58,6 @@ void base_tracker_clusterizer::_initialize(const datatools::properties &setup_) 
   // Extract the setup of the base tracker fitter :
   datatools::properties btc_setup;
   setup_.export_and_rename_starting_with(btc_setup, "BTC.", "");
-
-  // Logging priority:
-  datatools::logger::priority lp = datatools::logger::extract_logging_configuration(btc_setup);
-  DT_THROW_IF(lp == datatools::logger::PRIO_UNDEFINED, std::logic_error,
-              "Invalid logging priority level !");
-  set_logging_priority(lp);
 
   // Initialization stuff:
   const std::string &geo_setup_label = _geometry_manager_->get_setup_label();
@@ -81,11 +77,9 @@ void base_tracker_clusterizer::_initialize(const datatools::properties &setup_) 
   // If no locator plugin name is set, then search for the first one
   if (locator_plugin_name.empty()) {
     const geomtools::manager::plugins_dict_type &plugins = geo_mgr.get_plugins();
-    for (geomtools::manager::plugins_dict_type::const_iterator ip = plugins.begin();
-         ip != plugins.end(); ip++) {
-      const std::string &plugin_name = ip->first;
+    for (const auto& ip : plugins) {
+      const std::string& plugin_name = ip.first;
       if (geo_mgr.is_plugin_a<snemo::geometry::locator_plugin>(plugin_name)) {
-        DT_LOG_DEBUG(get_logging_priority(), "Find locator plugin with name = " << plugin_name);
         locator_plugin_name = plugin_name;
         break;
       }
@@ -94,16 +88,10 @@ void base_tracker_clusterizer::_initialize(const datatools::properties &setup_) 
   // Access to a given plugin by name and type :
   if (geo_mgr.has_plugin(locator_plugin_name) &&
       geo_mgr.is_plugin_a<snemo::geometry::locator_plugin>(locator_plugin_name)) {
-    DT_LOG_NOTICE(get_logging_priority(),
-                  "Found locator plugin named '" << locator_plugin_name << "'");
     const snemo::geometry::locator_plugin &locplug =
         geo_mgr.get_plugin<snemo::geometry::locator_plugin>(locator_plugin_name);
     // Set the Geiger cell locator :
     _gg_locator_ = &(locplug.get_gg_locator());
-  }
-  if (get_logging_priority() >= datatools::logger::PRIO_DEBUG) {
-    DT_LOG_DEBUG(get_logging_priority(), "Geiger locator :");
-    _gg_locator_->tree_dump(std::clog, "", "[debug]: ");
   }
 
   // Cell geom_id mask
@@ -114,7 +102,6 @@ void base_tracker_clusterizer::_initialize(const datatools::properties &setup_) 
   }
 
   // Default value for the TrackerPreClustering :
-  //_tpc_setup_data_.logging = get_logging_priority();
   _tpc_setup_data_.delayed_hit_cluster_time = 10.0 * CLHEP::microsecond;
   _tpc_setup_data_.cell_size = get_gg_locator().get_cell_diameter();
   _tpc_setup_data_.processing_prompt_hits = true;
@@ -147,15 +134,12 @@ void base_tracker_clusterizer::_initialize(const datatools::properties &setup_) 
 
   // Configure the algorithm :
   _pc_.initialize(_tpc_setup_data_);
-
-  return;
 }
 
 void base_tracker_clusterizer::_clear_working_arrays() {
   _ignored_hits_.clear();
   _prompt_time_clusters_.clear();
   _delayed_time_clusters_.clear();
-  return;
 }
 
 void base_tracker_clusterizer::_reset() {
@@ -163,19 +147,16 @@ void base_tracker_clusterizer::_reset() {
 
   // Clear working arrays:
   _clear_working_arrays();
-  //_tpc_setup_data_.reset();
   _pc_.reset();
   _cell_id_selector_.reset();
 
   // Reset configuration params:
   _set_defaults();
-  return;
 }
 
 void base_tracker_clusterizer::set_geometry_manager(const geomtools::manager &gmgr_) {
   DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
   _geometry_manager_ = &gmgr_;
-  return;
 }
 
 const geomtools::manager &base_tracker_clusterizer::get_geometry_manager() const {
@@ -186,25 +167,8 @@ const geomtools::manager &base_tracker_clusterizer::get_geometry_manager() const
 bool base_tracker_clusterizer::has_geometry_manager() const { return _geometry_manager_ != 0; }
 
 void base_tracker_clusterizer::_set_defaults() {
-  _logging_priority = datatools::logger::PRIO_WARNING;
   _geometry_manager_ = 0;
   _gg_locator_ = 0;
-  return;
-}
-
-// Constructor
-base_tracker_clusterizer::base_tracker_clusterizer(const std::string &id_) {
-  _id_ = id_;
-  _set_initialized(false);
-  _set_defaults();
-  return;
-}
-
-base_tracker_clusterizer::~base_tracker_clusterizer() {
-  if (_initialized_) {
-    _reset();
-  }
-  return;
 }
 
 void base_tracker_clusterizer::tree_dump(std::ostream &out_, const std::string &title_,
@@ -217,8 +181,6 @@ void base_tracker_clusterizer::tree_dump(std::ostream &out_, const std::string &
     out_ << indent_ << title_ << std::endl;
   }
 
-  out_ << indent << datatools::i_tree_dumpable::tag << "Logging          : '"
-       << datatools::logger::get_priority_label(_logging_priority) << "'" << std::endl;
   out_ << indent << datatools::i_tree_dumpable::tag << "Initialized      : " << is_initialized()
        << std::endl;
   out_ << indent << datatools::i_tree_dumpable::tag << "Geometry manager : " << _geometry_manager_
@@ -230,7 +192,6 @@ void base_tracker_clusterizer::tree_dump(std::ostream &out_, const std::string &
          << _geometry_manager_->get_setup_version() << "'" << std::endl;
   }
   out_ << indent << datatools::i_tree_dumpable::inherit_tag(inherit_) << "End." << std::endl;
-  return;
 }
 
 int base_tracker_clusterizer::_prepare_process(
@@ -241,21 +202,19 @@ int base_tracker_clusterizer::_prepare_process(
    * Locate cells *
    ****************/
   const base_tracker_clusterizer::hit_collection_type &gg_hits = gg_hits_;
-  DT_LOG_DEBUG(get_logging_priority(), "Number of Geiger hits = " << gg_hits.size());
   // Ensure the hits have registered X/Y position :
-  BOOST_FOREACH (const snemo::datamodel::calibrated_data::tracker_hit_handle_type &gg_handle,
-                 gg_hits) {
+  for (const auto& gg_handle : gg_hits) {
     if (!gg_handle.has_data()) continue;
-    const snemo::datamodel::calibrated_tracker_hit &sncore_gg_hit = gg_handle.get();
-    const geomtools::geom_id &gid = sncore_gg_hit.get_geom_id();
+    const geomtools::geom_id &gid = gg_handle->get_geom_id();
     // Check if X/Y position of the cell is recorded in the event :
-    if (!sncore_gg_hit.has_xy()) {
-      // if not, we do it :
+    if (!gg_handle->has_xy()) {
+      // if not, we do it (better, calibration should enforce setting...)
       geomtools::vector_3d hit_pos;
-      DT_LOG_DEBUG(get_logging_priority(), "Compute X/Y position of the hit cell with GID=" << gid);
       get_gg_locator().get_cell_position(gid, hit_pos);
       {
         // locally break the const-ness of the hit to store the X/Y doublet :
+        // Oh for...
+        const snemo::datamodel::calibrated_tracker_hit &sncore_gg_hit = gg_handle.get();
         snemo::datamodel::calibrated_tracker_hit &mutable_sncore_gg_hit =
             const_cast<snemo::datamodel::calibrated_tracker_hit &>(sncore_gg_hit);
         mutable_sncore_gg_hit.set_xy(hit_pos.x(), hit_pos.y());
@@ -273,14 +232,12 @@ int base_tracker_clusterizer::_prepare_process(
   std::map<const hit_type *, hit_handle_type> pre_cluster_mapping;
 
   // Fill the TrackerPreClustering input data model :
-  BOOST_FOREACH (const snemo::datamodel::calibrated_data::tracker_hit_handle_type &gg_handle,
-                 gg_hits) {
+  for(const auto& gg_handle : gg_hits) {
     if (!gg_handle.has_data()) continue;
     const snemo::datamodel::calibrated_tracker_hit &sncore_gg_hit = gg_handle.get();
     const geomtools::geom_id &gid = sncore_gg_hit.get_geom_id();
     // Drift cell selector
     if (_cell_id_selector_.is_initialized() && !_cell_id_selector_.match(gid)) {
-      DT_LOG_TRACE(get_logging_priority(), "Drift cell with geom id '" << gid << "' excluded!");
       continue;
     }
     idata.hits.push_back(&sncore_gg_hit);
@@ -294,7 +251,6 @@ int base_tracker_clusterizer::_prepare_process(
   // Invoke pre-clusterizing algo :
   int status = _pc_.process<hit_type>(idata, odata);
   if (status != TrackerPreClustering::pre_clusterizer::OK) {
-    DT_LOG_ERROR(get_logging_priority(), "Pre-clusterization has failed !");
     return 1;
   }
 
@@ -305,8 +261,6 @@ int base_tracker_clusterizer::_prepare_process(
   for (size_t ihit = 0; ihit < odata.ignored_hits.size(); ihit++) {
     _ignored_hits_.push_back(pre_cluster_mapping[odata.ignored_hits.at(ihit)]);
   }
-  DT_LOG_DEBUG(get_logging_priority(), _ignored_hits_.size()
-                                           << " clusters of hits have been ignored");
 
   // Prompt time clusters :
   _prompt_time_clusters_.reserve(odata.prompt_clusters.size());
@@ -322,8 +276,6 @@ int base_tracker_clusterizer::_prepare_process(
       hc.push_back(pre_cluster_mapping[odata.prompt_clusters[icluster].at(ihit)]);
     }
   }
-  DT_LOG_DEBUG(get_logging_priority(), _prompt_time_clusters_.size()
-                                           << " cluster of hits are prompt");
 
   // Delayed time clusters :
   _delayed_time_clusters_.reserve(odata.delayed_clusters.size());
@@ -339,29 +291,9 @@ int base_tracker_clusterizer::_prepare_process(
       hc.push_back(pre_cluster_mapping[odata.delayed_clusters[icluster].at(ihit)]);
     }
   }
-  DT_LOG_DEBUG(get_logging_priority(), _delayed_time_clusters_.size()
-                                           << " cluster of hits are delayed");
 
   return 0;
 }  // end of base_tracker_clusterizer::_prepare_process
-
-// void
-// base_tracker_clusterizer::_post_process_ignored_hits(snemo::datamodel::tracker_clustering_data &
-// clustering_)
-// {
-//   // Process ignored hits :
-//   for (size_t i = 0; i < _ignored_hits_.size(); i++) {
-//     const hit_handle_type & the_hit = _ignored_hits_[i];
-//     // All ignored hits are pushed as unclustered hits in
-//     // all clustering solutions :
-//     for (size_t j = 0; j < clustering_.get_solutions().size(); j++) {
-//       snemo::datamodel::tracker_clustering_solution & the_solution =
-//         clustering_.grab_solutions()[j].grab();
-//       the_solution.grab_unclustered_hits().push_back(the_hit);
-//     }
-//   }
-//   return;
-// }
 
 void base_tracker_clusterizer::_post_process_collect_unclustered_hits(
     const base_tracker_clusterizer::hit_collection_type &gg_hits_,
@@ -390,7 +322,6 @@ void base_tracker_clusterizer::_post_process_collect_unclustered_hits(
       }
     }  // hit loop
   }
-  return;
 }
 
 int base_tracker_clusterizer::_post_process(
@@ -408,7 +339,7 @@ int base_tracker_clusterizer::process(
   namespace sdm = snemo::datamodel;
   int status = 0;
   DT_THROW_IF(!is_initialized(), std::logic_error,
-              "Clusterizer '" << _id_ << "' is not initialized !");
+              "Clusterizer '" << this << "' is not initialized !");
   _clear_working_arrays();
 
   clustering_.invalidate_solutions();
@@ -417,7 +348,6 @@ int base_tracker_clusterizer::process(
   // what are candidate clusters of delayed hits :
   status = _prepare_process(gg_hits_, calo_hits_, clustering_);
   if (status != 0) {
-    DT_LOG_ERROR(get_logging_priority(), "Pre-processing based on time-coincidence has failed !");
     return status;
   }
 
@@ -435,14 +365,11 @@ int base_tracker_clusterizer::process(
       }
       status = _process_algo(prompt_clusters, calo_hits_, prompt_work_clusterings.back());
       if (status != 0) {
-        DT_LOG_ERROR(get_logging_priority(),
-                     "Processing of prompt hits by '" << _id_ << "' algorithm has failed !");
         return status;
       }
     }
 
     if (_prompt_time_clusters_.size() == 0) {
-      DT_LOG_DEBUG(get_logging_priority(), "No cluster of prompt hits to be processed !");
     } else if (_prompt_time_clusters_.size() == 1) {
       // In this case, only one clustering algorithm has been performed on
       // only one side of the tracking chamber or on both sides in a single shot:
@@ -517,8 +444,6 @@ int base_tracker_clusterizer::process(
         }
         status = _process_algo(delayed_cluster, calo_hits_, delayed_work_clusterings.back());
         if (status != 0) {
-          DT_LOG_ERROR(get_logging_priority(),
-                       "Processing of delayed hits by '" << _id_ << "' algorithm has failed !");
           return status;
         }
       }

@@ -150,11 +150,9 @@ void mock_tracker_clustering_module::initialize(const datatools::properties& set
   }
 
   // Clustering algorithm :
-  std::string algorithm_id = mock_tracker_clustering_driver::MTC_ID;
   _driver_.reset(new mock_tracker_clustering_driver);
   DT_THROW_IF(!_driver_, std::logic_error,
-              "Module '" << get_name() << "' could not instantiate the '" << algorithm_id
-                         << "' tracker clusterizer algorithm !");
+              "Module '" << get_name() << "' could not instantiate the tracker clusterizer algorithm !");
 
   // Plug the geometry manager :
   _driver_.get()->set_geometry_manager(get_geometry_manager());

@@ -76,14 +76,14 @@ class base_tracker_clusterizer {
   typedef snemo::datamodel::calibrated_data::calorimeter_hit_collection_type
       calo_hit_collection_type;
 
-  /// Set logging priority level
-  void set_logging_priority(datatools::logger::priority logging_priority_);
+  /// Default constructor
+  base_tracker_clusterizer();
 
-  /// Get logging priority
-  datatools::logger::priority get_logging_priority() const;
+  /// Destructor
+  virtual ~base_tracker_clusterizer();
 
   /// Return the clusterizer ID
-  const std::string &get_id() const;
+  //const std::string &get_id() const;
 
   /// Return the tracker locator
   const snemo::geometry::gg_locator &get_gg_locator() const;
@@ -99,12 +99,6 @@ class base_tracker_clusterizer {
 
   /// Check if theclusterizer is initialized
   bool is_initialized() const;
-
-  /// Default constructor
-  base_tracker_clusterizer(const std::string &id_ = "anonymous");
-
-  /// Destructor
-  virtual ~base_tracker_clusterizer();
 
   /// Main clustering process
   int process(const base_tracker_clusterizer::hit_collection_type &gg_hits_,
@@ -164,12 +158,8 @@ class base_tracker_clusterizer {
       const base_tracker_clusterizer::hit_collection_type &gg_hits_,
       snemo::datamodel::tracker_clustering_data &clustering_);
 
- protected:
-  datatools::logger::priority _logging_priority;  /// Logging priority
-
  private:
   bool _initialized_;                            //!< Initialization status
-  std::string _id_;                              //!< Identifier of the clusterizer algorithm
   const geomtools::manager *_geometry_manager_;  //!< The SuperNEMO geometry manager
   const snemo::geometry::gg_locator
       *_gg_locator_;  //!< Locator dedicated to the SuperNEMO tracking chamber

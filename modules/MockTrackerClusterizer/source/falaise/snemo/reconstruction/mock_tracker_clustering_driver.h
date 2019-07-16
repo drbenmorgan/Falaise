@@ -52,8 +52,6 @@ namespace reconstruction {
 /// Driver for the MockTrackerClusterizer clustering algorithm
 class mock_tracker_clustering_driver : public ::snemo::processing::base_tracker_clusterizer {
  public:
-  static const std::string MTC_ID;  /// The MockTrackerClusterizer string identifier
-
   /// Default constructor
   mock_tracker_clustering_driver();
 
@@ -66,21 +64,10 @@ class mock_tracker_clustering_driver : public ::snemo::processing::base_tracker_
   /// Reset the clusterizer
   virtual void reset();
 
-  // /// Prepare cluster for processing
-  // virtual int _prepare_process(const base_tracker_clusterizer::hit_collection_type & gg_hits_,
-  //                              const base_tracker_clusterizer::calo_hit_collection_type &
-  //                              calo_hits_, snemo::datamodel::tracker_clustering_data &
-  //                              clustering_);
-
   /// Main clustering method
   virtual int _process_algo(const base_tracker_clusterizer::hit_collection_type& gg_hits_,
                             const base_tracker_clusterizer::calo_hit_collection_type& calo_hits_,
                             snemo::datamodel::tracker_clustering_data& clustering_);
-
-  // /// Post-processing
-  // virtual int _post_process(const base_tracker_clusterizer::hit_collection_type & gg_hits_,
-  //                           const base_tracker_clusterizer::calo_hit_collection_type &
-  //                           calo_hits_, snemo::datamodel::tracker_clustering_data & clustering_);
 
   /// Check if 2 tracker cells are neighbours
   bool are_neighbours(const geomtools::geom_id& tracker_hit_id1_,

@@ -94,7 +94,6 @@ int main(int argc_, char** argv_) {
 
     // The SULTAN driver:
     snemo::reconstruction::sultan_driver SULTAN;
-    SULTAN.set_logging_priority(logging);
     SULTAN.set_geometry_manager(Geo);
     SULTAN.initialize(SULTANconfig);
 

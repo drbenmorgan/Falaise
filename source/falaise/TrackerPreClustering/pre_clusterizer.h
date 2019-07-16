@@ -134,17 +134,16 @@ template <class Hit>
 struct compare_tracker_hit_ptr_by_delayed_time {
  public:
   /// Main comparison method(less than) : require non null handles and non-Nan delayed times
-  bool operator()(const Hit* hit_ptr_i_, const Hit* hit_ptr_j_) const {
-    if (!hit_ptr_i_->has_delayed_time()) return false;
-    if (!hit_ptr_j_->has_delayed_time()) return false;
-    return hit_ptr_i_->get_delayed_time() < hit_ptr_j_->get_delayed_time();
+  bool operator()(const Hit* lhs, const Hit* rhs) const {
+    if (!lhs->has_delayed_time()) return false;
+    if (!rhs->has_delayed_time()) return false;
+    return lhs->get_delayed_time() < rhs->get_delayed_time();
   }
 };
 
 template <typename Hit>
 int pre_clusterizer::process(const input_data<Hit> &input_data_, output_data<Hit> &output_data_) {
-  typedef Hit hit_type;
-  typedef std::vector<const hit_type *> hit_collection_type;
+  typedef std::vector<const Hit*> hit_collection_type;
 
   // Collection of hit per half-chamber :
   static hit_collection_type prompt_hits[2];
@@ -154,12 +153,8 @@ int pre_clusterizer::process(const input_data<Hit> &input_data_, output_data<Hit
   delayed_hits[0].clear();
   delayed_hits[1].clear();
 
-  for (const hit_type *hitref : input_data_.hits) {
-    if (hitref->is_sterile()) {
-      output_data_.ignored_hits.push_back(hitref);
-      continue;
-    }
-    if (hitref->is_noisy()) {
+  for (const Hit* hitref : input_data_.hits) {
+    if (hitref->is_sterile() || hitref->is_noisy()) {
       output_data_.ignored_hits.push_back(hitref);
       continue;
     }
@@ -225,7 +220,7 @@ int pre_clusterizer::process(const input_data<Hit> &input_data_, output_data<Hit
       }
       for (unsigned int i = 0; i < prompt_hits[side].size(); i++) {
         // Traverse the prompt hits in this side :
-        const hit_type *hit_ref = prompt_hits[side].at(i);
+        const Hit* hit_ref = prompt_hits[side].at(i);
         if (new_prompt_cluster == 0) {
           hit_collection_type tmp;
           output_data_.prompt_clusters.push_back(tmp);
@@ -246,7 +241,7 @@ int pre_clusterizer::process(const input_data<Hit> &input_data_, output_data<Hit
     }
     for (unsigned int side = 0; side < max_side; side++) {
       // Sort the collection of delayed hits by delayed time :
-      compare_tracker_hit_ptr_by_delayed_time<hit_type> cthpbdt;
+      compare_tracker_hit_ptr_by_delayed_time<Hit> cthpbdt;
       std::sort(delayed_hits[side].begin(), delayed_hits[side].end(), cthpbdt);
       if (delayed_hits[side].size() < 2) {
         if (delayed_hits[side].size() == 1) {
@@ -256,11 +251,11 @@ int pre_clusterizer::process(const input_data<Hit> &input_data_, output_data<Hit
       }
       // Pick up the first time-orderer delayed hit on this side of the source foil as
       // the start of a forseen cluster :
-      const hit_type *hit_ref_1 = delayed_hits[side].at(0);
+      const Hit* hit_ref_1 = delayed_hits[side].at(0);
       hit_collection_type *new_cluster = 0;
       for (unsigned int i = 1; i < delayed_hits[side].size(); i++) {
         // Traverse the other delayed hits in this side :
-        const hit_type *hit_ref_2 = delayed_hits[side].at(i);
+        const Hit* hit_ref_2 = delayed_hits[side].at(i);
         // Check if the delayed time falls in a time window of given width and starting from
         // the time reference given by the 'first' hit :
         if (hit_ref_2->get_delayed_time() >
