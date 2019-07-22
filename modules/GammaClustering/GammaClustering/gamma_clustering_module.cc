@@ -35,8 +35,8 @@
 #include "falaise/snemo/datamodels/particle_track_data.h"
 #include "falaise/snemo/processing/module.h"
 
-#include "falaise/snemo/services/geometry.h"
 #include "falaise/snemo/services/service_handle.h"
+#include "falaise/snemo/services/geometry.h"
 
 #include "GammaClustering/gamma_clustering_driver.h"
 
