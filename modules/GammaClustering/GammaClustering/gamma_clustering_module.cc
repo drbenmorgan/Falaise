@@ -67,8 +67,8 @@ gamma_clustering_module::gamma_clustering_module(const falaise::config::property
                                                  datatools::service_manager& services)
     : geoSVC_{services},
       PTD_tag_{ps.get<std::string>(
-          "PTD_label", snemo::datamodel::data_info::default_particle_track_data_label())},
-      algo_{} {
+          "PTD_label", snemo::datamodel::data_info::default_particle_track_data_label())}
+      {
   algo_.set_geometry_manager(*(geoSVC_.operator->()));
   algo_.initialize(ps);
 }

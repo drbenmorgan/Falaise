@@ -93,8 +93,8 @@ class gamma_clustering_driver : public ::snemo::processing::base_gamma_builder {
                                     cluster_collection_type& clusters_) const;
 
   /// Associate clusters given Time-Of-Flight calculation
-  virtual void _get_tof_association(const cluster_collection_type& from_clusters_,
-                                    cluster_collection_type& to_clusters_) const;
+  virtual void _get_tof_association(const cluster_collection_type& the_reconstructed_clusters,
+                                    cluster_collection_type& the_reconstructed_gammas) const;
 
   /// Return Time-Of-Flight probability between 2 calorimeter hits
   virtual double _get_tof_probability(
