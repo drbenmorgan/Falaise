@@ -73,7 +73,7 @@ void mock_tracker_s2c_module::initialize(const datatools::properties& ps,
     cdOutputTag = ps.fetch_string("CD_label");
   }
 
-  geoServiceTag = snemo::processing::service_info::default_geometry_service_label();
+  geoServiceTag = snemo::service_info::default_geometry_service_label();
   if (ps.has_key("Geo_label")) {
     geoServiceTag = ps.fetch_string("Geo_label");
   }

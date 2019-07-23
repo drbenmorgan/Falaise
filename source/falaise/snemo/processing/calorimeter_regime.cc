@@ -16,42 +16,39 @@
 #include <mygsl/rng.h>
 
 namespace {
-  const double fwhm2sig{1.0 / (2 * sqrt(2 * log(2.0)))}; 
+const double fwhm2sig{1.0 / (2 * sqrt(2 * log(2.0)))};
 }
 
 namespace snemo {
 
 namespace processing {
 
-CalorimeterModel::CalorimeterModel(datatools::properties const& config) : CalorimeterModel::CalorimeterModel() {
-  // This is not ideal, but best we can do for now...
-  const double energy_unit = CLHEP::keV;
-  const double time_unit = CLHEP::ns;
-
-  if (config.has_key("energy.resolution")) {
-    _resolution_ = config_.fetch_real_with_explicit_dimension("energy.resolution", "fraction");
+CalorimeterModel::CalorimeterModel(datatools::properties const& ps)
+    : CalorimeterModel::CalorimeterModel() {
+  if (ps.has_key("energy.resolution")) {
+    energyResolution = ps.fetch_real_with_explicit_dimension("energy.resolution", "fraction");
   }
 
-  if (config.has_key("energy.high_threshold")) {
-    _high_threshold_ = config_.fetch_real_with_explicit_dimension("energy.high_threshold", "energy");
+  if (ps.has_key("energy.high_threshold")) {
+    highEnergyThreshold = ps.fetch_real_with_explicit_dimension("energy.high_threshold", "energy");
   }
 
-  if (config.has_key("energy.low_threshold")) {
-    _low_threshold_ = config_.fetch_real_with_explicit_dimension("energy.low_threshold", "energy");
+  if (ps.has_key("energy.low_threshold")) {
+    lowEnergyThreshold = ps.fetch_real_with_explicit_dimension("energy.low_threshold", "energy");
   }
 
   // Alpha quenching fit parameters
   const std::string key_name = "alpha_quenching_parameters";
-  if (config.has_key(key_name)) {
-    _alpha_quenching_0_ = config_.fetch_real_vector(key_name, 0);
-    _alpha_quenching_1_ = config_.fetch_real_vector(key_name, 1);
-    _alpha_quenching_2_ = config_.fetch_real_vector(key_name, 2);
+  if (ps.has_key(key_name)) {
+    alphaQuenching_0 = ps.fetch_real_vector(key_name, 0);
+    alphaQuenching_1 = ps.fetch_real_vector(key_name, 1);
+    alphaQuenching_2 = ps.fetch_real_vector(key_name, 2);
   }
 
   // Scintillator relaxation time for time resolution
-  if (config_.has_key("scintillator_relaxation_time")) {
-    _scintillator_relaxation_time_
-      = config.fetch_real_with_explicit_dimension("scintillator_relaxation_time", "time");
+  if (ps.has_key("scintillator_relaxation_time")) {
+    relaxationTime =
+        ps.fetch_real_with_explicit_dimension("scintillator_relaxation_time", "time");
   }
 }
 
@@ -81,13 +78,14 @@ double CalorimeterModel::quench_alpha_energy(const double energy_) const {
 
   const double mod_energy = 1.0 / (alphaQuenching_1 * energy + 1.0);
   const double quenching_factor =
-      -alphaQuenching_0 * (std::pow(mod_energy, alphaQuenching_2) - std::pow(mod_energy, alphaQuenching_2 / 2.0));
+      -alphaQuenching_0 *
+      (std::pow(mod_energy, alphaQuenching_2) - std::pow(mod_energy, alphaQuenching_2 / 2.0));
 
   return energy / quenching_factor;
 }
 
 double CalorimeterModel::randomize_time(mygsl::rng& ran_, const double time_,
-                                          const double energy_) const {
+                                        const double energy_) const {
   const double sigma_time = get_sigma_time(energy_);
   // Negative time are physical since input time is relative
   return ran_.gaussian(time_, sigma_time);
@@ -237,4 +235,3 @@ DOCD_CLASS_IMPLEMENT_LOAD_END()  // Closing macro for implementation
 // Registration macro for class 'snemo::processing::CalorimeterModel' :
 DOCD_CLASS_SYSTEM_REGISTRATION(snemo::processing::CalorimeterModel,
                                "snemo::processing::CalorimeterModel")
-

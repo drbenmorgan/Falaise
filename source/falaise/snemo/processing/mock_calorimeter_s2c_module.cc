@@ -43,46 +43,46 @@ namespace processing {
 DPP_MODULE_REGISTRATION_IMPLEMENT(mock_calorimeter_s2c_module,
                                   "snemo::processing::mock_calorimeter_s2c_module")
 
-void mock_calorimeter_s2c_module::initialize(const datatools::properties& config,
+void mock_calorimeter_s2c_module::initialize(const datatools::properties& ps,
                                              datatools::service_manager& /*service_manager_*/,
                                              dpp::module_handle_dict_type& /* module_dict_ */) {
   DT_THROW_IF(is_initialized(), std::logic_error,
               "Module '" << get_name() << "' is already initialized ! ");
 
-  this->base_module::_common_initialize(config);
+  this->base_module::_common_initialize(ps);
 
   sdInputTag = snemo::datamodel::data_info::default_simulated_data_label();
-  if (config.has_key("SD_label")) {
-    sdInputTag = config.fetch_string("SD_label");
+  if (ps.has_key("SD_label")) {
+    sdInputTag = ps.fetch_string("SD_label");
   }
 
   cdOutputTag = snemo::datamodel::data_info::default_calibrated_data_label();
-  if (config.has_key("CD_label")) {
-    cdOutputTag = config.fetch_string("CD_label");
+  if (ps.has_key("CD_label")) {
+    cdOutputTag = ps.fetch_string("CD_label");
   }
 
   int random_seed = 12345;
-  if (config.has_key("random.seed")) {
-    random_seed = config.fetch_integer("random.seed");
+  if (ps.has_key("random.seed")) {
+    random_seed = ps.fetch_integer("random.seed");
   }
   std::string random_id = "mt19937";
-  if (config.has_key("random.id")) {
-    random_id = config.fetch_string("random.id");
+  if (ps.has_key("random.id")) {
+    random_id = ps.fetch_string("random.id");
   }
   // Initialize the embedded random number generator:
   RNG_.init(random_id, random_seed);
 
   // Get the calorimeter categories:
   caloTypes = {"calo", "xcalo", "gveto"};
-  if (config.has_key("hit_categories")) {
-    config.fetch("hit_categories", caloTypes);
+  if (ps.has_key("hit_categories")) {
+    ps.fetch("hit_categories", caloTypes);
   }
 
   // Initialize the calorimeter regime utility:
   caloModels = {};
   for (const std::string& calo : caloTypes) {
     datatools::properties caloModelConfig;
-    config.export_and_rename_starting_with(caloModelConfig, calo + ".", "");
+    ps.export_and_rename_starting_with(caloModelConfig, calo + ".", "");
 
     CalorimeterModel model {caloModelConfig};
     caloModels.emplace(std::make_pair(calo, model));
@@ -90,12 +90,12 @@ void mock_calorimeter_s2c_module::initialize(const datatools::properties& config
 
   // Setup trigger time
   timeWindow = 100 * CLHEP::ns;
-  if (config.has_key("cluster_time_width")) {
-    timeWindow = setup_.fetch_real_with_explicit_dimension("cluster_time_width", "time");
+  if (ps.has_key("cluster_time_width")) {
+    timeWindow = ps.fetch_real_with_explicit_dimension("cluster_time_width", "time");
   }
 
   // 2012-09-17 FM : support reference to the MC true hit ID
-  assocMCHitId = config.has_flag("store_mc_hit_id");
+  assocMCHitId = ps.has_flag("store_mc_hit_id");
 
   // Get the alpha quenching (always)
   quenchAlphas = true;
