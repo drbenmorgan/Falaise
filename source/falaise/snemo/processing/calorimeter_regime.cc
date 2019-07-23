@@ -10,10 +10,9 @@
 
 // Third party:
 // - Bayeux/datatools:
-#include <datatools/clhep_units.h>
-#include <datatools/properties.h>
+#include <bayeux/datatools/exception.h>
+#include <bayeux/datatools/clhep_units.h>
 // - Bayeux/mygsl:
-#include <mygsl/rng.h>
 
 namespace {
 const double fwhm2sig{1.0 / (2 * sqrt(2 * log(2.0)))};
@@ -23,36 +22,36 @@ namespace snemo {
 
 namespace processing {
 
-CalorimeterModel::CalorimeterModel(datatools::properties const& ps)
+CalorimeterModel::CalorimeterModel(falaise::config::property_set const& ps)
     : CalorimeterModel::CalorimeterModel() {
   if (ps.has_key("energy.resolution")) {
-    energyResolution = ps.fetch_real_with_explicit_dimension("energy.resolution", "fraction");
+    energyResolution = ps.get<falaise::config::fraction_t>("energy.resolution")();
   }
 
   if (ps.has_key("energy.high_threshold")) {
-    highEnergyThreshold = ps.fetch_real_with_explicit_dimension("energy.high_threshold", "energy");
+    highEnergyThreshold = ps.get<falaise::config::energy_t>("energy.high_threshold")();
   }
 
   if (ps.has_key("energy.low_threshold")) {
-    lowEnergyThreshold = ps.fetch_real_with_explicit_dimension("energy.low_threshold", "energy");
+    lowEnergyThreshold = ps.get<falaise::config::energy_t>("energy.low_threshold")();
   }
 
-  // Alpha quenching fit parameters
   const std::string key_name = "alpha_quenching_parameters";
   if (ps.has_key(key_name)) {
-    alphaQuenching_0 = ps.fetch_real_vector(key_name, 0);
-    alphaQuenching_1 = ps.fetch_real_vector(key_name, 1);
-    alphaQuenching_2 = ps.fetch_real_vector(key_name, 2);
+    auto tmp = ps.get<std::vector<double>>(key_name);
+    DT_THROW_IF(tmp.size() != 3, std::domain_error, "alpha_quenching_parameters must be array of size 3");
+    alphaQuenching_0 = tmp[0];
+    alphaQuenching_1 = tmp[1];
+    alphaQuenching_2 = tmp[2];
   }
 
   // Scintillator relaxation time for time resolution
   if (ps.has_key("scintillator_relaxation_time")) {
-    relaxationTime =
-        ps.fetch_real_with_explicit_dimension("scintillator_relaxation_time", "time");
+    relaxationTime = ps.get<falaise::config::time_t>("scintillator_relaxation_time")();
   }
 }
 
-double CalorimeterModel::randomize_energy(mygsl::rng& ran_, const double energy_) const {
+double CalorimeterModel::randomize_energy(mygsl::rng& rng, const double energy) const {
   // 2015-01-08 XG: Implement a better energy calibration based on Poisson
   // statistics for the number of photons inside scintillator. This
   // technique should be more accurate for low energy deposit.
@@ -64,31 +63,32 @@ double CalorimeterModel::randomize_energy(mygsl::rng& ran_, const double energy_
 
   // 2016-06-01 XG: Get back to gaussian fluctuation to avoid fixed number
   // of photon-electron due to Poisson distribution
-  const double sigma_energy = get_sigma_energy(energy_);
-  const double spread_energy = ran_.gaussian(energy_, sigma_energy);
+  const double sigma_energy = get_sigma_energy(energy);
+  const double spread_energy = rng.gaussian(energy, sigma_energy);
   return (spread_energy < 0.0 ? 0.0 : spread_energy);
 }
 
-double CalorimeterModel::get_sigma_energy(const double energy_) const {
-  return energyResolution * fwhm2sig * sqrt(energy_ / CLHEP::MeV);
+double CalorimeterModel::get_sigma_energy(const double energy) const {
+  return energyResolution * fwhm2sig * sqrt(energy / CLHEP::MeV);
 }
 
-double CalorimeterModel::quench_alpha_energy(const double energy_) const {
-  const double energy = energy_ * CLHEP::MeV;
 
-  const double mod_energy = 1.0 / (alphaQuenching_1 * energy + 1.0);
+double CalorimeterModel::quench_alpha_energy(const double energy) const {
+  const double raw_energy = energy * CLHEP::MeV;
+
+  const double mod_energy = 1.0 / (alphaQuenching_1 * raw_energy + 1.0);
   const double quenching_factor =
       -alphaQuenching_0 *
       (std::pow(mod_energy, alphaQuenching_2) - std::pow(mod_energy, alphaQuenching_2 / 2.0));
 
-  return energy / quenching_factor;
+  return raw_energy / quenching_factor;
 }
 
-double CalorimeterModel::randomize_time(mygsl::rng& ran_, const double time_,
-                                        const double energy_) const {
-  const double sigma_time = get_sigma_time(energy_);
+double CalorimeterModel::randomize_time(mygsl::rng& rng, const double time,
+                                        const double energy) const {
+  const double sigma_time = get_sigma_time(energy);
   // Negative time are physical since input time is relative
-  return ran_.gaussian(time_, sigma_time);
+  return rng.gaussian(time, sigma_time);
 }
 
 double CalorimeterModel::get_sigma_time(const double energy) const {
@@ -98,12 +98,12 @@ double CalorimeterModel::get_sigma_time(const double energy) const {
   return relaxationTime * sigma_e / sqrt(energy / CLHEP::MeV);
 }
 
-bool CalorimeterModel::is_high_threshold(const double energy_) const {
-  return (energy_ >= highEnergyThreshold);
+bool CalorimeterModel::is_high_threshold(const double energy) const {
+  return (energy >= highEnergyThreshold);
 }
 
-bool CalorimeterModel::is_low_threshold(const double energy_) const {
-  return (energy_ >= lowEnergyThreshold);
+bool CalorimeterModel::is_low_threshold(const double energy) const {
+  return (energy >= lowEnergyThreshold);
 }
 
 }  // end of namespace processing

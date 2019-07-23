@@ -23,15 +23,11 @@
 
 // Third party
 // - Bayeux/datatools
+#include <bayeux/mygsl/rng.h>
 #include <CLHEP/Units/SystemOfUnits.h>
 
-namespace datatools {
-class properties;
-}
+#include "falaise/config/property_set.h"
 
-namespace mygsl {
-class rng;
-}
 
 namespace snemo {
 
@@ -42,28 +38,28 @@ namespace processing {
 class CalorimeterModel {
  public:
   CalorimeterModel() = default;
-  explicit CalorimeterModel(datatools::properties const& config);
+  explicit CalorimeterModel(falaise::config::property_set const& ps);
 
   /// Randomize the measured energy value given the true energy
-  double randomize_energy(mygsl::rng& rng_, const double energy_) const;
+  double randomize_energy(mygsl::rng& rng, const double energy) const;
 
   /// Return the error on energy
-  double get_sigma_energy(const double energy_) const;
+  double get_sigma_energy(const double energy) const;
 
   /// Compute the effective quenched energy for alpha particle
-  double quench_alpha_energy(const double energy_) const;
+  double quench_alpha_energy(const double energy) const;
 
   /// Randomize the measured time value given the true time and energy
-  double randomize_time(mygsl::rng& ran_, const double time_, const double energy_) const;
+  double randomize_time(mygsl::rng& rng, const double time, const double energy) const;
 
   /// Return the error on time
-  double get_sigma_time(const double energy_) const;
+  double get_sigma_time(const double energy) const;
 
   /// Check if a given energy passes the high threshold
-  bool is_high_threshold(const double energy_) const;
+  bool is_high_threshold(const double energy) const;
 
   /// Check if a given energy passes the low threshold
-  bool is_low_threshold(const double energy_) const;
+  bool is_low_threshold(const double energy) const;
 
  private:
   double highEnergyThreshold {150.*CLHEP::keV}; //!< High energy threshold

@@ -50,50 +50,44 @@ namespace processing {
 class mock_calorimeter_s2c_module : public dpp::base_module {
  public:
   // Because dpp::base_module is insane
-  virtual ~mock_calorimeter_s2c_module() {this->reset();}
+  virtual ~mock_calorimeter_s2c_module() { this->reset(); }
 
   /// Initialization
-  virtual void initialize(const datatools::properties& setup_,
-                          datatools::service_manager& service_manager_,
-                          dpp::module_handle_dict_type& module_dict_);
+  virtual void initialize(const datatools::properties& ps,
+                          datatools::service_manager& /*unused*/,
+                          dpp::module_handle_dict_type& /*unused*/);
 
   /// Reset
   virtual void reset();
 
   /// Data record processing
-  virtual process_status process(datatools::things& data_);
-
+  virtual process_status process(datatools::things& event);
 
  private:
   /// Digitize calorimeter hits
-  void _digitizeHits(
-      const mctools::simulated_data& simulated_data_,
-      snemo::datamodel::calibrated_data::calorimeter_hit_collection_type&
-          calibrated_calorimeter_hits_);
+  void _digitizeHits(const mctools::simulated_data& simdata,
+                     snemo::datamodel::calibrated_data::calorimeter_hit_collection_type& calohits);
 
   /// Calibrate calorimeter hits (energy/time resolution spread)
-  void _calibrateHits(
-      snemo::datamodel::calibrated_data::calorimeter_hit_collection_type& calorimeter_hits_);
+  void _calibrateHits(snemo::datamodel::calibrated_data::calorimeter_hit_collection_type& calohits);
 
   /// Apply basic trigger filter
-  void _triggerHits(
-      snemo::datamodel::calibrated_data::calorimeter_hit_collection_type& calorimeter_hits_);
+  void _triggerHits(snemo::datamodel::calibrated_data::calorimeter_hit_collection_type& calohits);
 
   /// Main process function
-  void _process(const mctools::simulated_data& simulated_data_,
-                snemo::datamodel::calibrated_data::calorimeter_hit_collection_type&
-                    calibrated_calorimeter_hits_);
+  void _process(const mctools::simulated_data& simdata,
+                snemo::datamodel::calibrated_data::calorimeter_hit_collection_type& calohits);
 
  private:
-  mygsl::rng RNG_ {};                                //!< PRN generator
-  std::vector<std::string> caloTypes {};          //!< Calorimeter hit categories
+  mygsl::rng RNG_{};                     //!< PRN generator
+  std::vector<std::string> caloTypes{};  //!< Calorimeter hit categories
   typedef std::map<std::string, CalorimeterModel> CaloModelMap;
-  CaloModelMap caloModels {};  //!< Calorimeter regime tools
-  std::string sdInputTag {};                             //!< The label of the simulated data bank
-  std::string cdOutputTag {};                             //!< The label of the calibrated data bank
-  double timeWindow {100.*CLHEP::ns};                        //!< Time width of a calo cluster
-  bool quenchAlphas {true};                             //!< Flag to (dis)activate the alpha quenching
-  bool assocMCHitId {false};                             //!< The flag to reference MC true hit
+  CaloModelMap caloModels{};            //!< Calorimeter regime tools
+  std::string sdInputTag{};             //!< The label of the simulated data bank
+  std::string cdOutputTag{};            //!< The label of the calibrated data bank
+  double timeWindow{100. * CLHEP::ns};  //!< Time width of a calo cluster
+  bool quenchAlphas{true};              //!< Flag to (dis)activate the alpha quenching
+  bool assocMCHitId{false};             //!< The flag to reference MC true hit
 
   // Macro to automate the registration of the module :
   DPP_MODULE_REGISTRATION_INTERFACE(mock_calorimeter_s2c_module)
