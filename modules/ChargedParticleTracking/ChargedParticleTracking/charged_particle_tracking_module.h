@@ -41,9 +41,9 @@
 // - Bayeux/dpp:
 #include <dpp/base_module.h>
 
-namespace geomtools {
-class manager;
-}
+#include "falaise/snemo/services/service_handle.h"
+#include "falaise/snemo/services/geometry.h"
+
 
 namespace snemo {
 
@@ -63,12 +63,6 @@ class alpha_finder_driver;
 /// \brief Charged particle tracking module
 class charged_particle_tracking_module : public dpp::base_module {
  public:
-  /// Setting Geometry manager
-  void set_geometry_manager(const geomtools::manager& gmgr_);
-
-  /// Getting Geometry manager
-  const geomtools::manager& get_geometry_manager() const;
-
   /// Constructor
   charged_particle_tracking_module(datatools::logger::priority = datatools::logger::PRIO_FATAL);
 
@@ -100,7 +94,7 @@ class charged_particle_tracking_module : public dpp::base_module {
   void _set_defaults();
 
  private:
-  const geomtools::manager* _geometry_manager_;  //!< The geometry manager
+  snemo::service_handle<snemo::geometry_svc> _geometry_manager_;  //!< The geometry manager
 
   std::string _CD_label_;   //!< The label of the calibrated data bank
   std::string _TTD_label_;  //!< The label of the tracker trajectory data bank
