@@ -72,17 +72,18 @@ class alpha_finder_driver {
   /// Return driver id
   static const std::string& get_id();
 
+  // Defaults are probably o.k. since pointers aren't owned
+  /// Constructor:
+  //alpha_finder_driver();
+
+  /// Destructor:
+  //~alpha_finder_driver();
+
   /// Setting initialization flag
   void set_initialized(const bool initialized_);
 
   /// Getting initialization flag
   bool is_initialized() const;
-
-  /// Setting logging priority
-  void set_logging_priority(const datatools::logger::priority priority_);
-
-  /// Getting logging priority
-  datatools::logger::priority get_logging_priority() const;
 
   /// Check the geometry manager
   bool has_geometry_manager() const;
@@ -92,12 +93,6 @@ class alpha_finder_driver {
 
   /// Return a non-mutable reference to the geometry manager
   const geomtools::manager& get_geometry_manager() const;
-
-  /// Constructor:
-  alpha_finder_driver();
-
-  /// Destructor:
-  ~alpha_finder_driver();
 
   /// Initialize the driver through configuration properties
   void initialize(const datatools::properties& setup_);
@@ -117,6 +112,12 @@ class alpha_finder_driver {
   void _set_defaults();
 
  private:
+  /// Setting logging priority
+  void set_logging_priority(const datatools::logger::priority priority_);
+
+  /// Getting logging priority
+  datatools::logger::priority get_logging_priority() const;
+
   /// Find the unfitted cluster (cluster with 1 or 2 Geiger hits)
   void _find_delayed_unfitted_cluster_(
       const snemo::datamodel::tracker_trajectory_data& tracker_trajectory_data_,
@@ -145,16 +146,16 @@ class alpha_finder_driver {
       snemo::datamodel::particle_track_data& particle_track_data_);
 
  private:
-  bool _initialized_;                                       //<! Initialize flag
-  datatools::logger::priority _logging_priority_;           //<! Logging flag
-  const geomtools::manager* _geometry_manager_;             //<! The SuperNEMO geometry manager
-  const snemo::geometry::locator_plugin* _locator_plugin_;  //!< The SuperNEMO locator plugin
+  bool _initialized_ = false;                                       //<! Initialize flag
+  datatools::logger::priority _logging_priority_ = datatools::logger::PRIO_WARNING;           //<! Logging flag
+  const geomtools::manager* _geometry_manager_ = nullptr;             //<! The SuperNEMO geometry manager
+  const snemo::geometry::locator_plugin* _locator_plugin_ = nullptr;  //!< The SuperNEMO locator plugin
 
-  double _minimal_delayed_time_;  //!< Minimal Geiger hit delayed time
+  double _minimal_delayed_time_ = 15 * CLHEP::microsecond;  //!< Minimal Geiger hit delayed time
   double
-      _minimal_cluster_xy_search_distance_;  //!< Minimal distance in XY coordinate between GG hits
-  double _minimal_cluster_z_search_distance_;  //!< Minimal distance in Z coordinate between GG hits
-  double _minimal_vertex_distance_;  //!< Minimal distance between the prompt vertex and the delayed
+      _minimal_cluster_xy_search_distance_ = 21 * CLHEP::cm;  //!< Minimal distance in XY coordinate between GG hits
+  double _minimal_cluster_z_search_distance_ = 30 * CLHEP::cm;  //!< Minimal distance in Z coordinate between GG hits
+  double _minimal_vertex_distance_ = 30 * CLHEP::cm;  //!< Minimal distance between the prompt vertex and the delayed
                                      //!< GG hit
 };
 
