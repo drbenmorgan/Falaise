@@ -385,7 +385,7 @@ void alpha_finder_driver::_fit_short_track_(
   double max_distance = 0.0 * CLHEP::cm;
   // Loop on all the delayed geiger hits to compute distance between hit
   // and associated vertex
-  for (const auto& datatools::handle<snemo::datamodel::calibrated_tracker_hit> a_hit : hits_) {
+  for (const datatools::handle<snemo::datamodel::calibrated_tracker_hit>& a_hit : hits_) {
     const geomtools::vector_3d a_hit_position(a_hit->get_x(), a_hit->get_y(), a_hit->get_z());
     const double distance = (first_vertex_ - a_hit_position).mag();
     if (distance > max_distance) {
