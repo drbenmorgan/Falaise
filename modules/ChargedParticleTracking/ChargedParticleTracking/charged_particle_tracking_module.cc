@@ -72,11 +72,6 @@ void charged_particle_tracking_module::initialize(
 
   // Geometry manager :
   _geometry_manager_ = snemo::service_handle<snemo::geometry_svc>{service_manager_};
-  // workaround for algorithms needed a geom_manager ref
-  auto& tmp_gm = _geometry_manager_;
-  auto get_geometry_manager = [&tmp_gm](){
-    return *(tmp_gm.operator->());
-  };
 
   // Drivers :
   std::vector<std::string> driver_names;
@@ -93,7 +88,7 @@ void charged_particle_tracking_module::initialize(
     if (a_driver_name == snemo::reconstruction::vertex_extrapolation_driver::get_id()) {
       // Initialize Vertex Extrapolation Driver
       _VED_.reset(new snemo::reconstruction::vertex_extrapolation_driver);
-      _VED_->set_geometry_manager(get_geometry_manager());
+      _VED_->set_geometry_manager(*(_geometry_manager_.operator->()));
       datatools::properties VED_config;
       setup_.export_and_rename_starting_with(VED_config, a_driver_name + ".", "");
       _VED_->initialize(VED_config);
@@ -106,14 +101,14 @@ void charged_particle_tracking_module::initialize(
     } else if (a_driver_name == snemo::reconstruction::calorimeter_association_driver::get_id()) {
       // Initialize Calorimeter Association Driver
       _CAD_.reset(new snemo::reconstruction::calorimeter_association_driver);
-      _CAD_->set_geometry_manager(get_geometry_manager());
+      _CAD_->set_geometry_manager(*(_geometry_manager_.operator->()));
       datatools::properties CAD_config;
       setup_.export_and_rename_starting_with(CAD_config, a_driver_name + ".", "");
       _CAD_->initialize(CAD_config);
     } else if (a_driver_name == snemo::reconstruction::alpha_finder_driver::get_id()) {
       // Initialize Alpha Finder Driver
       _AFD_.reset(new snemo::reconstruction::alpha_finder_driver);
-      _AFD_->set_geometry_manager(get_geometry_manager());
+      _AFD_->set_geometry_manager(*(_geometry_manager_.operator->()));
       datatools::properties AFD_config;
       setup_.export_and_rename_starting_with(AFD_config, a_driver_name + ".", "");
       _AFD_->initialize(AFD_config);
