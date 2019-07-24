@@ -73,8 +73,9 @@ void charged_particle_tracking_module::initialize(
   // Geometry manager :
   _geometry_manager_ = snemo::service_handle<snemo::geometry_svc>{service_manager_};
   // workaround for algorithms needed a geom_manager ref
-  auto get_geometry_manager = [&_geometry_manager_]() {
-    return *(_geometry_manager_.operator->());
+  auto& tmp_gm = _geometry_manager_;
+  auto get_geometry_manager = [&tmp_gm](){
+    return *(tmp_gm.operator->());
   };
 
   // Drivers :
