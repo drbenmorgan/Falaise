@@ -84,17 +84,14 @@ void charged_particle_tracking_module::initialize(
       auto VED_config = ps.get<falaise::config::property_set>(a_driver_name,{});
       _VED_->initialize(VED_config);
     } else if (a_driver_name == snreco::charge_computation_driver::get_id()) {
-      // Initialize Charge Computation Driver
       auto CCD_config = ps.get<falaise::config::property_set>(a_driver_name,{});
       _CCD_.reset(new snreco::charge_computation_driver{CCD_config});
     } else if (a_driver_name == snreco::calorimeter_association_driver::get_id()) {
-      // Initialize Calorimeter Association Driver
       _CAD_.reset(new snreco::calorimeter_association_driver);
       _CAD_->set_geometry_manager(*(_geometry_manager_.operator->()));
       auto CAD_config = ps.get<falaise::config::property_set>(a_driver_name,{});
       _CAD_->initialize(CAD_config);
     } else if (a_driver_name == snreco::alpha_finder_driver::get_id()) {
-      // Initialize Alpha Finder Driver
       _AFD_.reset(new snreco::alpha_finder_driver);
       _AFD_->set_geometry_manager(*(_geometry_manager_.operator->()));
       auto AFD_config = ps.get<falaise::config::property_set>(a_driver_name,{});
@@ -407,9 +404,9 @@ DOCD_CLASS_IMPLEMENT_LOAD_BEGIN(snemo::reconstruction::charged_particle_tracking
   }
 
   // Invoke specific OCD support from the driver class:
-  ::snemo::reconstruction::vertex_extrapolation_driver::init_ocd(ocd_);
-  ::snemo::reconstruction::charge_computation_driver::init_ocd(ocd_);
-  ::snemo::reconstruction::calorimeter_association_driver::init_ocd(ocd_);
+  //::snemo::reconstruction::vertex_extrapolation_driver::init_ocd(ocd_);
+  //::snemo::reconstruction::charge_computation_driver::init_ocd(ocd_);
+  //::snemo::reconstruction::calorimeter_association_driver::init_ocd(ocd_);
 
   // Additionnal configuration hints :
   ocd_.set_configuration_hints(
@@ -419,7 +416,6 @@ DOCD_CLASS_IMPLEMENT_LOAD_BEGIN(snemo::reconstruction::charged_particle_tracking
       "  CD_label                     : string = \"CD\"                      \n"
       "  TTD_label                    : string = \"TTD\"                     \n"
       "  PTD_label                    : string = \"PTD\"                     \n"
-      "  Geo_label                    : string = \"geometry\"                \n"
       "  drivers                      : string[3] = \"VED\" \"CCD\" \"CAD\"  \n"
       "  VED.logging.priority         : string = \"fatal\"                   \n"
       "  VED.use_linear_extrapolation : boolean = 0                          \n"
