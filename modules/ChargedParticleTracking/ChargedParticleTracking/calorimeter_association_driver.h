@@ -100,12 +100,6 @@ class calorimeter_association_driver {
   /// Return a non-mutable reference to the geometry manager
   const geomtools::manager& get_geometry_manager() const;
 
-  /// Constructor:
-  calorimeter_association_driver();
-
-  /// Destructor:
-  ~calorimeter_association_driver();
-
   /// Initialize the driver through configuration properties
   void initialize(const datatools::properties& setup_);
 
@@ -120,10 +114,6 @@ class calorimeter_association_driver {
   /// OCD support:
   static void init_ocd(datatools::object_configuration_description& ocd_);
 
- protected:
-  /// Set default values to class members:
-  void _set_defaults();
-
  private:
   /// Find matching calorimeters:
   void _measure_matching_calorimeters_(
@@ -131,11 +121,11 @@ class calorimeter_association_driver {
       snemo::datamodel::particle_track& particle_);
 
  private:
-  bool _initialized_;                                       //<! Initialize flag
-  datatools::logger::priority _logging_priority_;           //<! Logging flag
-  const geomtools::manager* _geometry_manager_;             //<! The SuperNEMO geometry manager
-  const snemo::geometry::locator_plugin* _locator_plugin_;  //!< The SuperNEMO locator plugin
-  double _matching_tolerance_;  //<! Matching distance between vertex and calorimeter
+  bool _initialized_ = false;                                       //<! Initialize flag
+  datatools::logger::priority _logging_priority_ = datatools::logger::PRIO_WARNING;           //<! Logging flag
+  const geomtools::manager* _geometry_manager_ = nullptr;             //<! The SuperNEMO geometry manager
+  const snemo::geometry::locator_plugin* _locator_plugin_ = nullptr;  //!< The SuperNEMO locator plugin
+  double _matching_tolerance_ = 50*CLHEP::mm;  //<! Matching distance between vertex and calorimeter
 };
 
 }  // end of namespace reconstruction
