@@ -82,9 +82,9 @@ const geomtools::manager& calorimeter_association_driver::get_geometry_manager()
 /// Initialize the driver through configuration properties
 calorimeter_association_driver::calorimeter_association_driver(const falaise::config::property_set& ps, const geomtools::manager* gm) {
   _logging_priority_ = datatools::logger::get_priority(ps.get<std::string>("logging.priority","warning"));
-  _geometry_manager_ = gm
-  auto locator_plugin_name = ps.get<std::string>("locator_plugin_name","");
-  _locator_plugin_ = getSNemoLocator(get_geometry_manager(), locator_plugin_name);
+  _geometry_manager_ = gm;
+  auto lpname = ps.get<std::string>("locator_plugin_name","");
+  _locator_plugin_ = getSNemoLocator(get_geometry_manager(), lpname);
   _matching_tolerance_ = ps.get<falaise::config::length_t>("matching_tolerance",{50, "mm"})();
 }
 
