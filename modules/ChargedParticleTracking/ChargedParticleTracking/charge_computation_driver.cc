@@ -57,7 +57,7 @@ void charge_computation_driver::process(const snemo::datamodel::tracker_trajecto
                                         snemo::datamodel::particle_track &particle_) {
   DT_THROW_IF(!is_initialized(), std::logic_error, "Driver is not initialized !");
 
-  using snedm = snemo::datamodel;
+  namespace snedm = snemo::datamodel;
 
   // Look first if trajectory pattern is an helix or not
   const snedm::base_trajectory_pattern &a_track_pattern = trajectory_.get_pattern();
