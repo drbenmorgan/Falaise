@@ -82,32 +82,26 @@ class calorimeter_association_driver {
   /// Return driver id
   static const std::string& get_id();
 
-  /// Setting initialization flag
-  void set_initialized(const bool initialized_);
+  /// Default constructor
+  calorimeter_association_driver() = default;
 
-  /// Getting initialization flag
-  bool is_initialized() const;
+  /// Construct from configuration and geometry
+  calorimeter_association_driver(const falaise::config::property_set& ps, const geomtools::manager* gm);
 
-  /// Setting logging priority
-  void set_logging_priority(const datatools::logger::priority priority_);
+  /// Destructor
+  ~calorimeter_association_driver() = default;
 
-  /// Getting logging priority
-  datatools::logger::priority get_logging_priority() const;
+  /// Copy constructor
+  calorimeter_association_driver(const calorimeter_association_driver&) = default;
 
-  /// Check the geometry manager
-  bool has_geometry_manager() const;
+  /// Copy assignment operator
+  calorimeter_association_driver& operator=(const calorimeter_association_driver&) = default;
 
-  /// Address the geometry manager
-  void set_geometry_manager(const geomtools::manager& gmgr_);
+  /// Move constructor
+  calorimeter_association_driver(calorimeter_association_driver&&) = default;
 
-  /// Return a non-mutable reference to the geometry manager
-  const geomtools::manager& get_geometry_manager() const;
-
-  /// Initialize the driver through configuration properties
-  void initialize(const falaise::config::property_set& ps);
-
-  /// Reset the driver
-  void reset();
+  /// Move assignment operator
+  calorimeter_association_driver& operator=(calorimeter_association_driver&&) = default;
 
   /// Main driver method
   void process(
@@ -118,13 +112,15 @@ class calorimeter_association_driver {
   static void init_ocd(datatools::object_configuration_description& ocd_);
 
  private:
+  /// Return a valid reference to the geometry manager
+  const geomtools::manager& get_geometry_manager() const;
+
   /// Find matching calorimeters:
   void _measure_matching_calorimeters_(
       const snemo::datamodel::calibrated_data::calorimeter_hit_collection_type& calorimeter_hits_,
       snemo::datamodel::particle_track& particle_);
 
  private:
-  bool _initialized_ = false;                                       //<! Initialize flag
   datatools::logger::priority _logging_priority_ = datatools::logger::PRIO_WARNING;           //<! Logging flag
   const geomtools::manager* _geometry_manager_ = nullptr;             //<! The SuperNEMO geometry manager
   const snemo::geometry::locator_plugin* _locator_plugin_ = nullptr;  //!< The SuperNEMO locator plugin

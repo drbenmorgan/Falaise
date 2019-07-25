@@ -74,58 +74,18 @@ const std::string& calorimeter_association_driver::get_id() {
   return s;
 }
 
-void calorimeter_association_driver::set_initialized(const bool initialized_) {
-  _initialized_ = initialized_;
-}
-
-bool calorimeter_association_driver::is_initialized() const { return _initialized_; }
-
-void calorimeter_association_driver::set_logging_priority(
-    const datatools::logger::priority priority_) {
-  _logging_priority_ = priority_;
-}
-
-datatools::logger::priority calorimeter_association_driver::get_logging_priority() const {
-  return _logging_priority_;
-}
-
-bool calorimeter_association_driver::has_geometry_manager() const {
-  return _geometry_manager_ != nullptr;
-}
-
-void calorimeter_association_driver::set_geometry_manager(const geomtools::manager& gmgr_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Driver is already initialized !");
-  _geometry_manager_ = &gmgr_;
-}
-
 const geomtools::manager& calorimeter_association_driver::get_geometry_manager() const {
   DT_THROW_IF(!has_geometry_manager(), std::logic_error, "No geometry manager is setup !");
   return *_geometry_manager_;
 }
 
 /// Initialize the driver through configuration properties
-void calorimeter_association_driver::initialize(const falaise::config::property_set& ps) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Driver is already initialized !");
-
-  DT_THROW_IF(!has_geometry_manager(), std::logic_error, "Missing geometry manager !");
-  DT_THROW_IF(!get_geometry_manager().is_initialized(), std::logic_error,
-              "Geometry manager is not initialized !");
-
+calorimeter_association_driver::calorimeter_association_driver(const falaise::config::property_set& ps, const geomtools::manager* gm) {
   _logging_priority_ = datatools::logger::get_priority(ps.get<std::string>("logging.priority","warning"));
-  // _geometry_manager_ = snemo::service_handle<snemo::geometry_svc>{services_};
+  _geometry_manager_ = gm
   auto locator_plugin_name = ps.get<std::string>("locator_plugin_name","");
   _locator_plugin_ = getSNemoLocator(get_geometry_manager(), locator_plugin_name);
   _matching_tolerance_ = ps.get<falaise::config::length_t>("matching_tolerance",{50, "mm"})();
-  set_initialized(true);
-}
-
-/// Reset the driver
-void calorimeter_association_driver::reset() {
-  _initialized_ = false;
-  _logging_priority_ = datatools::logger::PRIO_WARNING;
-  _geometry_manager_ = nullptr;
-  _locator_plugin_ = nullptr;
-  _matching_tolerance_ = 50 * CLHEP::mm;
 }
 
 void calorimeter_association_driver::process(
@@ -221,7 +181,7 @@ void calorimeter_association_driver::_measure_matching_calorimeters_(
       for (const geomtools::geom_id& a_gid : gids) {
         const geomtools::geom_info* ginfo_ptr = the_mapping.get_geom_info_ptr(a_gid);
         if (!ginfo_ptr) {
-          DT_LOG_WARNING(get_logging_priority(), "Unmapped geom id " << a_gid << "!");
+          DT_LOG_WARNING(_logging_priority_, "Unmapped geom id " << a_gid << "!");
           continue;
         }
 

@@ -78,22 +78,17 @@ void charged_particle_tracking_module::initialize(
   });
 
   for (const std::string& id : driver_names) {
+    auto dps = ps.get<falaise::config::property_set>(id,{});
     if (id == snreco::vertex_extrapolation_driver::get_id()) {
       _VED_.reset(new snreco::vertex_extrapolation_driver);
       _VED_->set_geometry_manager(*(_geometry_manager_.operator->()));
-      auto VED_config = ps.get<falaise::config::property_set>(id,{});
-      _VED_->initialize(VED_config);
+      _VED_->initialize(dps);
     } else if (id == snreco::charge_computation_driver::get_id()) {
-      auto CCD_config = ps.get<falaise::config::property_set>(id,{});
-      _CCD_.reset(new snreco::charge_computation_driver{CCD_config});
+      _CCD_.reset(new snreco::charge_computation_driver{dps});
     } else if (id == snreco::calorimeter_association_driver::get_id()) {
-      _CAD_.reset(new snreco::calorimeter_association_driver);
-      _CAD_->set_geometry_manager(*(_geometry_manager_.operator->()));
-      auto CAD_config = ps.get<falaise::config::property_set>(id,{});
-      _CAD_->initialize(CAD_config);
+      _CAD_.reset(new snreco::calorimeter_association_driver{dps, (_geometry_manager_.operator->())});
     } else if (id == snreco::alpha_finder_driver::get_id()) {
-      auto AFD_config = ps.get<falaise::config::property_set>(id,{});
-      _AFD_.reset(new snreco::alpha_finder_driver{AFD_config, (_geometry_manager_.operator->())});
+      _AFD_.reset(new snreco::alpha_finder_driver{dps, (_geometry_manager_.operator->())});
     } else {
       DT_THROW_IF(true, std::logic_error, "Driver '" << id << "' does not exist !");
     }
