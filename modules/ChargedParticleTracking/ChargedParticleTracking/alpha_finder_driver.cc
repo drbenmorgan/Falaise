@@ -484,10 +484,10 @@ void alpha_finder_driver::_build_alpha_particle_track_(
       vertex_label = snedm::particle_track::vertex_on_source_foil_label();
     } else if (std::abs(first_vertex.x() - xcalo_bd[0]) < epsilon ||
                std::abs(first_vertex.x() - xcalo_bd[1]) < epsilon) {
-      vertex_label = snedm::datamodel::particle_track::vertex_on_main_calorimeter_label();
+      vertex_label = snedm::particle_track::vertex_on_main_calorimeter_label();
     } else if (std::abs(first_vertex.y() - ycalo_bd[0]) < epsilon ||
                std::abs(first_vertex.y() - ycalo_bd[1]) < epsilon) {
-      vertex_label = snedm::datamodel::particle_track::vertex_on_x_calorimeter_label();
+      vertex_label = snedm::particle_track::vertex_on_x_calorimeter_label();
     } else if (std::abs(first_vertex.z() - zcalo_bd[0]) < epsilon ||
                std::abs(first_vertex.z() - zcalo_bd[1]) < epsilon) {
       vertex_label = snedm::particle_track::vertex_on_gamma_veto_label();
