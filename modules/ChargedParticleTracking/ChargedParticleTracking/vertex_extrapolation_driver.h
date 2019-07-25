@@ -82,12 +82,6 @@ class vertex_extrapolation_driver {
   /// Return a non-mutable reference to the geometry manager
   const geomtools::manager& get_geometry_manager() const;
 
-  /// Constructor:
-  vertex_extrapolation_driver();
-
-  /// Destructor:
-  ~vertex_extrapolation_driver();
-
   /// Initialize the driver through configuration properties
   void initialize(const datatools::properties& setup_);
 
@@ -101,10 +95,6 @@ class vertex_extrapolation_driver {
   /// OCD support:
   static void init_ocd(datatools::object_configuration_description& ocd_);
 
- protected:
-  /// Set default values to class members:
-  void _set_defaults();
-
  private:
   /// Check reliability of vertices extrapolation given Geiger cells
   void _check_vertices_(const snemo::datamodel::tracker_trajectory& trajectory_);
@@ -114,11 +104,11 @@ class vertex_extrapolation_driver {
                           snemo::datamodel::particle_track::vertex_collection_type& vertices_);
 
  private:
-  bool _initialized_;                                       //!< Initialize flag
-  datatools::logger::priority _logging_priority_;           //!< Logging priority
-  const geomtools::manager* _geometry_manager_;             //!< The SuperNEMO geometry manager
-  const snemo::geometry::locator_plugin* _locator_plugin_;  //!< The SuperNEMO locator plugin
-  std::map<std::string, bool> _use_vertices_;               //!< Vertices reliability
+  bool _initialized_ = false;                                       //!< Initialize flag
+  datatools::logger::priority _logging_priority_ = datatools::logger::PRIO_WARNING;           //!< Logging priority
+  const geomtools::manager* _geometry_manager_ = nullptr;             //!< The SuperNEMO geometry manager
+  const snemo::geometry::locator_plugin* _locator_plugin_ = nullptr;  //!< The SuperNEMO locator plugin
+  std::map<std::string, bool> _use_vertices_ = {};               //!< Vertices reliability
 };
 
 }  // end of namespace reconstruction

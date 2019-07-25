@@ -34,7 +34,6 @@ const std::string &vertex_extrapolation_driver::get_id() {
 
 void vertex_extrapolation_driver::set_initialized(const bool initialized_) {
   _initialized_ = initialized_;
-  return;
 }
 
 bool vertex_extrapolation_driver::is_initialized() const { return _initialized_; }
@@ -42,7 +41,6 @@ bool vertex_extrapolation_driver::is_initialized() const { return _initialized_;
 void vertex_extrapolation_driver::set_logging_priority(
     const datatools::logger::priority priority_) {
   _logging_priority_ = priority_;
-  return;
 }
 
 datatools::logger::priority vertex_extrapolation_driver::get_logging_priority() const {
@@ -52,7 +50,6 @@ datatools::logger::priority vertex_extrapolation_driver::get_logging_priority() 
 void vertex_extrapolation_driver::set_geometry_manager(const geomtools::manager &gmgr_) {
   DT_THROW_IF(is_initialized(), std::logic_error, "Driver is already initialized !");
   _geometry_manager_ = &gmgr_;
-  return;
 }
 
 const geomtools::manager &vertex_extrapolation_driver::get_geometry_manager() const {
@@ -60,21 +57,8 @@ const geomtools::manager &vertex_extrapolation_driver::get_geometry_manager() co
   return *_geometry_manager_;
 }
 
-bool vertex_extrapolation_driver::has_geometry_manager() const { return _geometry_manager_ != 0; }
+bool vertex_extrapolation_driver::has_geometry_manager() const { return _geometry_manager_ != nullptr; }
 
-/// Constructor
-vertex_extrapolation_driver::vertex_extrapolation_driver() {
-  _set_defaults();
-  return;
-}
-
-/// Destructor
-vertex_extrapolation_driver::~vertex_extrapolation_driver() {
-  if (is_initialized()) {
-    reset();
-  }
-  return;
-}
 
 /// Initialize the driver through configuration properties
 void vertex_extrapolation_driver::initialize(const datatools::properties &setup_) {
@@ -97,12 +81,9 @@ void vertex_extrapolation_driver::initialize(const datatools::properties &setup_
     locator_plugin_name = setup_.fetch_string("locator_plugin_name");
   } else {
     // If no locator plugin name is set, then search for the first one
-    const geomtools::manager::plugins_dict_type &plugins = geo_mgr.get_plugins();
-    for (geomtools::manager::plugins_dict_type::const_iterator ip = plugins.begin();
-         ip != plugins.end(); ip++) {
-      const std::string &plugin_name = ip->first;
+    for (const auto& ip : geo_mgr.get_plugins()) {
+      const std::string &plugin_name = ip.first;
       if (geo_mgr.is_plugin_a<snemo::geometry::locator_plugin>(plugin_name)) {
-        DT_LOG_DEBUG(get_logging_priority(), "Find locator plugin with name = " << plugin_name);
         locator_plugin_name = plugin_name;
         break;
       }
@@ -115,36 +96,25 @@ void vertex_extrapolation_driver::initialize(const datatools::properties &setup_
   _locator_plugin_ = &geo_mgr.get_plugin<snemo::geometry::locator_plugin>(locator_plugin_name);
 
   set_initialized(true);
-  return;
 }
 
 /// Reset the driver
 void vertex_extrapolation_driver::reset() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Driver is not initialized !");
-  _set_defaults();
-  return;
-}
-
-void vertex_extrapolation_driver::_set_defaults() {
   _initialized_ = false;
   _logging_priority_ = datatools::logger::PRIO_WARNING;
-  _geometry_manager_ = 0;
-  _locator_plugin_ = 0;
-  return;
+  _geometry_manager_ = nullptr;
+  _locator_plugin_ = nullptr;
 }
 
 void vertex_extrapolation_driver::process(const snemo::datamodel::tracker_trajectory &trajectory_,
                                           snemo::datamodel::particle_track &particle_) {
   DT_THROW_IF(!is_initialized(), std::logic_error, "Driver is not initialized !");
   this->_measure_vertices_(trajectory_, particle_.get_vertices());
-  return;
 }
 
 void vertex_extrapolation_driver::_measure_vertices_(
     const snemo::datamodel::tracker_trajectory &trajectory_,
     snemo::datamodel::particle_track::vertex_collection_type &vertices_) {
-  DT_LOG_TRACE(get_logging_priority(), "Entering...");
-
   // Extract the side from the geom_id of the tracker_trajectory object:
   if (!trajectory_.has_geom_id()) {
     DT_LOG_ERROR(get_logging_priority(), "Tracker trajectory has no geom_id! Abort!");
@@ -157,7 +127,6 @@ void vertex_extrapolation_driver::_measure_vertices_(
                  "Trajectory geom_id " << gid << " has no 'module' or 'side' address!");
     return;
   }
-  DT_LOG_TRACE(get_logging_priority(), "Trajectory geom_id = " << gid);
   const int side = id_mgr.get(gid, "side");
 
   // Set the calorimeter locators :
@@ -183,24 +152,25 @@ void vertex_extrapolation_driver::_measure_vertices_(
   const std::string &a_pattern_id = a_track_pattern.get_pattern_id();
 
   // Extrapolated vertices:
-  typedef std::vector<std::pair<std::string, geomtools::vector_3d> > vertex_dict_type;
+  using vertex_dict_type = std::vector<std::pair<std::string, geomtools::vector_3d> >;
   vertex_dict_type vertices;
 
   // Add a property into 'blur_spot' auxiliaries to refer to the hit calo:
   std::string calo_category_flag;
+
+  // ----- Start of line pattern handling
   if (a_pattern_id == snemo::datamodel::line_trajectory_pattern::pattern_id()) {
-    const snemo::datamodel::line_trajectory_pattern &ltp =
-        dynamic_cast<const snemo::datamodel::line_trajectory_pattern &>(a_track_pattern);
+    const auto& ltp = dynamic_cast<const snemo::datamodel::line_trajectory_pattern &>(a_track_pattern);
     const geomtools::line_3d &a_line = ltp.get_segment();
     const geomtools::vector_3d &first = a_line.get_first();
     const geomtools::vector_3d &last = a_line.get_last();
     const geomtools::vector_3d direction = first - last;
 
+    // Calculate intersection on each geometric object
     typedef std::map<geomtools::vector_3d, std::string> vertex_list_type;
     vertex_list_type vtxlist;
     // Source foil:
     {
-      DT_LOG_TRACE(get_logging_priority(), "Looking for vertex on source foil...");
       const double x = 0.0 * CLHEP::mm;
       const double y = direction.y() / direction.x() * (x - first.x()) + first.y();
       const double z = direction.z() / direction.y() * (y - first.y()) + first.z();
@@ -209,11 +179,10 @@ void vertex_extrapolation_driver::_measure_vertices_(
       const geomtools::vector_3d a_vertex(x, y, z);
       vtxlist.insert(std::make_pair(
           a_vertex, snemo::datamodel::particle_track::vertex_on_source_foil_label()));
-    }  // end of source foil search
+    }
 
     // Calorimeter walls:
     {
-      DT_LOG_TRACE(get_logging_priority(), "Looking for vertex on main wall...");
       for (size_t iside = 0; iside < snemo::geometry::utils::NSIDES; ++iside) {
         const double x = xcalo_bd[iside];
         const double y = direction.y() / direction.x() * (x - first.x()) + first.y();
@@ -224,11 +193,10 @@ void vertex_extrapolation_driver::_measure_vertices_(
         vtxlist.insert(std::make_pair(
             a_vertex, snemo::datamodel::particle_track::vertex_on_main_calorimeter_label()));
       }
-    }  // end of main wall search
+    }
 
     // Calorimeter on xwalls
     {
-      DT_LOG_TRACE(get_logging_priority(), "Looking for vertex on X-wall...");
       for (size_t iwall = 0; iwall < snemo::geometry::xcalo_locator::NWALLS_PER_SIDE; ++iwall) {
         const double y = ycalo_bd[iwall];
         const double z = direction.z() / direction.y() * (y - first.y()) + first.z();
@@ -239,11 +207,10 @@ void vertex_extrapolation_driver::_measure_vertices_(
         vtxlist.insert(std::make_pair(
             a_vertex, snemo::datamodel::particle_track::vertex_on_x_calorimeter_label()));
       }
-    }  // end of x-wall search
+    }
 
     // Calorimeter on gveto
     {
-      DT_LOG_TRACE(get_logging_priority(), "Looking for vertex on gamma veto...");
       for (size_t iwall = 0; iwall < snemo::geometry::gveto_locator::NWALLS_PER_SIDE; ++iwall) {
         const double z = zcalo_bd[iwall];
         const double y = direction.y() / direction.z() * (z - first.z()) + first.y();
@@ -254,23 +221,29 @@ void vertex_extrapolation_driver::_measure_vertices_(
         vtxlist.insert(std::make_pair(
             a_vertex, snemo::datamodel::particle_track::vertex_on_gamma_veto_label()));
       }
-    }  // end of gveto search
+    }
 
+    // This *looks* like it finds the two vertices closest to the end points of
+    // the line pattern
     std::pair<double, double> min_distances;
     datatools::infinity(min_distances.first);
     datatools::infinity(min_distances.second);
-    vertex_list_type::const_iterator jt1 = vtxlist.begin();
-    vertex_list_type::const_iterator jt2 = vtxlist.begin();
-    for (vertex_list_type::const_iterator it = vtxlist.begin(); it != vtxlist.end(); ++it) {
+    auto jt1 = vtxlist.begin();
+    auto jt2 = vtxlist.begin();
+    for (auto it = vtxlist.begin(); it != vtxlist.end(); ++it) {
       const double l1 = (first - it->first).mag();
       const double l2 = (last - it->first).mag();
 
       if (l1 < l2) {
-        if (l1 > min_distances.first) continue;
+        if (l1 > min_distances.first) {
+          continue;
+        }
         jt1 = it;
         min_distances.first = l1;
       } else {
-        if (l2 > min_distances.second) continue;
+        if (l2 > min_distances.second) {
+          continue;
+        }
         jt2 = it;
         min_distances.second = l2;
       }
@@ -292,10 +265,10 @@ void vertex_extrapolation_driver::_measure_vertices_(
       vertices.push_back(std::make_pair(snemo::datamodel::particle_track::vertex_on_wire_label(),
                                         a_line.get_last()));
     }
-  }  // end of line pattern
+  }  // ----- end of line pattern handling
+  // ---- start of helix pattern handling
   else if (a_pattern_id == snemo::datamodel::helix_trajectory_pattern::pattern_id()) {
-    const snemo::datamodel::helix_trajectory_pattern &htp =
-        dynamic_cast<const snemo::datamodel::helix_trajectory_pattern &>(a_track_pattern);
+    const auto& htp = dynamic_cast<const snemo::datamodel::helix_trajectory_pattern &>(a_track_pattern);
     const geomtools::helix_3d &a_helix = htp.get_helix();
 
     // Extract helix parameters
@@ -307,7 +280,6 @@ void vertex_extrapolation_driver::_measure_vertices_(
 
     // Source foil
     {
-      DT_LOG_TRACE(get_logging_priority(), "Looking for vertex on source foil...");
       const double xfoil = 0.0 * CLHEP::mm;
       const double xcenter = hcenter.x();
       const double cangle = (xfoil - xcenter) / hradius;
@@ -321,11 +293,10 @@ void vertex_extrapolation_driver::_measure_vertices_(
             std::make_pair(geomtools::helix_3d::angle_to_t(-angle),
                            snemo::datamodel::particle_track::vertex_on_source_foil_label()));
       }
-    }  // end of source foil search
+    }
 
     // Calorimeter walls
     {
-      DT_LOG_TRACE(get_logging_priority(), "Looking for vertex on main wall...");
       for (size_t iside = 0; iside < snemo::geometry::utils::NSIDES; ++iside) {
         const double xcenter = hcenter.x();
         const double cangle = (xcalo_bd[iside] - xcenter) / hradius;
@@ -340,11 +311,10 @@ void vertex_extrapolation_driver::_measure_vertices_(
                              snemo::datamodel::particle_track::vertex_on_main_calorimeter_label()));
         }
       }
-    }  // end of main wall search
+    }
 
     // X-walls
     {
-      DT_LOG_TRACE(get_logging_priority(), "Looking for vertex on X-wall...");
       for (size_t iwall = 0; iwall < snemo::geometry::xcalo_locator::NWALLS_PER_SIDE; ++iwall) {
         const double ycenter = hcenter.y();
         const double cangle = (ycalo_bd[iwall] - ycenter) / hradius;
@@ -355,32 +325,20 @@ void vertex_extrapolation_driver::_measure_vertices_(
               std::make_pair(geomtools::helix_3d::angle_to_t(angle),
                              snemo::datamodel::particle_track::vertex_on_x_calorimeter_label()));
           const double mean_angle = (a_helix.get_angle1() + a_helix.get_angle2()) / 2.0;
-          if (mean_angle < 0.0)
-            angle = -M_PI - angle;
-          else
-            angle = +M_PI - angle;
+          angle = (mean_angle < 0.0) ? (-M_PI - angle) : (+M_PI - angle);
           tparams.insert(
               std::make_pair(geomtools::helix_3d::angle_to_t(angle),
                              snemo::datamodel::particle_track::vertex_on_x_calorimeter_label()));
         }
-      }  // end of x-wall loop
-    }    // end of x-wall search
+      }
+    }
 
     // Gvetos
     {
-      DT_LOG_TRACE(get_logging_priority(), "Looking for vertex on gamma veto...");
       for (size_t iwall = 0; iwall < snemo::geometry::xcalo_locator::NWALLS_PER_SIDE; ++iwall) {
         const double t = a_helix.get_t_from_z(zcalo_bd[iwall]);
         tparams.insert(
             std::make_pair(t, snemo::datamodel::particle_track::vertex_on_gamma_veto_label()));
-      }
-    }  // end of gveto search
-
-    if (get_logging_priority() >= datatools::logger::PRIO_TRACE) {
-      DT_LOG_TRACE(get_logging_priority(), "Stored t parameters :");
-      for (std::map<double, std::string>::const_iterator it = tparams.begin(); it != tparams.end();
-           ++it) {
-        DT_LOG_TRACE(get_logging_priority(), it->second << ", t = " << it->first);
       }
     }
 
@@ -396,8 +354,7 @@ void vertex_extrapolation_driver::_measure_vertices_(
     datatools::infinity(min_distances.second);
     std::pair<std::string, std::string> category_flags;
 
-    for (std::map<double, std::string>::const_iterator it = tparams.begin(); it != tparams.end();
-         ++it) {
+    for (auto it = tparams.begin(); it != tparams.end(); ++it) {
       const double t = it->first;
       const std::string &category = it->second;
 
@@ -407,12 +364,16 @@ void vertex_extrapolation_driver::_measure_vertices_(
 
       // Keep smallest distance but remove also too long extrapolation
       if (delta1 < delta2) {
-        if (delta1 > min_distances.first) continue;
+        if (delta1 > min_distances.first) {
+          continue;
+        }
         new_ts.first = t;
         category_flags.first = category;
         min_distances.first = delta1;
       } else {
-        if (delta2 > min_distances.second) continue;
+        if (delta2 > min_distances.second) {
+          continue;
+        }
         new_ts.second = t;
         category_flags.second = category;
         min_distances.second = delta2;
@@ -447,20 +408,20 @@ void vertex_extrapolation_driver::_measure_vertices_(
                                           a_helix.get_last()));
       }
     }
-  }  // end of helix pattern
+  }
+  // ----- end of helix pattern
 
-  // Save new vertex
-  for (vertex_dict_type::const_iterator it = vertices.begin(); it != vertices.end(); ++it) {
+
+  // Save new vertices
+  for (auto it = vertices.begin(); it != vertices.end(); ++it) {
     // Check vertex side is on the same side as the trajectory
     if ((side == snemo::geometry::utils::SIDE_BACK && it->second.x() > 0.0) ||
         (side == snemo::geometry::utils::SIDE_FRONT && it->second.x() < 0.0)) {
       DT_LOG_DEBUG(get_logging_priority(), "Closest vertex is on the opposite side!");
     }
-    snemo::datamodel::particle_track::handle_spot hBS(new geomtools::blur_spot);
-    vertices_.push_back(hBS);
-    geomtools::blur_spot &spot = hBS.grab();
-    spot.set_hit_id(vertices_.size());
-    spot.grab_auxiliaries().update(snemo::datamodel::particle_track::vertex_type_key(), it->first);
+    auto spot = datatools::make_handle<geomtools::blur_spot>();
+    spot->set_hit_id(vertices_.size());
+    spot->grab_auxiliaries().update(snemo::datamodel::particle_track::vertex_type_key(), it->first);
     // Future: determine the GID of the scintillator block or source strip
     // associated to the impact vertex:
     //
@@ -474,8 +435,11 @@ void vertex_extrapolation_driver::_measure_vertices_(
     //
 
     // For now it is dimension 3 with no errors nor rotation defined:
-    spot.set_blur_dimension(geomtools::blur_spot::dimension_three);
-    spot.set_position(it->second);
+    spot->set_blur_dimension(geomtools::blur_spot::dimension_three);
+    spot->set_position(it->second);
+
+    vertices_.push_back(spot);
+
     //
     // Future implementation:= ???
     //
@@ -512,20 +476,13 @@ void vertex_extrapolation_driver::_measure_vertices_(
     //     spot.set_errors(sigma_y, sigma_z);
     //   } else ...
     //
-    if (get_logging_priority() >= datatools::logger::PRIO_TRACE) {
-      DT_LOG_TRACE(get_logging_priority(), "Vertex:");
-      spot.tree_dump(std::clog, "", "[trace]: ");
-    }
   }
-
-  DT_LOG_TRACE(get_logging_priority(), "Exiting.");
-  return;
 }
+
 
 void vertex_extrapolation_driver::_check_vertices_(
     const snemo::datamodel::tracker_trajectory &trajectory_) {
   if (!trajectory_.has_cluster()) {
-    DT_LOG_TRACE(get_logging_priority(), "No tracker cluster are attached to tracker trajectory !");
     return;
   }
   // Reset values of booleans
@@ -535,36 +492,29 @@ void vertex_extrapolation_driver::_check_vertices_(
   _use_vertices_[sdm::particle_track::vertex_on_x_calorimeter_label()] = false;
   _use_vertices_[sdm::particle_track::vertex_on_gamma_veto_label()] = false;
 
-  const snemo::datamodel::tracker_cluster &a_cluster = trajectory_.get_cluster();
-  DT_LOG_TRACE(get_logging_priority(), "Cluster #" << a_cluster.get_hit_id());
-  const snemo::datamodel::calibrated_tracker_hit::collection_type &the_hits = a_cluster.get_hits();
-  for (snemo::datamodel::calibrated_tracker_hit::collection_type::const_iterator ihit =
-           the_hits.begin();
-       ihit != the_hits.end(); ++ihit) {
-    const snemo::datamodel::calibrated_tracker_hit &a_hit = ihit->get();
-    const geomtools::geom_id &a_gid = a_hit.get_geom_id();
+  const sdm::tracker_cluster &a_cluster = trajectory_.get_cluster();
+  const sdm::calibrated_tracker_hit::collection_type &the_hits = a_cluster.get_hits();
+  for (const datatools::handle<sdm::calibrated_tracker_hit> a_hit : the_hits) {
+    const geomtools::geom_id &a_gid = a_hit->get_geom_id();
 
     // Extract layer
     const snemo::geometry::gg_locator &gg_locator = _locator_plugin_->get_gg_locator();
     const uint32_t layer = gg_locator.extract_layer(a_gid);
     if (layer < 1) {
       // Extrapolate vertex to the foil if the first GG layers are fired
-      DT_LOG_TRACE(get_logging_priority(),
-                   "Foil vertex: found Geiger cells in the first two layers !");
       _use_vertices_[sdm::particle_track::vertex_on_source_foil_label()] = true;
     }
+
     const uint32_t side = gg_locator.extract_side(a_gid);
     if (layer >= gg_locator.get_number_of_layers(side) - 1) {
       _use_vertices_[sdm::particle_track::vertex_on_main_calorimeter_label()] = true;
     }
+
     const uint32_t row = gg_locator.extract_row(a_gid);
     if (row <= 1 || row >= gg_locator.get_number_of_rows(side) - 1) {
-      DT_LOG_TRACE(get_logging_priority(),
-                   "Xcalo vertex: found Geiger cells in the closest rows !");
       _use_vertices_[sdm::particle_track::vertex_on_x_calorimeter_label()] = true;
     }
   }
-  return;
 }
 
 // static
