@@ -58,43 +58,15 @@ const std::string &alpha_finder_driver::get_id() {
   return s;
 }
 
-void alpha_finder_driver::set_initialized(const bool initialized_) {
-  _initialized_ = initialized_;
-}
-
-bool alpha_finder_driver::is_initialized() const { return _initialized_; }
-
-void alpha_finder_driver::set_logging_priority(const datatools::logger::priority priority_) {
-  _logging_priority_ = priority_;
-}
-
-datatools::logger::priority alpha_finder_driver::get_logging_priority() const {
-  return _logging_priority_;
-}
-
-bool alpha_finder_driver::has_geometry_manager() const { return _geometry_manager_ != nullptr; }
-
-void alpha_finder_driver::set_geometry_manager(const geomtools::manager &gmgr_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Driver is already initialized !");
-  _geometry_manager_ = &gmgr_;
-}
-
-const geomtools::manager &alpha_finder_driver::get_geometry_manager() const {
-  DT_THROW_IF(!has_geometry_manager(), std::logic_error, "No geometry manager is setup !");
+const geomtools::manager& alpha_finder_driver::get_geometry_manager() const {
+  DT_THROW_IF(_geometry_manager_ == nullptr, std::logic_error, "No geometry manager is setup !");
   return *_geometry_manager_;
 }
 
 /// Initialize the driver through configuration properties
-void alpha_finder_driver::initialize(const falaise::config::property_set& ps) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Driver is already initialized !");
-
-  DT_THROW_IF(!has_geometry_manager(), std::logic_error, "Missing geometry manager !");
-  DT_THROW_IF(!get_geometry_manager().is_initialized(), std::logic_error,
-              "Geometry manager is not initialized !");
-
+alpha_finder_driver::alpha_finder_driver(const falaise::config::property_set& ps, const geomtools::manager* gm) : alpha_finder_driver::alpha_finder_driver() {
   _logging_priority_ = datatools::logger::get_priority(ps.get<std::string>("logging.priority","warning"));
-  // _geometry_manager_ = snemo::service_handle<snemo::geometry_svc>{services_};
-
+  _geometry_manager_ = gm;
   auto locator_plugin_name = ps.get<std::string>("locator_plugin_name","");
   _locator_plugin_ = getSNemoLocator(get_geometry_manager(), locator_plugin_name);
 
@@ -102,30 +74,12 @@ void alpha_finder_driver::initialize(const falaise::config::property_set& ps) {
   _minimal_cluster_xy_search_distance_ = ps.get<falaise::config::length_t>("minimal_cluster_xy_search_distance", {21.,"cm"})();
   _minimal_cluster_z_search_distance_ = ps.get<falaise::config::length_t>("minimal_cluster_z_search_distance", {30.,"cm"})();
   _minimal_vertex_distance_ = ps.get<falaise::config::length_t>("minimal_vertex_distance", {30., "cm"})();
-
-  set_initialized(true);
 }
 
-/// Reset the driver
-void alpha_finder_driver::reset() {
-  _set_defaults();
-}
-
-void alpha_finder_driver::_set_defaults() {
-  _initialized_ = false;
-  _logging_priority_ = datatools::logger::PRIO_WARNING;
-
-  _minimal_delayed_time_ = 15 * CLHEP::microsecond;
-  _minimal_cluster_xy_search_distance_ = 21 * CLHEP::cm;
-  _minimal_cluster_z_search_distance_ = 30 * CLHEP::cm;
-  _minimal_vertex_distance_ = 30 * CLHEP::cm;
-}
 
 void alpha_finder_driver::process(
     const snemo::datamodel::tracker_trajectory_data &tracker_trajectory_data_,
     snemo::datamodel::particle_track_data &particle_track_data_) {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Driver is not initialized !");
-
   this->_find_delayed_unfitted_cluster_(tracker_trajectory_data_, particle_track_data_);
   this->_find_delayed_unclustered_hit_(tracker_trajectory_data_, particle_track_data_);
 }
@@ -458,7 +412,7 @@ void alpha_finder_driver::_build_alpha_particle_track_(
     const geomtools::geom_id& gid = a_trajectory->get_geom_id();
     const geomtools::id_mgr& id_mgr = get_geometry_manager().get_id_mgr();
     if (!id_mgr.has(gid, "module") || !id_mgr.has(gid, "side")) {
-      DT_LOG_ERROR(get_logging_priority(),
+      DT_LOG_ERROR(_logging_priority_,
                    "Trajectory geom_id " << gid << " has no 'module' or 'side' address!");
       return;
     }

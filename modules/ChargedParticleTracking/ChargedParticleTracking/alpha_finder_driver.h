@@ -73,33 +73,20 @@ class alpha_finder_driver {
   /// Return driver id
   static const std::string& get_id();
 
-  // Defaults are probably o.k. since pointers aren't owned
-  /// Constructor:
-  //alpha_finder_driver();
+  // Defaults for most are probably o.k. since pointers aren't owned
+  // Constructor:
+  alpha_finder_driver() = default;
+
+  alpha_finder_driver(const falaise::config::property_set& ps,
+                      const geomtools::manager* gm);
 
   /// Destructor:
-  //~alpha_finder_driver();
+  ~alpha_finder_driver() = default;
 
-  /// Setting initialization flag
-  void set_initialized(const bool initialized_);
-
-  /// Getting initialization flag
-  bool is_initialized() const;
-
-  /// Check the geometry manager
-  bool has_geometry_manager() const;
-
-  /// Address the geometry manager
-  void set_geometry_manager(const geomtools::manager& gmgr_);
-
-  /// Return a non-mutable reference to the geometry manager
-  const geomtools::manager& get_geometry_manager() const;
-
-  /// Initialize the driver through configuration properties
-  void initialize(const falaise::config::property_set& ps);
-
-  /// Reset the driver
-  void reset();
+  alpha_finder_driver(const alpha_finder_driver&) = default;
+  alpha_finder_driver& operator=(const alpha_finder_driver&) = default;
+  alpha_finder_driver(alpha_finder_driver&&) = default;
+  alpha_finder_driver& operator=(alpha_finder_driver&&) = default;
 
   /// Main driver method
   void process(const snemo::datamodel::tracker_trajectory_data& tracker_trajectory_data_,
@@ -108,16 +95,9 @@ class alpha_finder_driver {
   /// OCD support:
   static void init_ocd(datatools::object_configuration_description& ocd_);
 
- protected:
-  /// Set default values to class members:
-  void _set_defaults();
-
  private:
-  /// Setting logging priority
-  void set_logging_priority(const datatools::logger::priority priority_);
-
-  /// Getting logging priority
-  datatools::logger::priority get_logging_priority() const;
+  /// Return a valid reference to the geometry manager
+  const geomtools::manager& get_geometry_manager() const;
 
   /// Find the unfitted cluster (cluster with 1 or 2 Geiger hits)
   void _find_delayed_unfitted_cluster_(
@@ -147,7 +127,6 @@ class alpha_finder_driver {
       snemo::datamodel::particle_track_data& particle_track_data_);
 
  private:
-  bool _initialized_ = false;                                       //<! Initialize flag
   datatools::logger::priority _logging_priority_ = datatools::logger::PRIO_WARNING;           //<! Logging flag
   const geomtools::manager* _geometry_manager_ = nullptr;             //<! The SuperNEMO geometry manager
   const snemo::geometry::locator_plugin* _locator_plugin_ = nullptr;  //!< The SuperNEMO locator plugin
