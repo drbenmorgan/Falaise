@@ -111,8 +111,6 @@ void calorimeter_association_driver::initialize(const falaise::config::property_
   DT_THROW_IF(!get_geometry_manager().is_initialized(), std::logic_error,
               "Geometry manager is not initialized !");
 
-  falaise::config::property_set ps{setup_};
-
   _logging_priority_ = datatools::logger::get_priority(ps.get<std::string>("logging.priority","warning"));
   // _geometry_manager_ = snemo::service_handle<snemo::geometry_svc>{services_};
   auto locator_plugin_name = ps.get<std::string>("locator_plugin_name","");
