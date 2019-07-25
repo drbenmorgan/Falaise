@@ -182,6 +182,8 @@ void alpha_finder_driver::_find_delayed_unfitted_cluster_(
 void alpha_finder_driver::_find_delayed_unclustered_hit_(
     const snemo::datamodel::tracker_trajectory_data &tracker_trajectory_data_,
     snemo::datamodel::particle_track_data &particle_track_data_) {
+  namespace snedm = snemo::datamodel;
+
   // Check if the solution exist
   if (!tracker_trajectory_data_.has_solutions()) {
     return;
