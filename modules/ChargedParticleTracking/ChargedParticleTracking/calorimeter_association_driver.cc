@@ -115,7 +115,7 @@ void calorimeter_association_driver::initialize(const falaise::config::property_
   // _geometry_manager_ = snemo::service_handle<snemo::geometry_svc>{services_};
   auto locator_plugin_name = ps.get<std::string>("locator_plugin_name","");
   _locator_plugin_ = getSNemoLocator(get_geometry_manager(), locator_plugin_name);
-  _matching_tolerance_ = ps.get<falaise::config::length_t>("matching_tolerance",{50, "mm"});
+  _matching_tolerance_ = ps.get<falaise::config::length_t>("matching_tolerance",{50, "mm"})();
   set_initialized(true);
 }
 
