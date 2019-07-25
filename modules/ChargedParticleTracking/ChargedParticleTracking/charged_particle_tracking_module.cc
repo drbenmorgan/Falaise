@@ -61,6 +61,7 @@ void charged_particle_tracking_module::initialize(
   namespace snreco = snemo::reconstruction;
 
   dpp::base_module::_common_initialize(setup_);
+
   falaise::config::property_set ps{setup_};
 
   _CD_label_ = ps.get<std::string>("CD_label", sdmi::default_calibrated_data_label());
@@ -80,9 +81,7 @@ void charged_particle_tracking_module::initialize(
   for (const std::string& id : driver_names) {
     auto dps = ps.get<falaise::config::property_set>(id,{});
     if (id == snreco::vertex_extrapolation_driver::get_id()) {
-      _VED_.reset(new snreco::vertex_extrapolation_driver);
-      _VED_->set_geometry_manager(*(_geometry_manager_.operator->()));
-      _VED_->initialize(dps);
+      _VED_.reset(new snreco::vertex_extrapolation_driver{dps,(_geometry_manager_.operator->())});
     } else if (id == snreco::charge_computation_driver::get_id()) {
       _CCD_.reset(new snreco::charge_computation_driver{dps});
     } else if (id == snreco::calorimeter_association_driver::get_id()) {

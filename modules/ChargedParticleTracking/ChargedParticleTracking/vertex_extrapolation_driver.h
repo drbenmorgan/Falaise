@@ -62,32 +62,19 @@ class vertex_extrapolation_driver {
   /// Return driver id
   static const std::string& get_id();
 
-  /// Initialization flag
-  void set_initialized(const bool initialized_);
-
-  /// Getting initialization flag
-  bool is_initialized() const;
-
-  /// Setting logging priority
-  void set_logging_priority(const datatools::logger::priority priority_);
-
-  /// Getting logging priority
-  datatools::logger::priority get_logging_priority() const;
-
-  /// Check the geometry manager
-  bool has_geometry_manager() const;
-
-  /// Address the geometry manager
-  void set_geometry_manager(const geomtools::manager& gmgr_);
-
-  /// Return a non-mutable reference to the geometry manager
-  const geomtools::manager& get_geometry_manager() const;
+  /// Default constructor
+  vertex_extrapolation_driver() = default;
 
   /// Initialize the driver through configuration properties
-  void initialize(const falaise::config::property_set& ps);
+  vertex_extrapolation_driver(const falaise::config::property_set& ps, const geomtools::manager* gm);
 
-  /// Reset the driver
-  void reset();
+  // Destructor
+  ~vertex_extrapolation_driver() = default;
+
+  vertex_extrapolation_driver(const vertex_extrapolation_driver&) = default;
+  vertex_extrapolation_driver& operator=(const vertex_extrapolation_driver&) = default;
+  vertex_extrapolation_driver(vertex_extrapolation_driver&&) = default;
+  vertex_extrapolation_driver& operator=(vertex_extrapolation_driver&&) = default;
 
   /// Main driver method
   void process(const snemo::datamodel::tracker_trajectory& trajectory_,
@@ -97,6 +84,9 @@ class vertex_extrapolation_driver {
   static void init_ocd(datatools::object_configuration_description& ocd_);
 
  private:
+  /// Return a non-mutable reference to the geometry manager
+  const geomtools::manager& get_geometry_manager() const;
+
   /// Check reliability of vertices extrapolation given Geiger cells
   void _check_vertices_(const snemo::datamodel::tracker_trajectory& trajectory_);
 
@@ -105,7 +95,6 @@ class vertex_extrapolation_driver {
                           snemo::datamodel::particle_track::vertex_collection_type& vertices_);
 
  private:
-  bool _initialized_ = false;                                       //!< Initialize flag
   datatools::logger::priority _logging_priority_ = datatools::logger::PRIO_WARNING;           //!< Logging priority
   const geomtools::manager* _geometry_manager_ = nullptr;             //!< The SuperNEMO geometry manager
   const snemo::geometry::locator_plugin* _locator_plugin_ = nullptr;  //!< The SuperNEMO locator plugin

@@ -39,7 +39,6 @@ const snemo::geometry::locator_plugin* getSNemoLocator(const geomtools::manager&
 }
 }
 
-
 namespace snemo {
 
 namespace reconstruction {
@@ -49,63 +48,26 @@ const std::string &vertex_extrapolation_driver::get_id() {
   return s;
 }
 
-void vertex_extrapolation_driver::set_initialized(const bool initialized_) {
-  _initialized_ = initialized_;
-}
-
-bool vertex_extrapolation_driver::is_initialized() const { return _initialized_; }
-
-void vertex_extrapolation_driver::set_logging_priority(
-    const datatools::logger::priority priority_) {
-  _logging_priority_ = priority_;
-}
-
-datatools::logger::priority vertex_extrapolation_driver::get_logging_priority() const {
-  return _logging_priority_;
-}
-
-void vertex_extrapolation_driver::set_geometry_manager(const geomtools::manager &gmgr_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Driver is already initialized !");
-  _geometry_manager_ = &gmgr_;
-}
-
 const geomtools::manager &vertex_extrapolation_driver::get_geometry_manager() const {
-  DT_THROW_IF(!has_geometry_manager(), std::logic_error, "No geometry manager is setup !");
+  DT_THROW_IF(_geometry_manager_ == nullptr, std::logic_error, "No geometry manager is setup !");
   return *_geometry_manager_;
 }
 
-bool vertex_extrapolation_driver::has_geometry_manager() const { return _geometry_manager_ != nullptr; }
-
 
 /// Initialize the driver through configuration properties
-void vertex_extrapolation_driver::initialize(const falaise::config::property_set &ps) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Driver is already initialized !");
-
-  DT_THROW_IF(!has_geometry_manager(), std::logic_error, "Missing geometry manager !");
-  DT_THROW_IF(!get_geometry_manager().is_initialized(), std::logic_error,
-              "Geometry manager is not initialized !");
-
+vertex_extrapolation_driver::vertex_extrapolation_driver(const falaise::config::property_set &ps, const geomtools::manager* gm) {
   _logging_priority_ = datatools::logger::get_priority(ps.get<std::string>("logging.priority","warning"));
-  // _geometry_manager_ = snemo::service_handle<snemo::geometry_svc>{services_};
+  _geometry_manager_ = gm;
   auto locator_plugin_name = ps.get<std::string>("locator_plugin_name","");
   _locator_plugin_ = getSNemoLocator(get_geometry_manager(), locator_plugin_name);
-
-  set_initialized(true);
 }
 
-/// Reset the driver
-void vertex_extrapolation_driver::reset() {
-  _initialized_ = false;
-  _logging_priority_ = datatools::logger::PRIO_WARNING;
-  _geometry_manager_ = nullptr;
-  _locator_plugin_ = nullptr;
-}
 
 void vertex_extrapolation_driver::process(const snemo::datamodel::tracker_trajectory &trajectory_,
                                           snemo::datamodel::particle_track &particle_) {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Driver is not initialized !");
   this->_measure_vertices_(trajectory_, particle_.get_vertices());
 }
+
 
 void vertex_extrapolation_driver::_measure_vertices_(
     const snemo::datamodel::tracker_trajectory &trajectory_,
@@ -113,14 +75,14 @@ void vertex_extrapolation_driver::_measure_vertices_(
   namespace snedm = snemo::datamodel;
   // Extract the side from the geom_id of the tracker_trajectory object:
   if (!trajectory_.has_geom_id()) {
-    DT_LOG_ERROR(get_logging_priority(), "Tracker trajectory has no geom_id! Abort!");
+    DT_LOG_ERROR(_logging_priority_, "Tracker trajectory has no geom_id, cannot extrapolate vertices");
     return;
   }
   const geomtools::geom_id &gid = trajectory_.get_geom_id();
   const geomtools::id_mgr &id_mgr = get_geometry_manager().get_id_mgr();
   if (!id_mgr.has(gid, "module") || !id_mgr.has(gid, "side")) {
-    DT_LOG_ERROR(get_logging_priority(),
-                 "Trajectory geom_id " << gid << " has no 'module' or 'side' address!");
+    DT_LOG_ERROR(_logging_priority_,
+                 "Trajectory geom_id " << gid << " has no 'module' or 'side' address");
     return;
   }
   const int side = id_mgr.get(gid, "side");
@@ -414,7 +376,7 @@ void vertex_extrapolation_driver::_measure_vertices_(
     if ((side == snemo::geometry::utils::SIDE_BACK && it->second.x() > 0.0) ||
         (side == snemo::geometry::utils::SIDE_FRONT && it->second.x() < 0.0)) {
       // Is this an error or warning?
-      DT_LOG_WARNING(get_logging_priority(), "Closest vertex is on the opposite side!");
+      DT_LOG_WARNING(_logging_priority_, "Closest vertex is on the opposite side!");
     }
     auto spot = datatools::make_handle<geomtools::blur_spot>();
     spot->set_hit_id(vertices_.size());
