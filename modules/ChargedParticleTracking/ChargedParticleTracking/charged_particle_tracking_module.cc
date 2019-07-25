@@ -69,7 +69,7 @@ void charged_particle_tracking_module::initialize(
   // Geometry manager :
   _geometry_manager_ = snemo::service_handle<snemo::geometry_svc>{service_manager_};
 
-  auto driver_names = ps.get<std::vector<std::string>("drivers",{
+  auto driver_names = ps.get<std::vector<std::string>>("drivers",{
     snemo::reconstruction::vertex_extrapolation_driver::get_id(),
     snemo::reconstruction::charge_computation_driver::get_id(),
     snemo::reconstruction::calorimeter_association_driver::get_id(),
