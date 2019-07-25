@@ -21,7 +21,7 @@ const std::string &charge_computation_driver::get_id() {
   return s;
 }
 
-charge_computation_driver::charge_computation_driver(falaise::properties(const falaise::config::property_set& ps) :
+charge_computation_driver::charge_computation_driver(const falaise::config::property_set& ps) :
                                                      charge_computation_driver::charge_computation_driver() {
 
   _charge_from_source_ = ps.get<bool>("charge_from_source",true);
