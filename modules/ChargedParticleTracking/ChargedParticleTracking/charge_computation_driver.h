@@ -61,14 +61,8 @@ class charge_computation_driver {
   /// Getting initialization flag
   bool is_initialized() const;
 
-  /// Setting logging priority
-  void set_logging_priority(const datatools::logger::priority priority_);
-
-  /// Getting logging priority
-  datatools::logger::priority get_logging_priority() const;
-
   /// Initialize the driver through configuration properties
-  void initialize(const datatools::properties& setup_);
+  void initialize(const falaise::config::property_set& ps);
 
   /// Reset the driver
   void reset();
@@ -81,10 +75,9 @@ class charge_computation_driver {
   static void init_ocd(datatools::object_configuration_description& ocd_);
 
  private:
-  bool _initialized_ = false;                              //<! Initialize flag
-  datatools::logger::priority _logging_priority_ = datatools::logger::PRIO_WARNING;  //<! Logging flag
-  bool _charge_from_source_ = true;                       //<! Convention flag for charge measurement
-  int _magnetic_field_direction_ = +1;                  //<! Magnetic field direction (+/-1)
+  bool _initialized_ = false;          //<! Initialize flag
+  bool _charge_from_source_ = true;    //<! Convention flag for charge measurement
+  int _magnetic_field_direction_ = +1; //<! Magnetic field direction (+/-1)
 };
 
 }  // end of namespace reconstruction

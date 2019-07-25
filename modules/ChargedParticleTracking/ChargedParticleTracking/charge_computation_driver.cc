@@ -31,38 +31,20 @@ void charge_computation_driver::set_initialized(const bool initialized_) {
 
 bool charge_computation_driver::is_initialized() const { return _initialized_; }
 
-void charge_computation_driver::set_logging_priority(const datatools::logger::priority priority_) {
-  _logging_priority_ = priority_;
-}
-
-datatools::logger::priority charge_computation_driver::get_logging_priority() const {
-  return _logging_priority_;
-}
-
 /// Initialize the driver through configuration properties
-void charge_computation_driver::initialize(const datatools::properties &setup_) {
+void charge_computation_driver::initialize(const falaise::config::property_set& ps) {
   DT_THROW_IF(is_initialized(), std::logic_error, "Driver is already initialized !");
 
-  // Logging priority
-  datatools::logger::priority lp = datatools::logger::extract_logging_configuration(setup_);
-  DT_THROW_IF(lp == datatools::logger::PRIO_UNDEFINED, std::logic_error,
-              "Invalid logging priority level for geometry manager !");
-  set_logging_priority(lp);
+  _charge_from_source_ = ps.get<bool>("charge_from_source",true);
 
-  if (setup_.has_key("charge_from_source")) {
-    _charge_from_source_ = setup_.fetch_boolean("charge_from_source");
-  }
-
-  if (setup_.has_key("magnetic_field_direction")) {
-    const std::string a_direction = setup_.fetch_string("magnetic_field_direction");
-    if (a_direction == "+z") {
-      _magnetic_field_direction_ = +1;
-    } else if (a_direction == "-z") {
-      _magnetic_field_direction_ = -1;
-    } else {
-      DT_THROW_IF(true, std::logic_error,
-                  "Value for 'magnetic_field_direction' must be either '+z' or '-z'!");
-    }
+  auto a_direction = ps.get<std::string>("magnetic_field_direction","+z");
+  if (a_direction == "+z") {
+    _magnetic_field_direction_ = +1;
+  } else if (a_direction == "-z") {
+    _magnetic_field_direction_ = -1;
+  } else {
+    DT_THROW_IF(true, std::logic_error,
+                "Value for 'magnetic_field_direction' must be either '+z' or '-z'!");
   }
 
   set_initialized(true);
@@ -71,7 +53,6 @@ void charge_computation_driver::initialize(const datatools::properties &setup_) 
 /// Reset the driver
 void charge_computation_driver::reset() {
   _initialized_ = false;
-  _logging_priority_ = datatools::logger::PRIO_WARNING;
   _charge_from_source_ = true;
   _magnetic_field_direction_ = +1;
 }
@@ -79,19 +60,22 @@ void charge_computation_driver::reset() {
 void charge_computation_driver::process(const snemo::datamodel::tracker_trajectory &trajectory_,
                                         snemo::datamodel::particle_track &particle_) {
   DT_THROW_IF(!is_initialized(), std::logic_error, "Driver is not initialized !");
-  // Look first if trajectory pattern is an helix or not
-  const snemo::datamodel::base_trajectory_pattern &a_track_pattern = trajectory_.get_pattern();
 
-  if (a_track_pattern.get_pattern_id() == snemo::datamodel::line_trajectory_pattern::pattern_id()) {
-    particle_.set_charge(snemo::datamodel::particle_track::undefined);
+  using snedm = snemo::datamodel;
+
+  // Look first if trajectory pattern is an helix or not
+  const snedm::base_trajectory_pattern &a_track_pattern = trajectory_.get_pattern();
+
+  if (a_track_pattern.get_pattern_id() == snedm::line_trajectory_pattern::pattern_id()) {
+    particle_.set_charge(snedm::particle_track::undefined);
     return;
   }
 
   // Retrieve helix trajectory
-  const snemo::datamodel::helix_trajectory_pattern *ptr_helix = 0;
+  const snedm::helix_trajectory_pattern *ptr_helix = 0;
   if (a_track_pattern.get_pattern_id() ==
-      snemo::datamodel::helix_trajectory_pattern::pattern_id()) {
-    ptr_helix = dynamic_cast<const snemo::datamodel::helix_trajectory_pattern *>(&a_track_pattern);
+      snedm::helix_trajectory_pattern::pattern_id()) {
+    ptr_helix = dynamic_cast<const snedm::helix_trajectory_pattern *>(&a_track_pattern);
   }
   if (!ptr_helix) {
     return;
@@ -109,9 +93,9 @@ void charge_computation_driver::process(const snemo::datamodel::tracker_trajecto
   }
 
   if (a_charge < 0) {
-    particle_.set_charge(snemo::datamodel::particle_track::negative);
+    particle_.set_charge(snedm::particle_track::negative);
   } else {
-    particle_.set_charge(snemo::datamodel::particle_track::positive);
+    particle_.set_charge(snedm::particle_track::positive);
   }
 }
 
