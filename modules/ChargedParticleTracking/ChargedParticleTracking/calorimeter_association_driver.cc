@@ -75,7 +75,7 @@ const std::string& calorimeter_association_driver::get_id() {
 }
 
 const geomtools::manager& calorimeter_association_driver::get_geometry_manager() const {
-  DT_THROW_IF(!has_geometry_manager(), std::logic_error, "No geometry manager is setup !");
+  DT_THROW_IF(_geometry_manager_ == nullptr, std::logic_error, "No geometry manager is setup !");
   return *_geometry_manager_;
 }
 
