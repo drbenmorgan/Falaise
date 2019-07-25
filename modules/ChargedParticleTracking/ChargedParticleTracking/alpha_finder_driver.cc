@@ -35,12 +35,12 @@ const snemo::geometry::locator_plugin* getSNemoLocator(const geomtools::manager&
     // Just find the first of the right type
     for (const auto& ip : gm.get_plugins()) {
       if (gm.is_plugin_a<PluginType>(ip.first)) {
-        return &(gm.get_plugin<PluginType>(ip.first);
+        return &(gm.get_plugin<PluginType>(ip.first));
       }
     }
   }
   // Direct get will throw if no plugin with that name, or not of correct type
-  return &(gm.get_plugin<PluginType>(name);
+  return &(gm.get_plugin<PluginType>(name));
 }
 }
 
