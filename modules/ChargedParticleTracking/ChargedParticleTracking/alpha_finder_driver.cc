@@ -29,7 +29,7 @@
 #include <falaise/snemo/geometry/xcalo_locator.h>
 
 namespace {
-const snemo::geometry::locator_plugin* getSNemoLocator(const geomtools::geometry_manager& gm, const std::string& name) {
+const snemo::geometry::locator_plugin* getSNemoLocator(const geomtools::manager& gm, const std::string& name) {
   using PluginType = snemo::geometry::locator_plugin;
   if (name.empty()) {
     // Just find the first of the right type
