@@ -21,6 +21,7 @@
 #include <falaise/snemo/datamodels/tracker_clustering_data.h>
 #include <falaise/snemo/datamodels/tracker_trajectory_data.h>
 #include <falaise/snemo/services/services.h>
+#include <falaise/config/property_set.h>
 
 // This plugin (ChargedParticleTracking):
 #include <ChargedParticleTracking/alpha_finder_driver.h>
