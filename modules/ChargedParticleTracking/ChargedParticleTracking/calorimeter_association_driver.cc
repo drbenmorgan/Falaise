@@ -91,7 +91,6 @@ calorimeter_association_driver::calorimeter_association_driver(const falaise::co
 void calorimeter_association_driver::process(
     const snemo::datamodel::calibrated_data::calorimeter_hit_collection_type& calorimeter_hits_,
     snemo::datamodel::particle_track& particle_) {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Driver is not initialized !");
   this->_measure_matching_calorimeters_(calorimeter_hits_, particle_);
 }
 
