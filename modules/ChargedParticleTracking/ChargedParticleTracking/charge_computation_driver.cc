@@ -6,10 +6,6 @@
 // Standard library:
 #include <sstream>
 
-// Third party:
-// - Bayeux/datatools:
-#include <datatools/properties.h>
-
 // This project (Falaise):
 #include <falaise/snemo/datamodels/helix_trajectory_pattern.h>
 #include <falaise/snemo/datamodels/line_trajectory_pattern.h>

@@ -32,13 +32,7 @@
 #ifndef FALAISE_CHARGEDPARTICLETRACKING_PLUGIN_RECONSTRUCTION_CHARGE_COMPUTATION_DRIVER_H
 #define FALAISE_CHARGEDPARTICLETRACKING_PLUGIN_RECONSTRUCTION_CHARGE_COMPUTATION_DRIVER_H 1
 
-// Third party:
-// - Bayeux/datatools
-#include <datatools/logger.h>
-
-namespace datatools {
-class properties;
-}
+#include "falaise/config/property_set.h"
 
 namespace snemo {
 
