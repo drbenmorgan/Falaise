@@ -14,6 +14,9 @@
 #include <geomtools/manager.h>
 
 // This project (Falaise):
+#include <falaise/config/property_set.h>
+#include <falaise/config/quantity.h>
+
 #include <falaise/snemo/datamodels/helix_trajectory_pattern.h>
 #include <falaise/snemo/datamodels/line_trajectory_pattern.h>
 #include <falaise/snemo/datamodels/particle_track_data.h>
@@ -24,6 +27,22 @@
 #include <falaise/snemo/geometry/gveto_locator.h>
 #include <falaise/snemo/geometry/locator_plugin.h>
 #include <falaise/snemo/geometry/xcalo_locator.h>
+
+namespace {
+const snemo::geometry::locator_plugin* getSNemoLocator(const geomtools::geometry_manager& gm, const std::string& name) {
+  using PluginType = snemo::geometry::locator_plugin;
+  if (name.empty()) {
+    // Just find the first of the right type
+    for (const auto& ip : gm.get_plugins()) {
+      if (gm.is_plugin_a<PluginType>(ip.first)) {
+        return &(gm.get_plugin<PluginType>(ip.first);
+      }
+    }
+  }
+  // Direct get will throw if no plugin with that name, or not of correct type
+  return &(gm.get_plugin<PluginType>(name);
+}
+}
 
 namespace snemo {
 
@@ -66,60 +85,23 @@ const geomtools::manager &alpha_finder_driver::get_geometry_manager() const {
 }
 
 /// Initialize the driver through configuration properties
-void alpha_finder_driver::initialize(const datatools::properties &setup_) {
+void alpha_finder_driver::initialize(const falaise::config::property_set& ps) {
   DT_THROW_IF(is_initialized(), std::logic_error, "Driver is already initialized !");
 
   DT_THROW_IF(!has_geometry_manager(), std::logic_error, "Missing geometry manager !");
   DT_THROW_IF(!get_geometry_manager().is_initialized(), std::logic_error,
               "Geometry manager is not initialized !");
 
-  // Logging priority
-  datatools::logger::priority lp = datatools::logger::extract_logging_configuration(setup_);
-  DT_THROW_IF(lp == datatools::logger::PRIO_UNDEFINED, std::logic_error,
-              "Invalid logging priority level for geometry manager !");
-  set_logging_priority(lp);
+  _logging_priority_ = datatools::logger::get_priority(ps.get<std::string>("logging.priority","warning"));
+  // _geometry_manager_ = snemo::service_handle<snemo::geometry_svc>{services_};
 
-  // Get geometry locator plugin
-  const geomtools::manager &geo_mgr = get_geometry_manager();
-  std::string locator_plugin_name;
-  if (setup_.has_key("locator_plugin_name")) {
-    locator_plugin_name = setup_.fetch_string("locator_plugin_name");
-  } else {
-    // If no locator plugin name is set, then search for the first one
-    //const geomtools::manager::plugins_dict_type &plugins = geo_mgr.get_plugins();
-    for (const auto& ip : geo_mgr.get_plugins()) {
-      const std::string& plugin_name = ip.first;
-      if (geo_mgr.is_plugin_a<snemo::geometry::locator_plugin>(plugin_name)) {
-        locator_plugin_name = plugin_name;
-        break;
-      }
-    }
-  }
-  // Access to a given plugin by name and type :
-  DT_THROW_IF(!geo_mgr.has_plugin(locator_plugin_name) ||
-                  !geo_mgr.is_plugin_a<snemo::geometry::locator_plugin>(locator_plugin_name),
-              std::logic_error, "Found no locator plugin named '" << locator_plugin_name << "'");
-  _locator_plugin_ = &geo_mgr.get_plugin<snemo::geometry::locator_plugin>(locator_plugin_name);
+  auto locator_plugin_name = ps.get<std::string>("locator_plugin_name","");
+  _locator_plugin_ = getSNemoLocator(get_geometry_manager(), locator_plugin_name);
 
-  // Minimal anode time to consider Geiger hit as delayed
-  if (setup_.has_key("minimal_delayed_time")) {
-    _minimal_delayed_time_ = setup_.fetch_real_with_explicit_dimension("minimal_delayed_time", "time");
-  }
-
-  // Minimal distance in XY coordinate between Geiger hits
-  if (setup_.has_key("minimal_cluster_xy_search_distance")) {
-    _minimal_cluster_xy_search_distance_ = setup_.fetch_real_with_explicit_dimension("minimal_cluster_xy_search_distance", "length");
-  }
-
-  // Minimal distance in Z coordinate between Geiger hits
-  if (setup_.has_key("minimal_cluster_z_search_distance")) {
-    _minimal_cluster_z_search_distance_ = setup_.fetch_real_with_explicit_dimension("minimal_cluster_z_search_distance", "length");
-  }
-
-  // Minimal distance between vertex of the prompt track and delayed GG hit
-  if (setup_.has_key("minimal_vertex_distance")) {
-    _minimal_vertex_distance_ = setup_.fetch_real_with_explicit_dimension("minimal_vertex_distance", "distance");
-  }
+  _minimal_delayed_time_ = ps.get<falaise::config::time_t>("minimal_delayed_time",{15.,"microsecond"})();
+  _minimal_cluster_xy_search_distance_ = ps.get<falaise::config::length_t>("minimal_cluster_xy_search_distance", {21.,"cm"})();
+  _minimal_cluster_z_search_distance_ = ps.get<falaise::config::length_t>("minimal_cluster_z_search_distance", {30.,"cm"})();
+  _minimal_vertex_distance_ = ps.get<falaise::config::length_t>("minimal_vertex_distance", {30., "cm"})();
 
   set_initialized(true);
 }
@@ -151,6 +133,7 @@ void alpha_finder_driver::process(
 void alpha_finder_driver::_find_delayed_unfitted_cluster_(
     const snemo::datamodel::tracker_trajectory_data &tracker_trajectory_data_,
     snemo::datamodel::particle_track_data &particle_track_data_) {
+  namespace snedm = snemo::datamodel;
 
   // Check if the solution exist
   if (!tracker_trajectory_data_.has_solutions()) {
@@ -158,13 +141,13 @@ void alpha_finder_driver::_find_delayed_unfitted_cluster_(
   }
 
   // The default solution is chosen
-  const snemo::datamodel::tracker_trajectory_solution &a_solution =
+  const snedm::tracker_trajectory_solution &a_solution =
       tracker_trajectory_data_.get_default_solution();
   // Get unfitted cluster first
   if (!a_solution.has_unfitted_clusters()) {
     return;
   }
-  const snemo::datamodel::tracker_trajectory_solution::cluster_col_type &the_unfitted_clusters =
+  const snedm::tracker_trajectory_solution::cluster_col_type &the_unfitted_clusters =
       a_solution.get_unfitted_clusters();
   // Loop on all the unfitted cluster
   for (auto iclus = the_unfitted_clusters.begin(); iclus != the_unfitted_clusters.end(); ++iclus) {
@@ -175,7 +158,7 @@ void alpha_finder_driver::_find_delayed_unfitted_cluster_(
       return;
     }
 
-    const snemo::datamodel::calibrated_tracker_hit::collection_type &delayed_gg_hits =
+    const snedm::calibrated_tracker_hit::collection_type &delayed_gg_hits =
         a_delayed_cluster.get_hits();
 
     geomtools::vector_3d associated_vertex = geomtools::invalid_vector_3d();
@@ -184,12 +167,12 @@ void alpha_finder_driver::_find_delayed_unfitted_cluster_(
 
     // Add tracker cluster handle to trajectory
     if (particle_track_data_.has_particles()) {
-      snemo::datamodel::particle_track_data::particle_collection_type &particles =
+      snedm::particle_track_data::particle_collection_type &particles =
           particle_track_data_.grab_particles();
       snemo::datamodel::particle_track &a_particle = particles.back().grab();
       const datatools::properties &aux = a_particle.get_auxiliaries();
       if (aux.has_flag(alpha_finder_driver::short_alpha_key()) && a_particle.has_trajectory()) {
-        snemo::datamodel::tracker_trajectory &a_trajectory = a_particle.get_trajectory();
+        snedm::tracker_trajectory &a_trajectory = a_particle.get_trajectory();
         a_trajectory.set_cluster_handle(*iclus);
       }
     }
@@ -204,18 +187,18 @@ void alpha_finder_driver::_find_delayed_unclustered_hit_(
     return;
   }
   // The default solution is chosen
-  const snemo::datamodel::tracker_trajectory_solution &a_solution =
+  const snedm::tracker_trajectory_solution &a_solution =
       tracker_trajectory_data_.get_default_solution();
   // Get associated clustering solution (if any)
   if (!a_solution.has_clustering_solution()) {
     return;
   }
-  const snemo::datamodel::tracker_clustering_solution &a_clustering_solution =
+  const snedm::tracker_clustering_solution &a_clustering_solution =
       a_solution.get_clustering_solution();
   if (!a_clustering_solution.has_unclustered_hits()) {
     return;
   }
-  const snemo::datamodel::calibrated_tracker_hit::collection_type &unclustered_gg_hits =
+  const snedm::calibrated_tracker_hit::collection_type &unclustered_gg_hits =
       a_clustering_solution.get_unclustered_hits();
 
   this->_find_short_track_(unclustered_gg_hits, a_solution, particle_track_data_, false);
@@ -226,12 +209,14 @@ void alpha_finder_driver::_find_short_track_(
     const snemo::datamodel::calibrated_tracker_hit::collection_type &hits_,
     const snemo::datamodel::tracker_trajectory_solution &solution_,
     snemo::datamodel::particle_track_data &particle_track_data_, const bool hits_from_cluster) {
+  namespace snedm = snemo::datamodel;
+
   geomtools::vector_3d associated_vertex;
   geomtools::invalidate(associated_vertex);
   bool has_associated_alpha = false;
   // Loop on all the geiger hits of the unfitted cluster
   for (auto ihit = hits_.begin(); ihit != hits_.end(); ++ihit) {
-    const snemo::datamodel::calibrated_tracker_hit &a_delayed_gg_hit = ihit->get();
+    const snedm::calibrated_tracker_hit &a_delayed_gg_hit = ihit->get();
 
     // set a default distance for closest vertex to check against
     double closest_vertex_distance = _minimal_vertex_distance_;
@@ -251,11 +236,11 @@ void alpha_finder_driver::_find_short_track_(
     if (!solution_.has_trajectories()) {
       return;
     }
-    const snemo::datamodel::tracker_trajectory_solution::trajectory_col_type &the_trajectories =
+    const snedm::tracker_trajectory_solution::trajectory_col_type &the_trajectories =
         solution_.get_trajectories();
     // Loop on all the trajectories
     for (auto itraj = the_trajectories.begin(); itraj != the_trajectories.end(); ++itraj) {
-      const snemo::datamodel::tracker_trajectory &a_trajectory = itraj->get();
+      const snedm::tracker_trajectory &a_trajectory = itraj->get();
       // Look into properties to find the default trajectory. Here,
       // default means the one with the best chi2. This flag is set by the
       // 'fitting' module.
@@ -267,15 +252,15 @@ void alpha_finder_driver::_find_short_track_(
         continue;
       }
 
-      const snemo::datamodel::tracker_cluster &a_prompt_cluster = a_trajectory.get_cluster();
+      const snedm::tracker_cluster &a_prompt_cluster = a_trajectory.get_cluster();
       if (a_prompt_cluster.is_delayed()) {
         continue;
       }
 
-      const snemo::datamodel::calibrated_tracker_hit::collection_type &prompt_gg_hits =
+      const snedm::calibrated_tracker_hit::collection_type &prompt_gg_hits =
           a_prompt_cluster.get_hits();
       for (auto ipromptgg = prompt_gg_hits.begin(); ipromptgg != prompt_gg_hits.end(); ++ipromptgg) {
-        const snemo::datamodel::calibrated_tracker_hit &a_prompt_gg_hit = ipromptgg->get();
+        const snedm::calibrated_tracker_hit &a_prompt_gg_hit = ipromptgg->get();
         const geomtools::vector_2d a_prompt_position(a_prompt_gg_hit.get_x(),
                                                      a_prompt_gg_hit.get_y());
         const geomtools::vector_2d a_delayed_position(a_delayed_gg_hit.get_x(),
@@ -310,16 +295,16 @@ void alpha_finder_driver::_find_short_track_(
         geomtools::vector_3d last;
         geomtools::invalidate(first);
         geomtools::invalidate(last);
-        const snemo::datamodel::base_trajectory_pattern &a_pattern = a_trajectory.get_pattern();
+        const snedm::base_trajectory_pattern &a_pattern = a_trajectory.get_pattern();
         const std::string &a_pattern_id = a_pattern.get_pattern_id();
-        if (a_pattern_id == snemo::datamodel::line_trajectory_pattern::pattern_id()) {
+        if (a_pattern_id == snedm::line_trajectory_pattern::pattern_id()) {
           const snemo::datamodel::line_trajectory_pattern &ltp =
-              dynamic_cast<const snemo::datamodel::line_trajectory_pattern &>(a_pattern);
+              dynamic_cast<const snedm::line_trajectory_pattern &>(a_pattern);
           first = ltp.get_segment().get_first();
           last = ltp.get_segment().get_last();
-        } else if (a_pattern_id == snemo::datamodel::helix_trajectory_pattern::pattern_id()) {
+        } else if (a_pattern_id == snedm::helix_trajectory_pattern::pattern_id()) {
           const snemo::datamodel::helix_trajectory_pattern &htp =
-              dynamic_cast<const snemo::datamodel::helix_trajectory_pattern &>(a_pattern);
+              dynamic_cast<const snedm::helix_trajectory_pattern &>(a_pattern);
           first = htp.get_helix().get_first();
           last = htp.get_helix().get_last();
         }
@@ -356,7 +341,7 @@ void alpha_finder_driver::_find_short_track_(
         // If hits come from unclustered hits then add a new particle
         // Create a new cluster with only one delayed geiger hits and associate it
         // to the particle track trajectory
-        auto a_cluster = datatools::make_handle<snemo::datamodel::tracker_cluster>();
+        auto a_cluster = datatools::make_handle<snedm::tracker_cluster>();
         a_cluster->make_delayed();
         auto& hits = a_cluster->get_hits();
         hits.push_back(*ihit);
@@ -365,12 +350,12 @@ void alpha_finder_driver::_find_short_track_(
         this->_build_alpha_particle_track_(hits, associated_vertex, particle_track_data_);
 
         // Add special tracker cluster handle to trajectory
-        snemo::datamodel::particle_track_data::particle_collection_type &particles =
+        snedm::particle_track_data::particle_collection_type &particles =
             particle_track_data_.grab_particles();
-        snemo::datamodel::particle_track &a_particle = particles.back().grab();
+        snedm::particle_track &a_particle = particles.back().grab();
         const datatools::properties &aux = a_particle.get_auxiliaries();
         if (aux.has_flag(alpha_finder_driver::short_alpha_key()) && a_particle.has_trajectory()) {
-          snemo::datamodel::tracker_trajectory &a_trajectory = a_particle.get_trajectory();
+          snedm::tracker_trajectory &a_trajectory = a_particle.get_trajectory();
           a_trajectory.set_cluster_handle(a_cluster);
         }
       }
@@ -382,10 +367,12 @@ void alpha_finder_driver::_find_short_track_(
 void alpha_finder_driver::_fit_short_track_(
     const snemo::datamodel::calibrated_tracker_hit::collection_type &hits_,
     const geomtools::vector_3d &first_vertex_, geomtools::vector_3d &last_vertex_) {
+  namespace snedm = snemo::datamodel;
+
   double max_distance = 0.0 * CLHEP::cm;
   // Loop on all the delayed geiger hits to compute distance between hit
   // and associated vertex
-  for (const datatools::handle<snemo::datamodel::calibrated_tracker_hit>& a_hit : hits_) {
+  for (const datatools::handle<snedm::calibrated_tracker_hit>& a_hit : hits_) {
     const geomtools::vector_3d a_hit_position(a_hit->get_x(), a_hit->get_y(), a_hit->get_z());
     const double distance = (first_vertex_ - a_hit_position).mag();
     if (distance > max_distance) {
@@ -400,8 +387,10 @@ void alpha_finder_driver::_build_alpha_particle_track_(
     const snemo::datamodel::calibrated_tracker_hit::collection_type &hits_,
     const geomtools::vector_3d &first_vertex_,
     snemo::datamodel::particle_track_data &particle_track_data_) {
+  namespace snedm = snemo::datamodel;
+
   // Add short alpha particle track
-  auto a_short_alpha = datatools::make_handle<snemo::datamodel::particle_track>();
+  auto a_short_alpha = datatools::make_handle<snedm::particle_track>();
   a_short_alpha->set_track_id(particle_track_data_.get_number_of_particles());
   a_short_alpha->set_charge(snemo::datamodel::particle_track::undefined);
 
@@ -418,14 +407,14 @@ void alpha_finder_driver::_build_alpha_particle_track_(
   }
 
   // Create new 'tracker_trajectory' handle:
-  auto a_trajectory = datatools::make_handle<snemo::datamodel::tracker_trajectory>();
+  auto a_trajectory = datatools::make_handle<snedm::tracker_trajectory>();
   // Set trajectory geom_id using the first geiger hit of the associated
   // cluster
   get_geometry_manager().get_id_mgr().make_id("tracker_submodule", a_trajectory->grab_geom_id());
   get_geometry_manager().get_id_mgr().extract(hits_.front().get().get_geom_id(),
                                               a_trajectory->grab_geom_id());
   // Set trajectory pattern
-  snemo::datamodel::line_trajectory_pattern *a_line = new snemo::datamodel::line_trajectory_pattern;
+  snemo::datamodel::line_trajectory_pattern *a_line = new snedm::line_trajectory_pattern;
   a_line->get_segment().set_first(first_vertex);
   a_line->get_segment().set_last(last_vertex);
   a_trajectory->set_pattern_handle(a_line);
@@ -436,7 +425,7 @@ void alpha_finder_driver::_build_alpha_particle_track_(
   double delay_time;
   datatools::plus_infinity(delay_time); // double x = datatools::plus_infinity();
   {
-    for (const datatools::handle<snemo::datamodel::calibrated_tracker_hit>& a_hit : hits_) {
+    for (const datatools::handle<snedm::calibrated_tracker_hit>& a_hit : hits_) {
       delay_time = std::min(delay_time, a_hit->get_delayed_time());
     }
   }
@@ -449,14 +438,14 @@ void alpha_finder_driver::_build_alpha_particle_track_(
   // associated to the center of a Geiger cells. The latter will be set to a
   // 'VERTEX_ON_WIRE'; the former will be set given its relative position
   // wrt to detector geometry.
-  snemo::datamodel::particle_track::vertex_collection_type &vertices =
+  snedm::particle_track::vertex_collection_type &vertices =
       a_short_alpha->get_vertices();
   {
     // Vertex on wire
     auto spot = datatools::make_handle<geomtools::blur_spot>();
     spot->set_hit_id(vertices.size());
-    spot->grab_auxiliaries().update(snemo::datamodel::particle_track::vertex_type_key(),
-                                   snemo::datamodel::particle_track::vertex_on_wire_label());
+    spot->grab_auxiliaries().update(snedm::particle_track::vertex_type_key(),
+                                   snedm::particle_track::vertex_on_wire_label());
     spot->set_blur_dimension(geomtools::blur_spot::dimension_three);
     spot->set_position(last_vertex);
     vertices.push_back(spot);
@@ -490,22 +479,22 @@ void alpha_finder_driver::_build_alpha_particle_track_(
     const double epsilon = 1e-5 * CLHEP::mm;
     std::string vertex_label;
     if (std::abs(first_vertex.x()) < epsilon) {
-      vertex_label = snemo::datamodel::particle_track::vertex_on_source_foil_label();
+      vertex_label = snedm::particle_track::vertex_on_source_foil_label();
     } else if (std::abs(first_vertex.x() - xcalo_bd[0]) < epsilon ||
                std::abs(first_vertex.x() - xcalo_bd[1]) < epsilon) {
-      vertex_label = snemo::datamodel::particle_track::vertex_on_main_calorimeter_label();
+      vertex_label = snedm::datamodel::particle_track::vertex_on_main_calorimeter_label();
     } else if (std::abs(first_vertex.y() - ycalo_bd[0]) < epsilon ||
                std::abs(first_vertex.y() - ycalo_bd[1]) < epsilon) {
-      vertex_label = snemo::datamodel::particle_track::vertex_on_x_calorimeter_label();
+      vertex_label = snedm::datamodel::particle_track::vertex_on_x_calorimeter_label();
     } else if (std::abs(first_vertex.z() - zcalo_bd[0]) < epsilon ||
                std::abs(first_vertex.z() - zcalo_bd[1]) < epsilon) {
-      vertex_label = snemo::datamodel::particle_track::vertex_on_gamma_veto_label();
+      vertex_label = snedm::particle_track::vertex_on_gamma_veto_label();
     } else {
-      vertex_label = snemo::datamodel::particle_track::vertex_on_wire_label();
+      vertex_label = snedm::particle_track::vertex_on_wire_label();
     }
     auto spot = datatools::make_handle<geomtools::blur_spot>();
     spot->set_hit_id(vertices.size());
-    spot->grab_auxiliaries().update(snemo::datamodel::particle_track::vertex_type_key(),
+    spot->grab_auxiliaries().update(snedm::particle_track::vertex_type_key(),
                                    vertex_label);
     spot->set_blur_dimension(geomtools::blur_spot::dimension_three);
     spot->set_position(first_vertex);
