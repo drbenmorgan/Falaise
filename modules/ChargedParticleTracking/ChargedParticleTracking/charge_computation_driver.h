@@ -49,27 +49,20 @@ class charge_computation_driver {
   /// Return driver id
   static const std::string& get_id();
 
-  /// Setting initialization flag
-  void set_initialized(const bool initialized_);
+  charge_computation_driver() = default;
+  explicit charge_computation_driver(const falaise::config::property_set& ps);
 
-  /// Getting initialization flag
-  bool is_initialized() const;
-
-  /// Initialize the driver through configuration properties
-  void initialize(const falaise::config::property_set& ps);
-
-  /// Reset the driver
-  void reset();
+  ~charge_computation_driver() = default;
+  charge_computation_driver(const charge_computation_driver&) = default;
+  charge_computation_driver& operator=(const charge_computation_driver&) = default;
+  charge_computation_driver(charge_computation_driver&&) = default;
+  charge_computation_driver& operator=(charge_computation_driver&&) = default;
 
   /// Main driver method
   void process(const snemo::datamodel::tracker_trajectory& trajectory_,
                snemo::datamodel::particle_track& particle_);
 
-  /// OCD support:
-  static void init_ocd(datatools::object_configuration_description& ocd_);
-
  private:
-  bool _initialized_ = false;          //<! Initialize flag
   bool _charge_from_source_ = true;    //<! Convention flag for charge measurement
   int _magnetic_field_direction_ = +1; //<! Magnetic field direction (+/-1)
 };
@@ -78,14 +71,8 @@ class charge_computation_driver {
 
 }  // end of namespace snemo
 
-#include <datatools/ocd_macros.h>
-
-// Declare the OCD interface of the module
-DOCD_CLASS_DECLARATION(snemo::reconstruction::charge_computation_driver)
-
 #endif  // FALAISE_CHARGEDPARTICLETRACKING_PLUGIN_RECONSTRUCTION_CHARGE_COMPUTATION_DRIVER_H
 
-// end of falaise/snemo/reconstruction/charge_computation_driver.h
 /*
 ** Local Variables: --
 ** mode: c++ --
