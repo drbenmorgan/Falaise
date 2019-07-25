@@ -83,7 +83,7 @@ class vertex_extrapolation_driver {
   const geomtools::manager& get_geometry_manager() const;
 
   /// Initialize the driver through configuration properties
-  void initialize(const datatools::properties& setup_);
+  void initialize(const falaise::config::property_set& ps);
 
   /// Reset the driver
   void reset();
