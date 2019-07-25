@@ -67,12 +67,6 @@ class charge_computation_driver {
   /// Getting logging priority
   datatools::logger::priority get_logging_priority() const;
 
-  /// Constructor:
-  charge_computation_driver();
-
-  /// Destructor:
-  ~charge_computation_driver();
-
   /// Initialize the driver through configuration properties
   void initialize(const datatools::properties& setup_);
 
@@ -86,20 +80,11 @@ class charge_computation_driver {
   /// OCD support:
   static void init_ocd(datatools::object_configuration_description& ocd_);
 
- protected:
-  /// Set default values to class members:
-  void _set_defaults();
-
  private:
-  /// Measure particle charge:
-  void _measure_particle_charge_(const snemo::datamodel::tracker_trajectory& trajectory_,
-                                 snemo::datamodel::particle_track& particle_);
-
- private:
-  bool _initialized_;                              //<! Initialize flag
-  datatools::logger::priority _logging_priority_;  //<! Logging flag
-  bool _charge_from_source_;                       //<! Convention flag for charge measurement
-  int _magnetic_field_direction_;                  //<! Magnetic field direction (+/-1)
+  bool _initialized_ = false;                              //<! Initialize flag
+  datatools::logger::priority _logging_priority_ = datatools::logger::PRIO_WARNING;  //<! Logging flag
+  bool _charge_from_source_ = true;                       //<! Convention flag for charge measurement
+  int _magnetic_field_direction_ = +1;                  //<! Magnetic field direction (+/-1)
 };
 
 }  // end of namespace reconstruction
