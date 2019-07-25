@@ -34,7 +34,8 @@
 #define FALAISE_CHARGEDPARTICLETRACKING_PLUGIN_RECONSTRUCTION_VERTEX_EXTRAPOLATION_DRIVER_H 1
 
 // This project
-#include <falaise/snemo/datamodels/particle_track.h>
+#include "falaise/config/property_set.h"
+#include "falaise/snemo/datamodels/particle_track.h"
 
 namespace geomtools {
 class manager;
