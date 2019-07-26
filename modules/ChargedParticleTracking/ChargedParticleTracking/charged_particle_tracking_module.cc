@@ -15,13 +15,13 @@
 #include <bayeux/geomtools/manager.h>
 
 // This project (Falaise):
+#include <falaise/config/property_set.h>
 #include <falaise/snemo/datamodels/calibrated_data.h>
 #include <falaise/snemo/datamodels/data_model.h>
 #include <falaise/snemo/datamodels/particle_track_data.h>
 #include <falaise/snemo/datamodels/tracker_clustering_data.h>
 #include <falaise/snemo/datamodels/tracker_trajectory_data.h>
 #include <falaise/snemo/services/services.h>
-#include <falaise/config/property_set.h>
 
 // This plugin (ChargedParticleTracking):
 #include <ChargedParticleTracking/alpha_finder_driver.h>
@@ -37,19 +37,18 @@ namespace reconstruction {
 DPP_MODULE_REGISTRATION_IMPLEMENT(charged_particle_tracking_module,
                                   "snemo::reconstruction::charged_particle_tracking_module")
 
-
 void charged_particle_tracking_module::_set_defaults() {
   using sdmi = snemo::datamodel::data_info;
-  _CD_label_ = sdmi::default_calibrated_data_label();
-  _TTD_label_ = sdmi::default_tracker_trajectory_data_label();
-  _PTD_label_ = sdmi::default_particle_track_data_label();
+  CDTag_ = sdmi::default_calibrated_data_label();
+  TTDTag_ = sdmi::default_tracker_trajectory_data_label();
+  PTDTag_ = sdmi::default_particle_track_data_label();
 
-  _geometry_manager_ = snemo::service_handle<snemo::geometry_svc>{};
+  geoManager_ = snemo::service_handle<snemo::geometry_svc>{};
 
-  _VED_.reset();
-  _CCD_.reset();
-  _CAD_.reset();
-  _AFD_.reset();
+  VEAlgo_.reset();
+  CCAlgo_.reset();
+  CAAlgo_.reset();
+  AFAlgo_.reset();
 }
 
 void charged_particle_tracking_module::initialize(
@@ -60,34 +59,39 @@ void charged_particle_tracking_module::initialize(
   using sdmi = snemo::datamodel::data_info;
   namespace snreco = snemo::reconstruction;
 
+  using VertexExtrapolator = snreco::vertex_extrapolation_driver;
+  using ChargeCalculator = snreco::charge_computation_driver;
+  using TrackToCaloMatcher = snreco::calorimeter_association_driver;
+  using AlphaFinder = snreco::alpha_finder_driver;
+
   dpp::base_module::_common_initialize(setup_);
 
   falaise::config::property_set ps{setup_};
 
-  _CD_label_ = ps.get<std::string>("CD_label", sdmi::default_calibrated_data_label());
-  _TTD_label_ = ps.get<std::string>("TTD_label", sdmi::default_tracker_trajectory_data_label());
-  _PTD_label_ = ps.get<std::string>("PTD_label", sdmi::default_particle_track_data_label());
+  CDTag_ = ps.get<std::string>("CD_label", sdmi::default_calibrated_data_label());
+  TTDTag_ = ps.get<std::string>("TTD_label", sdmi::default_tracker_trajectory_data_label());
+  PTDTag_ = ps.get<std::string>("PTD_label", sdmi::default_particle_track_data_label());
 
   // Geometry manager :
-  _geometry_manager_ = snemo::service_handle<snemo::geometry_svc>{service_manager_};
+  geoManager_ = snemo::service_handle<snemo::geometry_svc>{service_manager_};
 
-  auto driver_names = ps.get<std::vector<std::string>>("drivers",{
-    snreco::vertex_extrapolation_driver::get_id(),
-    snreco::charge_computation_driver::get_id(),
-    snreco::calorimeter_association_driver::get_id(),
-    snreco::alpha_finder_driver::get_id(),
-  });
+  auto driver_names = ps.get<std::vector<std::string>>("drivers", {
+                                                                      VertexExtrapolator::get_id(),
+                                                                      ChargeCalculator::get_id(),
+                                                                      TrackToCaloMatcher::get_id(),
+                                                                      AlphaFinder::get_id(),
+                                                                  });
 
   for (const std::string& id : driver_names) {
-    auto dps = ps.get<falaise::config::property_set>(id,{});
-    if (id == snreco::vertex_extrapolation_driver::get_id()) {
-      _VED_.reset(new snreco::vertex_extrapolation_driver{dps,(_geometry_manager_.operator->())});
-    } else if (id == snreco::charge_computation_driver::get_id()) {
-      _CCD_.reset(new snreco::charge_computation_driver{dps});
-    } else if (id == snreco::calorimeter_association_driver::get_id()) {
-      _CAD_.reset(new snreco::calorimeter_association_driver{dps, (_geometry_manager_.operator->())});
-    } else if (id == snreco::alpha_finder_driver::get_id()) {
-      _AFD_.reset(new snreco::alpha_finder_driver{dps, (_geometry_manager_.operator->())});
+    auto dps = ps.get<falaise::config::property_set>(id, {});
+    if (id == VertexExtrapolator::get_id()) {
+      VEAlgo_.reset(new VertexExtrapolator{dps, (geoManager_.operator->())});
+    } else if (id == ChargeCalculator::get_id()) {
+      CCAlgo_.reset(new ChargeCalculator{dps});
+    } else if (id == TrackToCaloMatcher::get_id()) {
+      CAAlgo_.reset(new TrackToCaloMatcher{dps, (geoManager_.operator->())});
+    } else if (id == AlphaFinder::get_id()) {
+      AFAlgo_.reset(new AlphaFinder{dps, (geoManager_.operator->())});
     } else {
       DT_THROW_IF(true, std::logic_error, "Driver '" << id << "' does not exist !");
     }
@@ -125,11 +129,13 @@ dpp::base_module::process_status charged_particle_tracking_module::process(
   namespace snedm = snemo::datamodel;
 
   // Get required input products
-  const auto& the_calibrated_data = data_record_.get<snedm::calibrated_data>(_CD_label_);
-  const auto& the_tracker_trajectory_data = data_record_.get<snedm::tracker_trajectory_data>(_TTD_label_);
+  const auto& the_calibrated_data = data_record_.get<snedm::calibrated_data>(CDTag_);
+  const auto& the_tracker_trajectory_data =
+      data_record_.get<snedm::tracker_trajectory_data>(TTDTag_);
 
   // Create or reset output bank
-  auto the_particle_track_data = snedm::getOrAddToEvent<snedm::particle_track_data>(_PTD_label_, data_record_);
+  auto the_particle_track_data =
+      snedm::getOrAddToEvent<snedm::particle_track_data>(PTDTag_, data_record_);
   the_particle_track_data.reset();
 
   // Main processing method :
@@ -175,22 +181,22 @@ void charged_particle_tracking_module::_process(
     particle_track_data_.add_particle(hPT);
 
     // Compute particle charge
-    if (_CCD_) {
-      _CCD_->process(*a_trajectory, *hPT);
+    if (CCAlgo_) {
+      CCAlgo_->process(*a_trajectory, *hPT);
     }
     // Determine track vertices
-    if (_VED_) {
-      _VED_->process(*a_trajectory, *hPT);
+    if (VEAlgo_) {
+      VEAlgo_->process(*a_trajectory, *hPT);
     }
     // Associate vertices to calorimeter hits
-    if (_CAD_) {
-      _CAD_->process(calibrated_data_.calibrated_calorimeter_hits(), *hPT);
+    if (CAAlgo_) {
+      CAAlgo_->process(calibrated_data_.calibrated_calorimeter_hits(), *hPT);
     }
   }
 
   // Alpha finder
-  if (_AFD_) {
-    _AFD_->process(tracker_trajectory_data_, particle_track_data_);
+  if (AFAlgo_) {
+    AFAlgo_->process(tracker_trajectory_data_, particle_track_data_);
   }
 }
 
@@ -203,11 +209,9 @@ void charged_particle_tracking_module::_post_process(
     geomtools::base_hit::has_flag_predicate asso_pred(calorimeter_utils::associated_flag());
     geomtools::base_hit::negates_predicate not_asso_pred(asso_pred);
     // Wrapper predicates :
-    datatools::mother_to_daughter_predicate<geomtools::base_hit,
-                                            snedm::calibrated_calorimeter_hit>
+    datatools::mother_to_daughter_predicate<geomtools::base_hit, snedm::calibrated_calorimeter_hit>
         pred_M2D(not_asso_pred);
-    datatools::handle_predicate<snedm::calibrated_calorimeter_hit> pred_via_handle(
-        pred_M2D);
+    datatools::handle_predicate<snedm::calibrated_calorimeter_hit> pred_via_handle(pred_M2D);
 
     const snedm::calibrated_data::calorimeter_hit_collection_type& chits =
         calibrated_data_.calibrated_calorimeter_hits();
@@ -227,20 +231,19 @@ void charged_particle_tracking_module::_post_process(
   snedm::calibrated_data::calorimeter_hit_collection_type& chits =
       particle_track_data_.grab_non_associated_calorimeters();
 
-  for (auto chit = chits.begin(); chit != chits.end(); ++chit) {
-    snedm::calibrated_calorimeter_hit& a_calo_hit = chit->grab();
+  for (datatools::handle<snedm::calibrated_calorimeter_hit>& a_calo_hit : chits) {
     const bool has_neighbors =
-        calorimeter_utils::has_flag(a_calo_hit, calorimeter_utils::neighbor_flag());
+        calorimeter_utils::has_flag(*a_calo_hit, calorimeter_utils::neighbor_flag());
     bool has_gg_in_front = false;
 
     // Getting geometry mapping for parted block
-    const geomtools::mapping& the_mapping = _geometry_manager_->get_mapping();
+    const geomtools::mapping& the_mapping = geoManager_->get_mapping();
     std::vector<geomtools::geom_id> gids;
-    the_mapping.compute_matching_geom_id(a_calo_hit.get_geom_id(), gids);
+    the_mapping.compute_matching_geom_id(a_calo_hit->get_geom_id(), gids);
 
     for (const geomtools::geom_id& a_gid : gids) {
       const geomtools::geom_info* ginfo_ptr = the_mapping.get_geom_info_ptr(a_gid);
-      if (!ginfo_ptr) {
+      if (ginfo_ptr == nullptr) {
         DT_LOG_WARNING(get_logging_priority(), "Unmapped geom id " << a_gid << "!");
         continue;
       }
@@ -254,7 +257,7 @@ void charged_particle_tracking_module::_post_process(
         // Tolerance must be understood as 'skin' tolerance so must be
         // multiplied by a factor of 2
         const double tolerance = 100 * CLHEP::mm;
-        if (the_mapping.check_inside(*ginfo_ptr, cell_pos, tolerance, true)) {
+        if (geomtools::mapping::check_inside(*ginfo_ptr, cell_pos, tolerance, true)) {
           has_gg_in_front = true;
           break;
         }
@@ -266,7 +269,7 @@ void charged_particle_tracking_module::_post_process(
     }  // end of calorimeter geom ids
 
     if (!has_gg_in_front || (has_neighbors && has_gg_in_front)) {
-      calorimeter_utils::flag_as(a_calo_hit, calorimeter_utils::isolated_flag());
+      calorimeter_utils::flag_as(*a_calo_hit, calorimeter_utils::isolated_flag());
     }
   }  // end of calorimeter hits
 }
