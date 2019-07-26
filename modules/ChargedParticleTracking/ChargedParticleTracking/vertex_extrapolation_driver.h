@@ -66,7 +66,8 @@ class vertex_extrapolation_driver {
   vertex_extrapolation_driver() = default;
 
   /// Initialize the driver through configuration properties
-  vertex_extrapolation_driver(const falaise::config::property_set& ps, const geomtools::manager* gm);
+  vertex_extrapolation_driver(const falaise::config::property_set& ps,
+                              const geomtools::manager* gm);
 
   // Destructor
   ~vertex_extrapolation_driver() = default;
@@ -85,7 +86,7 @@ class vertex_extrapolation_driver {
 
  private:
   /// Return a non-mutable reference to the geometry manager
-  const geomtools::manager& get_geometry_manager() const;
+  const geomtools::manager& geoManager() const;
 
   /// Check reliability of vertices extrapolation given Geiger cells
   void _check_vertices_(const snemo::datamodel::tracker_trajectory& trajectory_);
@@ -95,9 +96,9 @@ class vertex_extrapolation_driver {
                           snemo::datamodel::particle_track::vertex_collection_type& vertices_);
 
  private:
-  datatools::logger::priority _logging_priority_ = datatools::logger::PRIO_WARNING;           //!< Logging priority
-  const geomtools::manager* _geometry_manager_ = nullptr;             //!< The SuperNEMO geometry manager
-  const snemo::geometry::locator_plugin* _locator_plugin_ = nullptr;  //!< The SuperNEMO locator plugin
+  datatools::logger::priority logPriority_ = datatools::logger::PRIO_WARNING;  //!< Logging priority
+  const geomtools::manager* geoManager_ = nullptr;               //!< The SuperNEMO geometry manager
+  const snemo::geometry::locator_plugin* geoLocator_ = nullptr;  //!< The SuperNEMO locator plugin
   std::map<std::string, bool> _use_vertices_ = {};               //!< Vertices reliability
 };
 
