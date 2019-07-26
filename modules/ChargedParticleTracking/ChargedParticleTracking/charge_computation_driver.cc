@@ -21,16 +21,15 @@ const std::string &charge_computation_driver::get_id() {
   return s;
 }
 
-charge_computation_driver::charge_computation_driver(const falaise::config::property_set& ps) :
-                                                     charge_computation_driver::charge_computation_driver() {
+charge_computation_driver::charge_computation_driver(const falaise::config::property_set &ps)
+    : charge_computation_driver::charge_computation_driver() {
+  chargeFromSource_ = ps.get<bool>("charge_from_source", true);
 
-  _charge_from_source_ = ps.get<bool>("charge_from_source",true);
-
-  auto a_direction = ps.get<std::string>("magnetic_field_direction","+z");
+  auto a_direction = ps.get<std::string>("magnetic_field_direction", "+z");
   if (a_direction == "+z") {
-    _magnetic_field_direction_ = +1;
+    magneticFieldDirection_ = +1;
   } else if (a_direction == "-z") {
-    _magnetic_field_direction_ = -1;
+    magneticFieldDirection_ = -1;
   } else {
     DT_THROW_IF(true, std::logic_error,
                 "Value for 'magnetic_field_direction' must be either '+z' or '-z'!");
@@ -50,12 +49,11 @@ void charge_computation_driver::process(const snemo::datamodel::tracker_trajecto
   }
 
   // Retrieve helix trajectory
-  const snedm::helix_trajectory_pattern *ptr_helix = 0;
-  if (a_track_pattern.get_pattern_id() ==
-      snedm::helix_trajectory_pattern::pattern_id()) {
+  const snedm::helix_trajectory_pattern* ptr_helix = nullptr;
+  if (a_track_pattern.get_pattern_id() == snedm::helix_trajectory_pattern::pattern_id()) {
     ptr_helix = dynamic_cast<const snedm::helix_trajectory_pattern *>(&a_track_pattern);
   }
-  if (!ptr_helix) {
+  if (ptr_helix == nullptr) {
     return;
   }
 
@@ -65,8 +63,8 @@ void charge_computation_driver::process(const snemo::datamodel::tracker_trajecto
   const bool is_negative = std::fabs(first_point.x()) < std::fabs(last_point.x());
 
   int a_charge = (is_negative ? -1 : +1);
-  a_charge *= _magnetic_field_direction_;
-  if (!_charge_from_source_) {
+  a_charge *= magneticFieldDirection_;
+  if (chargeFromSource_) {
     a_charge *= -1;
   }
 
@@ -80,4 +78,3 @@ void charge_computation_driver::process(const snemo::datamodel::tracker_trajecto
 }  // end of namespace reconstruction
 
 }  // end of namespace snemo
-

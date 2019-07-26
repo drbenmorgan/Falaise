@@ -63,8 +63,8 @@ class charge_computation_driver {
                snemo::datamodel::particle_track& particle_);
 
  private:
-  bool _charge_from_source_ = true;    //<! Convention flag for charge measurement
-  int _magnetic_field_direction_ = +1; //<! Magnetic field direction (+/-1)
+  bool chargeFromSource_ = true;     //<! Convention flag for charge measurement
+  int magneticFieldDirection_ = +1;  //<! Magnetic field direction (+/-1)
 };
 
 }  // end of namespace reconstruction
