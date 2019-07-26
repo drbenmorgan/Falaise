@@ -23,7 +23,8 @@
 #include <falaise/snemo/geometry/xcalo_locator.h>
 
 namespace {
-const snemo::geometry::locator_plugin* getSNemoLocator(const geomtools::manager& gm, const std::string& name) {
+const snemo::geometry::locator_plugin* getSNemoLocator(const geomtools::manager& gm,
+                                                       const std::string& name) {
   using PluginType = snemo::geometry::locator_plugin;
   if (name.empty()) {
     // Just find the first of the right type
@@ -36,7 +37,7 @@ const snemo::geometry::locator_plugin* getSNemoLocator(const geomtools::manager&
   // Direct get will throw if no plugin with that name, or not of correct type
   return &(gm.get_plugin<PluginType>(name));
 }
-}
+}  // namespace
 
 namespace snemo {
 
@@ -68,24 +69,25 @@ bool calorimeter_utils::has_flag(const snemo::datamodel::calibrated_calorimeter_
   return hit_.get_auxiliaries().has_flag(flag_);
 }
 
-
 const std::string& calorimeter_association_driver::get_id() {
   static const std::string s("CAD");
   return s;
 }
 
-const geomtools::manager& calorimeter_association_driver::get_geometry_manager() const {
-  DT_THROW_IF(_geometry_manager_ == nullptr, std::logic_error, "No geometry manager is setup !");
-  return *_geometry_manager_;
+const geomtools::manager& calorimeter_association_driver::geoManager() const {
+  DT_THROW_IF(geoManager_ == nullptr, std::logic_error, "No geometry manager is setup !");
+  return *geoManager_;
 }
 
 /// Initialize the driver through configuration properties
-calorimeter_association_driver::calorimeter_association_driver(const falaise::config::property_set& ps, const geomtools::manager* gm) {
-  _logging_priority_ = datatools::logger::get_priority(ps.get<std::string>("logging.priority","warning"));
-  _geometry_manager_ = gm;
-  auto lpname = ps.get<std::string>("locator_plugin_name","");
-  _locator_plugin_ = getSNemoLocator(get_geometry_manager(), lpname);
-  _matching_tolerance_ = ps.get<falaise::config::length_t>("matching_tolerance",{50, "mm"})();
+calorimeter_association_driver::calorimeter_association_driver(
+    const falaise::config::property_set& ps, const geomtools::manager* gm) {
+  logPriority_ =
+      datatools::logger::get_priority(ps.get<std::string>("logging.priority", "warning"));
+  geoManager_ = gm;
+  auto lpname = ps.get<std::string>("locator_plugin_name", "");
+  geoLocator_ = getSNemoLocator(geoManager(), lpname);
+  matchTolerance_ = ps.get<falaise::config::length_t>("matching_tolerance", {50, "mm"})();
 }
 
 void calorimeter_association_driver::process(
@@ -121,9 +123,9 @@ void calorimeter_association_driver::_measure_matching_calorimeters_(
   //                     |-------
   //
   // Set the calorimeter locators :
-  const snemo::geometry::calo_locator& calo_locator = _locator_plugin_->get_calo_locator();
-  const snemo::geometry::xcalo_locator& xcalo_locator = _locator_plugin_->get_xcalo_locator();
-  const snemo::geometry::gveto_locator& gveto_locator = _locator_plugin_->get_gveto_locator();
+  const snemo::geometry::calo_locator& calo_locator = geoLocator_->get_calo_locator();
+  const snemo::geometry::xcalo_locator& xcalo_locator = geoLocator_->get_xcalo_locator();
+  const snemo::geometry::gveto_locator& gveto_locator = geoLocator_->get_gveto_locator();
   // Get a list of neighbouring calorimeter hits
   std::set<geomtools::geom_id> list_of_neighbours;
 
@@ -154,8 +156,7 @@ void calorimeter_association_driver::_measure_matching_calorimeters_(
   }
 
   // Loop over reconstructed vertices
-  snedm::particle_track::vertex_collection_type& the_vertices =
-      particle_.get_vertices();
+  snedm::particle_track::vertex_collection_type& the_vertices = particle_.get_vertices();
   for (datatools::handle<geomtools::blur_spot>& a_vertex : the_vertices) {
     // Do not take care of vertex other than the ones on calorimeters
     if (!snedm::particle_track::vertex_is_on_main_calorimeter(*a_vertex) &&
@@ -169,25 +170,27 @@ void calorimeter_association_driver::_measure_matching_calorimeters_(
 
     calo_collection_type calo_collection;
 
-    for (const datatools::handle<snedm::calibrated_calorimeter_hit> a_calo_hit : calorimeter_hits_) {
+    for (const datatools::handle<snedm::calibrated_calorimeter_hit> a_calo_hit :
+         calorimeter_hits_) {
       const geomtools::geom_id& a_current_gid = a_calo_hit->get_geom_id();
 
       // Getting geometry mapping for parted block
-      const geomtools::mapping& the_mapping = get_geometry_manager().get_mapping();
+      const geomtools::mapping& the_mapping = geoManager().get_mapping();
       std::vector<geomtools::geom_id> gids;
       the_mapping.compute_matching_geom_id(a_current_gid, gids);
 
       for (const geomtools::geom_id& a_gid : gids) {
         const geomtools::geom_info* ginfo_ptr = the_mapping.get_geom_info_ptr(a_gid);
-        if (!ginfo_ptr) {
-          DT_LOG_WARNING(_logging_priority_, "Unmapped geom id " << a_gid << "!");
+        if (ginfo_ptr == nullptr) {
+          DT_LOG_WARNING(logPriority_, "Unmapped geom id " << a_gid << "!");
           continue;
         }
 
         // Tolerance must be understood as 'skin' tolerance so must be
         // multiplied by a factor of 2
-        const double tolerance = _matching_tolerance_;
-        if (the_mapping.check_inside(*ginfo_ptr, a_vertex->get_position(), tolerance, true)) {
+        const double tolerance = matchTolerance_;
+        if (geomtools::mapping::check_inside(*ginfo_ptr, a_vertex->get_position(), tolerance,
+                                             true)) {
           // Compute distance to calorimeter center
           geomtools::vector_3d calo_position = geomtools::invalid_vector_3d();
 
@@ -218,7 +221,8 @@ void calorimeter_association_driver::_measure_matching_calorimeters_(
       (icalo.second)->grab_auxiliaries().clean(calorimeter_utils::associated_flag());
     }
 
-    const datatools::handle<snedm::calibrated_calorimeter_hit> a_calo = calo_collection.begin()->second;
+    const datatools::handle<snedm::calibrated_calorimeter_hit> a_calo =
+        calo_collection.begin()->second;
     calorimeter_utils::flag_as(*a_calo, calorimeter_utils::associated_flag());
 
     // Store hit in particle, set vertex gid
@@ -226,7 +230,6 @@ void calorimeter_association_driver::_measure_matching_calorimeters_(
     a_vertex->set_geom_id(a_calo->get_geom_id());
   }  // end of vertices
 }
-
 
 // static
 //

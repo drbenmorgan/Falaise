@@ -86,7 +86,8 @@ class calorimeter_association_driver {
   calorimeter_association_driver() = default;
 
   /// Construct from configuration and geometry
-  calorimeter_association_driver(const falaise::config::property_set& ps, const geomtools::manager* gm);
+  calorimeter_association_driver(const falaise::config::property_set& ps,
+                                 const geomtools::manager* gm);
 
   /// Destructor
   ~calorimeter_association_driver() = default;
@@ -113,7 +114,7 @@ class calorimeter_association_driver {
 
  private:
   /// Return a valid reference to the geometry manager
-  const geomtools::manager& get_geometry_manager() const;
+  const geomtools::manager& geoManager() const;
 
   /// Find matching calorimeters:
   void _measure_matching_calorimeters_(
@@ -121,10 +122,10 @@ class calorimeter_association_driver {
       snemo::datamodel::particle_track& particle_);
 
  private:
-  datatools::logger::priority _logging_priority_ = datatools::logger::PRIO_WARNING;           //<! Logging flag
-  const geomtools::manager* _geometry_manager_ = nullptr;             //<! The SuperNEMO geometry manager
-  const snemo::geometry::locator_plugin* _locator_plugin_ = nullptr;  //!< The SuperNEMO locator plugin
-  double _matching_tolerance_ = 50*CLHEP::mm;  //<! Matching distance between vertex and calorimeter
+  datatools::logger::priority logPriority_ = datatools::logger::PRIO_WARNING;  //<! Logging flag
+  const geomtools::manager* geoManager_ = nullptr;               //<! The SuperNEMO geometry manager
+  const snemo::geometry::locator_plugin* geoLocator_ = nullptr;  //!< The SuperNEMO locator plugin
+  double matchTolerance_ = 50 * CLHEP::mm;  //<! Matching distance between vertex and calorimeter
 };
 
 }  // end of namespace reconstruction
