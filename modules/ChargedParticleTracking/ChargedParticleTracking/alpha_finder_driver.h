@@ -77,8 +77,7 @@ class alpha_finder_driver {
   // Constructor:
   alpha_finder_driver() = default;
 
-  alpha_finder_driver(const falaise::config::property_set& ps,
-                      const geomtools::manager* gm);
+  alpha_finder_driver(const falaise::config::property_set& ps, const geomtools::manager* gm);
 
   /// Destructor:
   ~alpha_finder_driver() = default;
@@ -97,7 +96,7 @@ class alpha_finder_driver {
 
  private:
   /// Return a valid reference to the geometry manager
-  const geomtools::manager& get_geometry_manager() const;
+  const geomtools::manager& geoManager() const;
 
   /// Find the unfitted cluster (cluster with 1 or 2 Geiger hits)
   void _find_delayed_unfitted_cluster_(
@@ -127,16 +126,15 @@ class alpha_finder_driver {
       snemo::datamodel::particle_track_data& particle_track_data_);
 
  private:
-  datatools::logger::priority _logging_priority_ = datatools::logger::PRIO_WARNING;           //<! Logging flag
-  const geomtools::manager* _geometry_manager_ = nullptr;             //<! The SuperNEMO geometry manager
-  const snemo::geometry::locator_plugin* _locator_plugin_ = nullptr;  //!< The SuperNEMO locator plugin
+  datatools::logger::priority logPriority_ = datatools::logger::PRIO_WARNING;  //<! Logging flag
+  const geomtools::manager* geoManager_ = nullptr;               //<! The SuperNEMO geometry manager
+  const snemo::geometry::locator_plugin* geoLocator_ = nullptr;  //!< The SuperNEMO locator plugin
 
-  double _minimal_delayed_time_ = 15 * CLHEP::microsecond;  //!< Minimal Geiger hit delayed time
-  double
-      _minimal_cluster_xy_search_distance_ = 21 * CLHEP::cm;  //!< Minimal distance in XY coordinate between GG hits
-  double _minimal_cluster_z_search_distance_ = 30 * CLHEP::cm;  //!< Minimal distance in Z coordinate between GG hits
-  double _minimal_vertex_distance_ = 30 * CLHEP::cm;  //!< Minimal distance between the prompt vertex and the delayed
-                                     //!< GG hit
+  double minDelayedTime_ = 15 * CLHEP::microsecond;  //!< Minimum Geiger hit delayed time
+  double minXYSearchDistance_ = 21 * CLHEP::cm;      //!< Minimum distance in XY between GG hits
+  double minZSearchDistance_ = 30 * CLHEP::cm;       //!< Minimum distance in Z between GG hits
+  double minVertexDistance_ = 30 * CLHEP::cm;        //!< Minimum distance between the prompt
+                                                     //!< vertex and the delayed GG hit
 };
 
 }  // end of namespace reconstruction
