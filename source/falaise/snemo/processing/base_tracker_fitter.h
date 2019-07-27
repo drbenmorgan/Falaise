@@ -137,9 +137,9 @@ class base_tracker_fitter {
  private:
   bool _initialized_;                            /// Initialization status
   std::string _id_;                              /// Identifier of the fitter algorithm
-  const geomtools::manager *_geometry_manager_;  /// The SuperNEMO geometry manager
+  const geomtools::manager *geoManager_;  /// The SuperNEMO geometry manager
   const snemo::geometry::gg_locator
-      *_gg_locator_;                /// Locator dedicated to the SuperNEMO tracking chamber
+      *geigerLocator_;                /// Locator dedicated to the SuperNEMO tracking chamber
   size_t _maximum_number_of_fits_;  /// The maximum number of fits to be saved
 };
 
