@@ -17,8 +17,11 @@
 
 // This project:
 #include <falaise/snemo/datamodels/tracker_clustering_data.h>
+#include <falaise/config/property_set.h>
+#include <falaise/config/quantity.h>
 #include <falaise/snemo/geometry/gg_locator.h>
 #include <falaise/snemo/geometry/locator_plugin.h>
+#include <falaise/snemo/geometry/locator_helpers.h>
 
 namespace snemo {
 
@@ -111,7 +114,7 @@ void base_tracker_clusterizer::_initialize(const datatools::properties &setup_) 
   _tpc_setup_data_.logging = get_logging_priority();
   _tpc_setup_data_.cell_size = get_gg_locator().get_cell_diameter();
   // configurable:
-  _tpc_setup_data_.delayed_hit_cluster_time = ps.get<falasis::config::time_t>("TPC.delayed_hit_cluster_time", {10.0, "microsecond"});
+  _tpc_setup_data_.delayed_hit_cluster_time = ps.get<falaise::config::time_t>("TPC.delayed_hit_cluster_time", {10.0, "microsecond"})();
   _tpc_setup_data_.processing_prompt_hits = ps.get<bool>("TPC.processing_prompt_hits", true);
   _tpc_setup_data_.processing_delayed_hits = ps.get<bool>("TPC.processing_delayed_hits", true);
   _tpc_setup_data_.split_chamber = ps.get<bool>("TPC.split_chamber", false);
