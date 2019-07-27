@@ -112,7 +112,7 @@ void base_gamma_builder::_initialize(const datatools::properties& setup_) {
   // Get geometry locator plugin
   auto locator_plugin_name = ps.get<std::string>("locator_plugin_name", "");
   const geomtools::manager& geo_mgr = get_geometry_manager();
-  geoLocator_ = snemo::geometry::getSNemoLocator(locator_plugin_name, geo_mgr);
+  geoLocator_ = snemo::geometry::getSNemoLocator(geo_mgr, locator_plugin_name);
 
   // Select calorimeter hits based on associated tags
   _select_calorimeter_hits_ = ps.get<bool>("select_calorimeter_hits", false);
