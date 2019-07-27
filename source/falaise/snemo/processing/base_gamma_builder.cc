@@ -117,7 +117,7 @@ void base_gamma_builder::_initialize(const datatools::properties& setup_) {
   // Select calorimeter hits based on associated tags
   _select_calorimeter_hits_ = ps.get<bool>("select_calorimeter_hits", false);
   if (_select_calorimeter_hits_) {
-    _select_calorimeter_hits_tags_ = ps.get<std::string>("select_calorimeter_hits.tags");
+    _select_calorimeter_hits_tags_ = ps.get<std::vector<std::string>>("select_calorimeter_hits.tags");
   }
 
   // Extrapolation on the source foil given charged particle
@@ -129,7 +129,7 @@ void base_gamma_builder::_initialize(const datatools::properties& setup_) {
   // Search for gamma from e+/e- annihilation
   _add_gamma_from_annihilation_ = ps.get<bool>("add_gamma_from_annihilation",false);
   if (_add_gamma_from_annihilation_) {
-    _add_gamma_from_annihilation_minimal_probability_ = ps.get<falaise::config::fraction_t>("add_gamma_from_annihilation.minimal_probability", {1.0, "percent"});
+    _add_gamma_from_annihilation_minimal_probability_ = ps.get<falaise::config::fraction_t>("add_gamma_from_annihilation.minimal_probability", {1.0, "percent"})();
   }
 }
 
