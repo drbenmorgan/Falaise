@@ -170,9 +170,9 @@ class base_tracker_clusterizer {
  private:
   bool _initialized_;                            //!< Initialization status
   std::string _id_;                              //!< Identifier of the clusterizer algorithm
-  const geomtools::manager *_geometry_manager_;  //!< The SuperNEMO geometry manager
+  const geomtools::manager *geoManager_;  //!< The SuperNEMO geometry manager
   const snemo::geometry::gg_locator
-      *_gg_locator_;  //!< Locator dedicated to the SuperNEMO tracking chamber
+      *geigerLocator_;  //!< Locator dedicated to the SuperNEMO tracking chamber
   geomtools::id_selector _cell_id_selector_;  //!< A selector of GIDs
   TrackerPreClustering::setup_data
       _tpc_setup_data_;  //!< The configuration data for the time-clustering algorithm
