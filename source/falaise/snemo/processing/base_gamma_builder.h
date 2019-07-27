@@ -158,8 +158,8 @@ class base_gamma_builder {
  private:
   bool _initialized_;                            //!< Initialization status
   std::string _id_;                              //!< Identifier of the gamma builder algorithm
-  const geomtools::manager *_geometry_manager_;  //!< The SuperNEMO geometry manager
-  const snemo::geometry::locator_plugin *_locator_plugin_;  //!< The SuperNEMO locator plugin
+  const geomtools::manager *geoManager_;  //!< The SuperNEMO geometry manager
+  const snemo::geometry::locator_plugin *geoLocator_;  //!< The SuperNEMO locator plugin
 
   hit_collection_type _used_hits_;     //!< Hits that are used as input for any gamma algorithm
   hit_collection_type _ignored_hits_;  //!< Hits that are not used as input for any gamma algorithm
