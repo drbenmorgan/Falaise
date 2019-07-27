@@ -63,7 +63,7 @@ datatools::logger::priority base_gamma_builder::get_logging_priority() const {
 }
 
 void base_gamma_builder::set_logging_priority(datatools::logger::priority priority_) {
-  DT_THROW_IF(lp == datatools::logger::PRIO_UNDEFINED, std::logic_error,
+  DT_THROW_IF(priority_ == datatools::logger::PRIO_UNDEFINED, std::logic_error,
               "Invalid logging priority level for base gamma builder !");
   _logging_priority = priority_;
 }
