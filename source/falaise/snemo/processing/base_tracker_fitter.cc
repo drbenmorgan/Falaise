@@ -21,7 +21,7 @@
 #include <falaise/snemo/datamodels/tracker_trajectory_data.h>
 #include <falaise/snemo/geometry/gg_locator.h>
 #include <falaise/snemo/geometry/locator_plugin.h>
-#include <falaise/geometry/locator_helpers.h>
+#include <falaise/snemo/geometry/locator_helpers.h>
 
 #include <falaise/config/property_set.h>
 
@@ -91,7 +91,7 @@ void base_tracker_fitter::_initialize(const datatools::properties& setup_) {
   _maximum_number_of_fits_ = ps.get<int>("maximum_number_of_fits", 0);
 
   auto locator_plugin_name = ps.get<std::string>("locator_plugin_name","");
-  auto& snLocator = snemo::geometry::getSNemoLocator(locator_plugin_name, get_geometry_manager());
+  auto& snLocator = snemo::geometry::getSNemoLocator(get_geometry_manager(),locator_plugin_name);
   geigerLocator_ = &(snLocator.get_gg_locator());
   DT_THROW_IF(geigerLocator_ == nullptr, std::logic_error, "Cannot find Geiger locator !");
 }
