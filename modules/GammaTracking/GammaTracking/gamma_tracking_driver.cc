@@ -51,7 +51,7 @@ void gamma_tracking_driver::initialize(const datatools::properties& setup_) {
   // Extract the setup of the gamma tracking algo :
   datatools::properties gt_setup;
   setup_.export_and_rename_starting_with(gt_setup, "GT.", "");
-  _gt_.initialize(gt_setup);
+  gtAlgo_.initialize(gt_setup);
 
   _set_initialized(true);
 }
@@ -71,7 +71,7 @@ int gamma_tracking_driver::_prepare_process(
     snemo::datamodel::particle_track_data& ptd_) {
   base_gamma_builder::_prepare_process(calo_hits_, ptd_);
 
-  gt::event& an_event = _gt_.grab_event();
+  gt::event& an_event = gtAlgo_.grab_event();
   gt::event::calorimeter_collection_type& the_gamma_calos = an_event.grab_calorimeters();
 
   for (const auto& a_calo_hit : calo_hits_) {
@@ -105,7 +105,7 @@ int gamma_tracking_driver::_prepare_process(
     new_calo_hit.sigma_energy = a_calo_hit->get_sigma_energy();
   }
 
-  _gt_.prepare_process();
+  gtAlgo_.prepare_process();
 
   return 0;
 }
@@ -115,9 +115,9 @@ int gamma_tracking_driver::_process_algo(
     const base_gamma_builder::hit_collection_type& /*calo_hits_*/,
     snemo::datamodel::particle_track_data& ptd_) {
   // Running gamma tracking
-  _gt_.process();
+  gtAlgo_.process();
   gt::gamma_tracking::solution_type gamma_tracks;
-  _gt_.get_reflects(gamma_tracks);
+  gtAlgo_.get_reflects(gamma_tracks);
 
   for (const auto& a_list : gamma_tracks) {
     auto hPT = datatools::make_handle<snemo::datamodel::particle_track>();
@@ -148,7 +148,7 @@ int gamma_tracking_driver::_process_algo(
       hBS->set_blur_dimension(geomtools::blur_spot::dimension_three);
 
       const gt::event::calorimeter_collection_type& the_gamma_calos =
-          _gt_.get_event().get_calorimeters();
+          gtAlgo_.get_event().get_calorimeters();
       hBS->grab_auxiliaries().store(snemo::datamodel::particle_track::vertex_type_key(),
                                     the_gamma_calos.at(calo_id).label);
       hBS->set_position(the_gamma_calos.at(calo_id).position);
@@ -158,7 +158,7 @@ int gamma_tracking_driver::_process_algo(
   }    // end of gammas
 
   // Reset GT algorithm
-  _gt_.reset();
+  gtAlgo_.reset();
 
   return 0;
 }
