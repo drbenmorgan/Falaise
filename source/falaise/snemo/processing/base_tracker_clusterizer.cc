@@ -35,7 +35,7 @@ base_tracker_clusterizer::base_tracker_clusterizer(const std::string &name) {
 }
 
 base_tracker_clusterizer::~base_tracker_clusterizer() {
-  if (_initialized_) {
+  if (isInitialized_) {
     _reset();
   }
 }
@@ -71,9 +71,9 @@ void base_tracker_clusterizer::set_logging_priority(datatools::logger::priority 
 
 const std::string &base_tracker_clusterizer::get_id() const { return id_; }
 
-bool base_tracker_clusterizer::is_initialized() const { return _initialized_; }
+bool base_tracker_clusterizer::is_initialized() const { return isInitialized_; }
 
-void base_tracker_clusterizer::_set_initialized(bool i_) { _initialized_ = i_; }
+void base_tracker_clusterizer::_set_initialized(bool i_) { isInitialized_ = i_; }
 
 const snemo::geometry::gg_locator &base_tracker_clusterizer::get_gg_locator() const {
   return *geigerLocator_;
