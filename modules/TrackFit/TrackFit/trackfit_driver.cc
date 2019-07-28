@@ -324,7 +324,7 @@ int trackfit_driver::_process_algo(const snemo::datamodel::tracker_clustering_da
         h_pattern.reset(htp);
 
         // Set cluster and pattern handle to tracker_trajectory:
-        h_trajectory->set_trajectory_id(a_trajectory_solution.get_trajectories().size());
+        h_trajectory->set_trajectory_id(a_trajectory_solution->get_trajectories().size());
         h_trajectory->set_cluster_handle(a_cluster);
         h_trajectory->set_pattern_handle(h_pattern);
         h_trajectory->grab_auxiliaries().store_real("chi2", pow(a_fit_solution.chi, 2));
@@ -355,7 +355,7 @@ int trackfit_driver::_process_algo(const snemo::datamodel::tracker_clustering_da
 
         // Create new 'tracker_trajectory' handle:
         auto h_trajectory = datatools::make_handle<snemo::datamodel::tracker_trajectory>();
-        a_trajectory_solution.grab_trajectories().push_back(h_trajectory);
+        a_trajectory_solution->grab_trajectories().push_back(h_trajectory);
 
         // Set trajectory geom_id using the first geiger
         // hit of the associated cluster
@@ -371,7 +371,7 @@ int trackfit_driver::_process_algo(const snemo::datamodel::tracker_clustering_da
         h_pattern.reset(ltp);
 
         // Set cluster and pattern handle to tracker_trajectory:
-        h_trajectory->set_trajectory_id(a_trajectory_solution.get_trajectories().size());
+        h_trajectory->set_trajectory_id(a_trajectory_solution->get_trajectories().size());
         h_trajectory->set_cluster_handle(a_cluster);
         h_trajectory->set_pattern_handle(h_pattern);
         h_trajectory->grab_auxiliaries().store_real("chi2", pow(a_fit_solution.chi, 2));
