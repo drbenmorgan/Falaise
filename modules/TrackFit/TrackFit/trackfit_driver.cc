@@ -390,7 +390,7 @@ int trackfit_driver::_process_algo(const snemo::datamodel::tracker_clustering_da
 
       if (!helix_fit_succeed && !line_fit_succeed) {
         snemo::datamodel::tracker_trajectory_solution::cluster_col_type& cct =
-            a_trajectory_solution.grab_unfitted_clusters();
+            a_trajectory_solution->grab_unfitted_clusters();
         cct.push_back(a_cluster);
       }
     }  // end of 'tracker_cluster'
