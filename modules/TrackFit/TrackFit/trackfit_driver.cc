@@ -254,7 +254,7 @@ int trackfit_driver::_process_algo(const snemo::datamodel::tracker_clustering_da
     const snemo::datamodel::tracker_clustering_solution::cluster_col_type& clusters =
         a_cluster_solution->get_clusters();
 
-    for (const datatools::handle<snemo::datamodel::tracker_clustering_solution>& a_cluster) {
+    for (const datatools::handle<snemo::datamodel::tracker_clustering_solution>& a_cluster : clusters) {
       // Get tracker hits stored in the current tracker cluster:
       const snemo::datamodel::calibrated_tracker_hit::collection_type& hits = a_cluster->get_hits();
 
