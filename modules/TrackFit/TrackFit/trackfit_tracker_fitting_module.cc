@@ -116,21 +116,21 @@ dpp::base_module::process_status trackfit_tracker_fitting_module::process(
     datatools::things& event) {
   DT_THROW_IF(!is_initialized(), std::logic_error,
               "Module '" << get_name() << "' is not initialized !");
+  namespace snedm = snemo::datamodel;
 
   // Check tracker clustering data
   if (!event.has(TCDTag_)) {
     DT_THROW_IF(true, std::logic_error, "Missing tracker clustering data to be processed !");
   }
-  const auto& inputClusters = event.get<snemo::datamodel::tracker_clustering_data>(TCDTag_);
+  const auto& inputClusters = event.get<snedm::tracker_clustering_data>(TCDTag_);
 
   // Check tracker trajectory data
-  auto& outputTrajectories =
-      snemo::datamodel::getOrAddToEvent<snemo::datamodel::tracker_trajectory_data>(TTDTag_, event);
+  auto& outputTrajectories = snedm::getOrAddToEvent<snedm::tracker_trajectory_data>(TTDTag_, event);
   if (outputTrajectories.has_solutions()) {
     DT_LOG_WARNING(get_logging_priority(),
                    "Event bank '" << TTDTag_ << "' already has processed tracker trajectory data");
   }
-  the_tracker_trajectory_data.reset();
+  outputTrajectories.reset();
 
   // Main processing method :
   _process(inputClusters, outputTrajectories);
