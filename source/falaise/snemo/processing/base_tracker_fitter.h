@@ -135,12 +135,12 @@ class base_tracker_fitter {
   datatools::logger::priority _logging_priority;  /// Logging priority threshold
 
  private:
-  bool _initialized_;                            /// Initialization status
-  std::string _id_;                              /// Identifier of the fitter algorithm
+  bool isInitialized_;                            /// Initialization status
+  std::string id_;                              /// Identifier of the fitter algorithm
   const geomtools::manager *geoManager_;  /// The SuperNEMO geometry manager
   const snemo::geometry::gg_locator
       *geigerLocator_;                /// Locator dedicated to the SuperNEMO tracking chamber
-  size_t _maximum_number_of_fits_;  /// The maximum number of fits to be saved
+  size_t maxFitsToSave_;  /// The maximum number of fits to be saved
 };
 
 }  // end of namespace processing

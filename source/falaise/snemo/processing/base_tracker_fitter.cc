@@ -29,8 +29,8 @@ namespace snemo {
 
 namespace processing {
 // Constructor
-base_tracker_fitter::base_tracker_fitter(const std::string& id_) {
-  _id_ = id_;
+base_tracker_fitter::base_tracker_fitter(const std::string& name) {
+  id_ = name;
   _set_initialized(false);
   _set_defaults();
 }
@@ -45,7 +45,7 @@ void base_tracker_fitter::_set_defaults() {
   _logging_priority = datatools::logger::PRIO_WARNING;
   geoManager_ = nullptr;
   geigerLocator_ = nullptr;
-  _maximum_number_of_fits_ = 0;
+  maxFitsToSave_ = 0;
 }
 
 datatools::logger::priority base_tracker_fitter::get_logging_priority() const {
@@ -59,15 +59,15 @@ void base_tracker_fitter::set_logging_priority(datatools::logger::priority prior
 }
 
 const std::string& base_tracker_fitter::get_id() const {
-  return _id_;
+  return id_;
 }
 
 bool base_tracker_fitter::is_initialized() const {
-  return _initialized_;
+  return isInitialized_;
 }
 
-void base_tracker_fitter::_set_initialized(bool i_) {
-  _initialized_ = i_;
+void base_tracker_fitter::_set_initialized(bool state) {
+  isInitialized_ = state;
 }
 
 const snemo::geometry::gg_locator& base_tracker_fitter::get_gg_locator() const {
@@ -88,7 +88,7 @@ void base_tracker_fitter::_initialize(const datatools::properties& setup_) {
   auto lp = datatools::logger::get_priority(ps.get<std::string>("logging.priority", "warning"));
   set_logging_priority(lp);
 
-  _maximum_number_of_fits_ = ps.get<int>("maximum_number_of_fits", 0);
+  maxFitsToSave_ = ps.get<int>("maximum_number_of_fits", 0);
 
   auto locator_plugin_name = ps.get<std::string>("locator_plugin_name","");
   auto snLocator = snemo::geometry::getSNemoLocator(get_geometry_manager(),locator_plugin_name);
@@ -118,14 +118,14 @@ bool base_tracker_fitter::has_geometry_manager() const {
 int base_tracker_fitter::process(const snemo::datamodel::tracker_clustering_data& clustering_,
                                  snemo::datamodel::tracker_trajectory_data& trajectory_) {
   int status = 0;
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Fitter '" << _id_ << "' is not initialized !");
+  DT_THROW_IF(!is_initialized(), std::logic_error, "Fitter '" << id_ << "' is not initialized !");
 
   trajectory_.invalidate_solutions();
 
   status = _process_algo(clustering_, trajectory_);
   if (status != 0) {
     DT_LOG_ERROR(get_logging_priority(),
-                 "Processing of cluster hits by '" << _id_ << "' algorithm has failed !");
+                 "Processing of cluster hits by '" << id_ << "' algorithm has failed !");
     return status;
   }
 
@@ -176,11 +176,11 @@ int base_tracker_fitter::_post_process(snemo::datamodel::tracker_trajectory_data
       snemo::datamodel::tracker_trajectory& a_trajectory = a_trajectory_dict.begin()->second.grab();
       a_trajectory.grab_auxiliaries().update("default", true);
 
-      if (_maximum_number_of_fits_ == 0) {
+      if (maxFitsToSave_ == 0) {
         continue;
       }
 
-      // Remove solution based on _maximum_number_of_fits_. Also keep
+      // Remove solution based on maxFitsToSave_. Also keep
       // trajectory with chi2 value pretty close to the previous saved
       // trajectory
       size_t count = 0;
@@ -188,7 +188,7 @@ int base_tracker_fitter::_post_process(snemo::datamodel::tracker_trajectory_data
       for (auto j = a_trajectory_dict.begin(); j != a_trajectory_dict.end();
            ++j, ++count) {
         const double chi2_tolerance = 0.1;
-        if (count >= _maximum_number_of_fits_ && std::abs(j->first - prev_chi2) > chi2_tolerance) {
+        if (count >= maxFitsToSave_ && std::abs(j->first - prev_chi2) > chi2_tolerance) {
           (j->second)->grab_auxiliaries().store_flag("__remove");
         } else {
           prev_chi2 = j->first;
@@ -231,7 +231,7 @@ void base_tracker_fitter::tree_dump(std::ostream& out_, const std::string& title
          << geoManager_->get_setup_version() << "'" << std::endl;
   }
   out_ << indent << datatools::i_tree_dumpable::tag
-       << "Max number of fit to be saved : " << _maximum_number_of_fits_ << std::endl;
+       << "Max number of fit to be saved : " << maxFitsToSave_ << std::endl;
 
   out_ << indent << datatools::i_tree_dumpable::inherit_tag(inherit_) << "End." << std::endl;
 }
