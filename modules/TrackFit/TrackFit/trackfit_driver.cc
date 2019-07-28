@@ -246,7 +246,7 @@ int trackfit_driver::_process_algo(const snemo::datamodel::tracker_clustering_da
 
   for (const datatools::handle<snemo::datamodel::tracker_clustering_solution>& a_cluster_solution : cluster_solutions) {
     auto a_trajectory_solution = datatools::make_handle<snemo::datamodel::tracker_trajectory_solution>();
-    trajectory_.add_solution(s_trajectory_solution);
+    trajectory_.add_solution(a_trajectory_solution);
     a_trajectory_solution->set_solution_id(a_cluster_solution->get_solution_id());
     a_trajectory_solution->set_clustering_solution(a_cluster_solution);
 
