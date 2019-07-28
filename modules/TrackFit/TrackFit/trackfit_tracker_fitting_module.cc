@@ -15,6 +15,7 @@
 #include <geomtools/manager.h>
 
 // This project:
+#include <falaise/config/property_set.h>
 #include <falaise/snemo/datamodels/data_model.h>
 #include <falaise/snemo/datamodels/tracker_clustering_data.h>
 #include <falaise/snemo/datamodels/tracker_trajectory_data.h>
