@@ -304,7 +304,7 @@ int trackfit_driver::_process_algo(const snemo::datamodel::tracker_clustering_da
 
         // Create new 'tracker_trajectory' handle:
         auto h_trajectory = datatools::make_handle<snemo::datamodel::tracker_trajectory>();
-        a_trajectory_solution.grab_trajectories().push_back(h_trajectory);
+        a_trajectory_solution->grab_trajectories().push_back(h_trajectory);
 
         // 2012/05/11 XG : this work if all cells are clusterized on
         // the same side. If clusterizer algorithms puts together
