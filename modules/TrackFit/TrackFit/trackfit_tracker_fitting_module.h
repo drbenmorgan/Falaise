@@ -33,11 +33,13 @@
 #ifndef FALAISE_TRACKFIT_PLUGIN_SNEMO_RECONSTRUCTION_TRACKFIT_TRACKER_FITTING_MODULE_H
 #define FALAISE_TRACKFIT_PLUGIN_SNEMO_RECONSTRUCTION_TRACKFIT_TRACKER_FITTING_MODULE_H 1
 
+#include <memory>
+
 // Third party:
-// - Boost:
-#include <boost/scoped_ptr.hpp>
 // - Bayeux/dpp :
 #include <dpp/base_module.h>
+
+
 
 namespace geomtools {
 class manager;
@@ -59,17 +61,17 @@ namespace reconstruction {
 /// \brief The data processing module for the fitting of particles trajectories in the tracker
 class trackfit_tracker_fitting_module : public dpp::base_module {
  public:
-  /// Setting geometry manager
-  void set_geometry_manager(const geomtools::manager& gmgr_);
-
-  /// Getting geometry manager
-  const geomtools::manager& get_geometry_manager() const;
-
   /// Constructor
   trackfit_tracker_fitting_module(datatools::logger::priority = datatools::logger::PRIO_FATAL);
 
   /// Destructor
   virtual ~trackfit_tracker_fitting_module();
+
+  /// Setting geometry manager
+  void set_geometry_manager(const geomtools::manager& gmgr_);
+
+  /// Getting geometry manager
+  const geomtools::manager& get_geometry_manager() const;
 
   /// Initialization
   virtual void initialize(const datatools::properties& setup_,
@@ -91,11 +93,11 @@ class trackfit_tracker_fitting_module : public dpp::base_module {
   void _set_defaults();
 
  private:
-  const geomtools::manager* _geometry_manager_;  //!< The geometry manager
-  std::string _TCD_label_;  //!< The label of the input tracker clustering data bank
-  std::string _TTD_label_;  //!< The label of the output tracker trajectory data bank
-  boost::scoped_ptr< ::snemo::processing::base_tracker_fitter>
-      _driver_;  //!< Handle to the embedded fitter algorithm with dynamic memory auto-deletion
+  const geomtools::manager* geoManager_;  //!< The geometry manager
+  std::string TCDTag_;  //!< The label of the input tracker clustering data bank
+  std::string TTDTag_;  //!< The label of the output tracker trajectory data bank
+  std::unique_ptr<snemo::processing::base_tracker_fitter>
+      fitterAlgo_;  //!< Handle to the embedded fitter algorithm with dynamic memory auto-deletion
 
   // Macro to automate the registration of the module :
   DPP_MODULE_REGISTRATION_INTERFACE(trackfit_tracker_fitting_module)
