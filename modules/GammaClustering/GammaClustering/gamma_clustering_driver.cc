@@ -69,7 +69,7 @@ void gamma_clustering_driver::initialize(const datatools::properties& setup_) {
   timeRange_ = ps.get<falaise::config::time_t>("cluster_time_range",{6, "nanosecond"})();
   gridMask_ = ps.get<std::string>("cluster_grid_mask", "first");
   minProbability_ = ps.get<falaise::config::fraction_t>("minimal_internal_probability", {1e-3, "percent"})();
-  minTimeResolution_ = ps.get<falase::config::time_t("sigma_time_good_calo", {2.5, "nanosecond"})();
+  minTimeResolution_ = ps.get<falaise::config::time_t("sigma_time_good_calo", {2.5, "nanosecond"})();
 
   _set_initialized(true);
 }
