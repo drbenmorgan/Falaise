@@ -107,10 +107,10 @@ class gamma_clustering_driver : public ::snemo::processing::base_gamma_builder {
       const snemo::datamodel::calibrated_calorimeter_hit& tail_begin_calo_hit_) const;
 
  private:
-  double _cluster_time_range_;      //!< The time condition for clustering
-  std::string _cluster_grid_mask_;  //!< The spatial condition for clustering
-  double _min_prob_;                //!< The minimal probability required between clusters
-  double _sigma_time_good_calo_;    //!< The minimal time resolution to consider calorimeter hit
+  double timeRange_;          //!< The time condition for clustering
+  std::string gridMask_;      //!< The spatial condition for clustering
+  double minProbability_;     //!< The minimal probability required between clusters
+  double minTimeResolution_;  //!< The minimal time resolution to consider calorimeter hit
 };
 
 }  // end of namespace reconstruction

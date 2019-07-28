@@ -17,6 +17,8 @@
 #include <bayeux/geomtools/manager.h>
 
 // This project:
+#include <falaise/config/property_set.h>
+#include <falaise/config/quantity.h>
 #include <falaise/snemo/datamodels/data_model.h>
 #include <falaise/snemo/datamodels/particle_track_data.h>
 #include <falaise/snemo/geometry/calo_locator.h>
@@ -50,10 +52,10 @@ gamma_clustering_driver::~gamma_clustering_driver() {
 void gamma_clustering_driver::_set_defaults() {
   base_gamma_builder::_set_defaults();
 
-  _cluster_time_range_ = 6 * CLHEP::ns;
-  _cluster_grid_mask_ = "first";
-  _min_prob_ = 1e-3 * CLHEP::perCent;
-  _sigma_time_good_calo_ = 2.5 * CLHEP::ns;
+  timeRange_ = 6 * CLHEP::ns;
+  gridMask_ = "first";
+  minProbability_ = 1e-3 * CLHEP::perCent;
+  minTimeResolution_ = 2.5 * CLHEP::ns;
 }
 
 // Initialization :
@@ -61,34 +63,13 @@ void gamma_clustering_driver::initialize(const datatools::properties& setup_) {
   this->snemo::processing::base_gamma_builder::_initialize(setup_);
 
   // Extract the setup of the base gamma builder :
-  datatools::properties gc_setup;
-  setup_.export_and_rename_starting_with(gc_setup, get_id() + ".", "");
+  falaise::config::property_set tmpPS{setup_};
+  auto ps = tmpPS.get<falaise::config::property_set>(get_id(),{});
 
-  std::string key;
-  if (gc_setup.has_key(key = "cluster_time_range")) {
-    _cluster_time_range_ = gc_setup.fetch_real(key);
-    if (!gc_setup.has_explicit_unit(key)) {
-      _cluster_time_range_ *= CLHEP::ns;
-    }
-  }
-
-  if (gc_setup.has_key(key = "cluster_grid_mask")) {
-    _cluster_grid_mask_ = gc_setup.fetch_string(key);
-  }
-
-  if (gc_setup.has_key(key = "minimal_internal_probability")) {
-    _min_prob_ = gc_setup.fetch_real(key);
-    if (!gc_setup.has_explicit_unit(key)) {
-      _min_prob_ *= CLHEP::perCent;
-    }
-  }
-
-  if (gc_setup.has_key(key = "sigma_time_good_calo")) {
-    _sigma_time_good_calo_ = gc_setup.fetch_real(key);
-    if (!gc_setup.has_explicit_unit(key)) {
-      _sigma_time_good_calo_ *= CLHEP::ns;
-    }
-  }
+  timeRange_ = ps.get<falaise::config::time_t>("cluster_time_range",{6, "nanosecond"})();
+  gridMask_ = ps.get<std::string>("cluster_grid_mask", "first");
+  minProbability_ = ps.get<falaise::config::fraction_t>("minimal_internal_probability", {1e-3, "percent"})();
+  minTimeResolution_ = ps.get<falase::config::time_t("sigma_time_good_calo", {2.5, "nanosecond"})();
 
   _set_initialized(true);
 }
@@ -107,8 +88,6 @@ int gamma_clustering_driver::_process_algo(
   // Getting gamma clusters
   cluster_collection_type the_reconstructed_clusters;
   for (const auto& a_calo_hit : calo_hits_) {
-    // const snemo::datamodel::calibrated_calorimeter_hit& a_calo_hit = icalo->get();
-
     const geomtools::geom_id& a_gid = a_calo_hit->get_geom_id();
     // If already clustered then skip it
     if (std::find(registered_calos.begin(), registered_calos.end(), a_gid) !=
@@ -126,15 +105,6 @@ int gamma_clustering_driver::_process_algo(
     // Ensure all calorimeter hits within a cluster are in time
     _get_time_neighbours(a_cluster, the_reconstructed_clusters);
   }
-
-  // if (get_logging_priority() >= datatools::logger::PRIO_TRACE) {
-  //  for (const auto& a_cluster : the_reconstructed_clusters) {
-  //    for (const auto& j : a_cluster) {
-  //      const snemo::datamodel::calibrated_calorimeter_hit& a_calo_hit = j.second.get();
-  //      a_calo_hit.tree_dump();
-  //    }
-  //  }
-  //}
 
   /*A : Carry on with tracking*/
   cluster_collection_type the_reconstructed_gammas;
@@ -213,18 +183,18 @@ void gamma_clustering_driver::_get_geometrical_neighbours(
   registered_calos_.push_back(a_gid);
 
   uint8_t mask = snemo::geometry::utils::NEIGHBOUR_NONE;
-  if (_cluster_grid_mask_ == "first") {
+  if (gridMask_ == "first") {
     mask = snemo::geometry::utils::NEIGHBOUR_FIRST;
-  } else if (_cluster_grid_mask_ == "second") {
+  } else if (gridMask_ == "second") {
     mask = snemo::geometry::utils::NEIGHBOUR_FIRST | snemo::geometry::utils::NEIGHBOUR_SECOND;
-  } else if (_cluster_grid_mask_ == "diagonal") {
+  } else if (gridMask_ == "diagonal") {
     mask = snemo::geometry::utils::NEIGHBOUR_DIAG;
-  } else if (_cluster_grid_mask_ == "side") {
+  } else if (gridMask_ == "side") {
     mask = snemo::geometry::utils::NEIGHBOUR_SIDE;
-  } else if (_cluster_grid_mask_ == "none") {
+  } else if (gridMask_ == "none") {
     mask = snemo::geometry::utils::NEIGHBOUR_NONE;
   } else {
-    DT_THROW_IF(true, std::logic_error, "Unknown neighbour mask '" << _cluster_grid_mask_ << "' !")
+    DT_THROW_IF(true, std::logic_error, "Unknown neighbour mask '" << gridMask_ << "' !")
   }
 
   const snemo::geometry::calo_locator& calo_locator = base_gamma_builder::get_calo_locator();
@@ -282,7 +252,7 @@ void gamma_clustering_driver::_get_time_neighbours(cluster_type& cluster_,
     const double current_time = it->first;
     const double next_time = std::next(it)->first;
     const double delta_time = next_time - current_time;
-    if (delta_time > _cluster_time_range_) {
+    if (delta_time > timeRange_) {
       break;
     }
   }
@@ -319,7 +289,7 @@ void gamma_clustering_driver::_get_tof_association(
     // The algo tries to find a tail to a head
     for (; it_head != a_cluster.rend(); ++it_head) {
       const snemo::datamodel::calibrated_calorimeter_hit& a_calo = *(it_head->second);
-      if (a_calo.get_sigma_time() < _sigma_time_good_calo_) {
+      if (a_calo.get_sigma_time() < minTimeResolution_) {
         break;
       }
     }
@@ -340,7 +310,7 @@ void gamma_clustering_driver::_get_tof_association(
 
       for (; it_tail != next_cluster.end(); ++it_tail) {
         const snemo::datamodel::calibrated_calorimeter_hit& a_calo = *(it_tail->second);
-        if (a_calo.get_sigma_time() < _sigma_time_good_calo_) {
+        if (a_calo.get_sigma_time() < minTimeResolution_) {
           break;
         }
       }
@@ -349,7 +319,7 @@ void gamma_clustering_driver::_get_tof_association(
       }
 
       const double tof_prob = _get_tof_probability(*(it_head->second), *(it_tail->second));
-      if (tof_prob > _min_prob_) {
+      if (tof_prob > minProbability_) {
         // Keep all possible solutions
         possible_clusters_association.insert(std::make_pair(tof_prob, j));
       }
@@ -408,7 +378,7 @@ void gamma_clustering_driver::_get_tof_association(
       if (it1 != cluster_to_be_considered.end()) {
         cluster_to_be_considered.erase(it1);
       }
-      
+
       auto it2 = std::find(cluster_to_be_considered.begin(), cluster_to_be_considered.end(), i_next_cluster);
       if (it2 != cluster_to_be_considered.end()) {
         cluster_to_be_considered.erase(it2);
@@ -455,7 +425,7 @@ double gamma_clustering_driver::_get_tof_probability(
 
   geomtools::vector_3d tail_position;
   const geomtools::geom_id& tail_gid = tail_begin_calo_hit_.get_geom_id();
-  
+
   if (calo_locator.is_calo_block_in_current_module(tail_gid)) {
     calo_locator.get_block_position(tail_gid, tail_position);
   } else if (xcalo_locator.is_calo_block_in_current_module(tail_gid)) {
