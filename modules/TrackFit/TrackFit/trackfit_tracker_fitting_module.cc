@@ -128,7 +128,7 @@ dpp::base_module::process_status trackfit_tracker_fitting_module::process(
       snemo::datamodel::getOrAddToEvent<snemo::datamodel::tracker_trajectory_data>(TTDTag_, event);
   if (outputTrajectories.has_solutions()) {
     DT_LOG_WARNING(get_logging_priority(),
-                   "Event bank '" << TTDTag << "' already has processed tracker trajectory data");
+                   "Event bank '" << TTDTag_ << "' already has processed tracker trajectory data");
   }
   the_tracker_trajectory_data.reset();
 
