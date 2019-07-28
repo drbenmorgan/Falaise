@@ -83,7 +83,7 @@ const snemo::geometry::gg_locator &base_tracker_clusterizer::get_gg_locator() co
 
 void base_tracker_clusterizer::_initialize(const datatools::properties &setup_) {
   DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
-  DT_THROW_IF(has_geometry_manager(), std::logic_error, "Missing geometry manager !");
+  DT_THROW_IF(!has_geometry_manager(), std::logic_error, "Missing geometry manager !");
   DT_THROW_IF(!geoManager_->is_initialized(), std::logic_error,
               "Geometry manager is not initialized !");
 
