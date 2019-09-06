@@ -148,6 +148,7 @@ if(FALAISE_ENABLE_TESTING)
     test/test_falaise.cxx
     test/test_io_data.cxx
     test/test_falaise_tags.cxx
+    test/test_tree_dump_helpers.cxx
    )
   list(APPEND FalaiseLibrary_TESTS_CATCH
     test/test_falaise_version.cxx
