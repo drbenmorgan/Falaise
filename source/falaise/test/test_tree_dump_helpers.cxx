@@ -68,6 +68,13 @@ void tree_dump(std::ostream& os, const std::string& indent, BidirIt first, Bidir
   ::tree_dump(os, indent, *last);
 }
 
+// Review how boost::program_options does this, very similar idea...
+// 
+// options_description desc{"options"};
+// desc.add_options()
+//   (...)
+//   ...
+//   (...); 
 struct tree_dumper {
   std::ostream& os;
   const std::string indent;
@@ -221,7 +228,6 @@ void as_tree_last_(std::ostream& os, const std::string& indent, const std::strin
 
 
 
-// Review how boost::program_options does this, very similar idea...
 class test : public datatools::i_tree_dumpable {
  public:
   void tree_dump(std::ostream& os = std::clog, const std::string& title = "",
