@@ -60,12 +60,15 @@ void tree_dump(std::ostream& os, const std::string& indent, BidirIt first, Bidir
   // So may need to have as_sequence or as_table functions.
   // Defaults can be "as_sequence" for value_type != tree, "as_tree" otherwise
 
-  auto penultimate = --last;
+  // Requires care to handle empty, single element containers!
+  auto penultimate = (first != last) ? --last : last;
   while (first != penultimate) {
     ::tree_dump(os, indent, *first);
     ++first;
   }
-  ::tree_dump(os, indent, *last);
+  if(first != last) {
+    ::tree_dump(os, indent, *last);
+  }
 }
 
 // Review how boost::program_options does this, very similar idea...
