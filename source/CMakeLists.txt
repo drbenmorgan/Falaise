@@ -27,18 +27,4 @@
 add_subdirectory(falaise)
 
 
-#-----------------------------------------------------------------------
-# Manual
-#
-if(Pandoc_FOUND)
-  set(FALAISE_MANPAGE_IN  ${CMAKE_CURRENT_SOURCE_DIR}/Falaise.1.md)
-  set(FALAISE_MANPAGE_OUT ${FALAISE_BUILDPRODUCT_DIR}/share/man/man1/Falaise.1)
 
-  add_custom_command(OUTPUT ${FALAISE_MANPAGE_OUT}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${FALAISE_BUILDPRODUCT_DIR}/share/man/man1
-    COMMAND ${Pandoc_EXECUTABLE} -s -w man ${FALAISE_MANPAGE_IN} -o ${FALAISE_MANPAGE_OUT}
-    COMMENT "Generating Falaise.1 man page"
-    DEPENDS ${FALAISE_MANPAGE_IN}
-    )
-  add_custom_target(falaise_man ALL DEPENDS ${FALAISE_MANPAGE_OUT})
-endif()
