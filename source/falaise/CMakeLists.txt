@@ -25,6 +25,7 @@
 #
 
 set(FalaiseLibrary_HEADERS
+  bounded_int.h
   exitcodes.h
   falaise.h
   resource.h
@@ -151,6 +152,7 @@ if(FALAISE_ENABLE_TESTING)
    )
   list(APPEND FalaiseLibrary_TESTS_CATCH
     test/test_falaise_version.cxx
+    test/test_bounded_int.cxx
     test/test_path.cxx
     test/test_property_set.cxx
     test/test_quantity.cxx
