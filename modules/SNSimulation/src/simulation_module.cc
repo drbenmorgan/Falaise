@@ -12,8 +12,8 @@
 // Third party:
 // - Falaise
 #include <falaise/property_set.h>
-#include <falaise/snemo/services/service_handle.h>
 #include <falaise/snemo/services/geometry.h>
+#include <falaise/snemo/services/service_handle.h>
 
 // - Bayeux/datatools:
 #include <datatools/exception.h>
@@ -33,11 +33,11 @@
 #include <mctools/g4/simulation_ctrl.h>
 
 namespace {
-  template <typename T>
-  void maybe_assign(falaise::property_set const& ps, std::string const& key, T& parameter) {
-    parameter = ps.get<T>(key, parameter);
-  }
+template <typename T>
+void maybe_assign(falaise::property_set const& ps, std::string const& key, T& parameter) {
+  parameter = ps.get<T>(key, parameter);
 }
+}  // namespace
 
 namespace mctools {
 namespace g4 {
@@ -56,13 +56,7 @@ simulation_module::simulation_module(datatools::logger::priority logging_priorit
 }
 
 // Destructor :
-simulation_module::~simulation_module() {
-  // Make sure all internal resources are terminated
-  // before destruction :
-  if (is_initialized()) {
-    reset();
-  }
-}
+simulation_module::~simulation_module() { reset(); }
 
 // Initialization :
 void simulation_module::initialize(const datatools::properties& ps,
@@ -72,10 +66,9 @@ void simulation_module::initialize(const datatools::properties& ps,
               "Module '" << get_name() << "' is already initialized !");
 
   // Parsing configuration starts here :
-  falaise::property_set fps{ps};
-
   this->_common_initialize(ps);
 
+  falaise::property_set fps{ps};
   maybe_assign(fps, "Geo_label", geometryServiceName_);
   maybe_assign(fps, "SD_label", simdataBankName_);
   if (simdataBankName_.empty()) {
@@ -106,14 +99,10 @@ void simulation_module::initialize(const datatools::properties& ps,
   maybe_assign(geant4PSet, "output_prng_states_file", geant4Parameters_.output_prng_states_file);
   maybe_assign(geant4PSet, "prng_states_save_modulo", geant4Parameters_.prng_states_save_modulo);
   // PSet is strict here on signed/unsigned
-  //maybe_assign(geant4PSet, "number_of_events_modulo", geant4Parameters_.number_of_events_modulo);
+  // maybe_assign(geant4PSet, "number_of_events_modulo", geant4Parameters_.number_of_events_modulo);
   // But this is fine...
   geant4Parameters_.number_of_events_modulo = geant4PSet.get<int>("number_of_events_modulo", 0);
   // could extract always extract integers as maxint_t, then check value fits in requested type?
-
-  //if (get_logging_priority() >= datatools::logger::PRIO_TRACE) {
-    geant4Parameters_.tree_dump(std::clog, "", "[trace]: ");
-  //}
 
   // Services setup
   if (geometryManagerRef_ == nullptr) {
@@ -128,9 +117,6 @@ void simulation_module::initialize(const datatools::properties& ps,
 
 // Reset :
 void simulation_module::reset() {
-  DT_THROW_IF(!is_initialized(), std::logic_error,
-              "Module '" << get_name() << "' is not initialized !");
-
   _set_initialized(false);
 
   if (geant4SimulationController_ != nullptr) {
@@ -150,11 +136,18 @@ void simulation_module::reset() {
 }
 
 // Processing :
-auto simulation_module::process(datatools::things& event_record_)
-    -> dpp::base_module::process_status {
+auto simulation_module::process(datatools::things& event) -> dpp::base_module::process_status {
   DT_THROW_IF(!this->is_initialized(), std::logic_error,
               "Module '" << get_name() << "' is not initialized !");
-  int status = this->_simulate_event(event_record_);
+  // Bank name must be unique
+  DT_THROW_IF(event.has(simdataBankName_), std::runtime_error,
+              "Work item input to module '" << this->get_name() << "' already has data bank named '"
+                                            << simdataBankName_ << "'");
+
+  auto& sdBank = event.add<mctools::simulated_data>(simdataBankName_);
+
+  int status = this->_simulate_event(sdBank);
+
   return status == 0 ? dpp::base_module::PROCESS_OK : dpp::base_module::PROCESS_FATAL;
 }
 
@@ -205,10 +198,7 @@ auto simulation_module::get_state_manager() const -> const mygsl::prng_state_man
 void simulation_module::_initialize_manager(datatools::service_manager& smgr_) {
   // Allocate the simulation manager :
   geant4Simulation_ = new manager;
-
-  // 2012-04-30 FM: add support for a handle to the service manager
   geant4Simulation_->set_service_manager(smgr_);
-
   // Install the geometry manager accessed from the
   // Geometry service (bypassing the embedded geometry manager
   // in the simulation manager) :
@@ -225,57 +215,34 @@ void simulation_module::_initialize_manager(datatools::service_manager& smgr_) {
 }
 
 void simulation_module::_terminate_manager() {
-  if (geant4SimulationController_ != nullptr) {
-    delete geant4SimulationController_;
-    geant4SimulationController_ = nullptr;
-  }
+  delete geant4SimulationController_;
+  geant4SimulationController_ = nullptr;
 
-  if (geant4Simulation_ != nullptr) {
-    delete geant4Simulation_;
-    geant4Simulation_ = nullptr;
-  }
+  delete geant4Simulation_;
+  geant4Simulation_ = nullptr;
 
   geant4Parameters_.reset();
 }
 
-auto simulation_module::_simulate_event(datatools::things& workItem) -> int {
-  // Bank name must be unique
-  DT_THROW_IF(workItem.has(simdataBankName_), std::runtime_error,
-              "Work item input to module '" << this->get_name() << "' already has data bank named '"
-                                            << simdataBankName_ << "'");
-  auto& sdBank = workItem.add<mctools::simulated_data>(simdataBankName_);
+auto simulation_module::_simulate_event(mctools::simulated_data& sdBank) -> int {
   geant4Simulation_->grab_user_event_action().set_external_event_data(sdBank);
-
   {
-    {
-      DT_LOG_TRACE(get_logging_priority(), "Acquire the event control lock...");
-      boost::mutex::scoped_lock lock(*geant4SimulationController_->event_mutex);
+    boost::mutex::scoped_lock lock(*geant4SimulationController_->event_mutex);
 
-      if (geant4SimulationController_->simulation_thread == nullptr) {
-        DT_LOG_TRACE(get_logging_priority(),
-                     "Starting the G4 simulation manager from its own thread...");
-        geant4SimulationController_->start();
-        DT_LOG_TRACE(get_logging_priority(), "G4 simulation manager thread started.");
-        DT_LOG_TRACE(get_logging_priority(), "Now wait for G4 to run an event...");
-      }
-      DT_LOG_TRACE(get_logging_priority(),
-                   "Notify that event control is now available for the G4 simulation thread...");
-      geant4SimulationController_->event_availability_status = simulation_ctrl::AVAILABLE_FOR_G4;
-      geant4SimulationController_->event_available_condition->notify_one();
+    if (geant4SimulationController_->simulation_thread == nullptr) {
+      geant4SimulationController_->start();
     }
+    geant4SimulationController_->event_availability_status = simulation_ctrl::AVAILABLE_FOR_G4;
+    geant4SimulationController_->event_available_condition->notify_one();
+  }
 
-    // Wait for the release of the event control by the G4 process :
-    {
-      DT_LOG_TRACE(get_logging_priority(),
-                   "Wait for the release of the event control by the G4 simulation thread...");
-      boost::mutex::scoped_lock lock(*geant4SimulationController_->event_mutex);
-      while (geant4SimulationController_->event_availability_status ==
-             simulation_ctrl::AVAILABLE_FOR_G4) {
-        geant4SimulationController_->event_available_condition->wait(
-            *geant4SimulationController_->event_mutex);
-      }
-      DT_LOG_TRACE(get_logging_priority(),
-                   "Ok ! The event control is released by the G4 simulation thread...");
+  // Wait for the release of the event control by the G4 process :
+  {
+    boost::mutex::scoped_lock lock(*geant4SimulationController_->event_mutex);
+    while (geant4SimulationController_->event_availability_status ==
+           simulation_ctrl::AVAILABLE_FOR_G4) {
+      geant4SimulationController_->event_available_condition->wait(
+          *geant4SimulationController_->event_mutex);
     }
   }
   return 0;

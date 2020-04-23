@@ -87,7 +87,7 @@ class simulation_module : public dpp::base_module {
 
   void _terminate_manager();
 
-  int _simulate_event(datatools::things& /* event_record_ */);
+  int _simulate_event(mctools::simulated_data& /* bank*/);
 
  private:
   std::string geometryServiceName_;  //!< The label of the Geometry service to be accessed
