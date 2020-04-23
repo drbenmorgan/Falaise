@@ -10,6 +10,11 @@
 #include <string>
 
 // Third party:
+// - Falaise
+#include <falaise/property_set.h>
+#include <falaise/snemo/services/service_handle.h>
+#include <falaise/snemo/services/geometry.h>
+
 // - Bayeux/datatools:
 #include <datatools/exception.h>
 #include <datatools/ioutils.h>
@@ -26,6 +31,13 @@
 #include <mctools/g4/event_action.h>
 #include <mctools/g4/manager.h>
 #include <mctools/g4/simulation_ctrl.h>
+
+namespace {
+  template <typename T>
+  void maybe_assign(falaise::property_set const& ps, std::string const& key, T& parameter) {
+    parameter = ps.get<T>(key, parameter);
+  }
+}
 
 namespace mctools {
 namespace g4 {
@@ -53,167 +65,63 @@ simulation_module::~simulation_module() {
 }
 
 // Initialization :
-void simulation_module::initialize(const datatools::properties& config_,
+void simulation_module::initialize(const datatools::properties& ps,
                                    datatools::service_manager& service_manager_,
                                    dpp::module_handle_dict_type& /*module_dict_*/) {
   DT_THROW_IF(is_initialized(), std::logic_error,
               "Module '" << get_name() << "' is already initialized !");
 
   // Parsing configuration starts here :
-  this->_common_initialize(config_);
+  falaise::property_set fps{ps};
 
-  if (geometryServiceName_.empty()) {
-    if (config_.has_key("Geo_label")) {
-      geometryServiceName_ = config_.fetch_string("Geo_label");
-    }
-  }
+  this->_common_initialize(ps);
 
+  maybe_assign(fps, "Geo_label", geometryServiceName_);
+  maybe_assign(fps, "SD_label", simdataBankName_);
   if (simdataBankName_.empty()) {
-    if (config_.has_key("SD_label")) {
-      simdataBankName_ = config_.fetch_string("SD_label");
-    }
+    // Use the default label for the 'simulated data' bank :
+    simdataBankName_ = ::mctools::event_utils::EVENT_DEFAULT_SIMULATED_DATA_LABEL;  // "SD"
   }
 
   // Special setup parameters for the mctools::g4 simulation manager :
-
   // Force non-interactive parameters:
   geant4Parameters_.interactive = false;
   geant4Parameters_.g4_visu = false;
   geant4Parameters_.g4_macro = "";
   geant4Parameters_.output_data_file.clear();
 
-  if (geant4Parameters_.logging == "fatal") {
-    if (config_.has_flag("manager.logging.priority")) {
-      geant4Parameters_.logging = config_.fetch_string("manager.logging.priority");
-    } else if (config_.has_flag("manager.debug")) {
-      geant4Parameters_.logging = "debug";
-    } else if (config_.has_flag("manager.verbose")) {
-      geant4Parameters_.logging = "notice";
-    }
-  }
+  // Extract from pset
+  auto geant4PSet = fps.get<falaise::property_set>("manager", {});
+  maybe_assign(geant4PSet, "logging", geant4Parameters_.logging);
+  maybe_assign(geant4PSet, "configuration_filename", geant4Parameters_.manager_config_filename);
+  maybe_assign(geant4PSet, "seed", geant4Parameters_.mgr_seed);
+  maybe_assign(geant4PSet, "vertex_generator_name", geant4Parameters_.vg_name);
+  maybe_assign(geant4PSet, "vertex_generator_seed", geant4Parameters_.vg_seed);
+  maybe_assign(geant4PSet, "event_generator_name", geant4Parameters_.eg_name);
+  maybe_assign(geant4PSet, "event_generator_seed", geant4Parameters_.eg_seed);
+  maybe_assign(geant4PSet, "shpf_seed", geant4Parameters_.shpf_seed);
+  maybe_assign(geant4PSet, "input_prng_seeds_file", geant4Parameters_.input_prng_seeds_file);
+  maybe_assign(geant4PSet, "output_prng_seeds_file", geant4Parameters_.output_prng_seeds_file);
+  maybe_assign(geant4PSet, "input_prng_states_file", geant4Parameters_.input_prng_states_file);
+  maybe_assign(geant4PSet, "output_prng_states_file", geant4Parameters_.output_prng_states_file);
+  maybe_assign(geant4PSet, "prng_states_save_modulo", geant4Parameters_.prng_states_save_modulo);
+  // PSet is strict here on signed/unsigned
+  //maybe_assign(geant4PSet, "number_of_events_modulo", geant4Parameters_.number_of_events_modulo);
+  // But this is fine...
+  geant4Parameters_.number_of_events_modulo = geant4PSet.get<int>("number_of_events_modulo", 0);
+  // could extract always extract integers as maxint_t, then check value fits in requested type?
 
-  if (geant4Parameters_.manager_config_filename.empty()) {
-    if (config_.has_key("manager.configuration_filename")) {
-      geant4Parameters_.manager_config_filename =
-          config_.fetch_string("manager.configuration_filename");
-    }
-  }
-
-  if (geant4Parameters_.mgr_seed == mygsl::random_utils::SEED_INVALID) {
-    if (config_.has_key("manager.seed")) {
-      geant4Parameters_.mgr_seed = config_.fetch_integer("manager.seed");
-    }
-  }
-
-  if (geant4Parameters_.vg_name.empty()) {
-    if (config_.has_key("manager.vertex_generator_name")) {
-      geant4Parameters_.vg_name = config_.fetch_string("manager.vertex_generator_name");
-    }
-  }
-
-  if (geant4Parameters_.vg_seed == mygsl::random_utils::SEED_INVALID) {
-    if (config_.has_key("manager.vertex_generator_seed")) {
-      geant4Parameters_.vg_seed = config_.fetch_integer("manager.vertex_generator_seed");
-    }
-  }
-
-  if (geant4Parameters_.eg_name.empty()) {
-    if (config_.has_key("manager.event_generator_name")) {
-      geant4Parameters_.eg_name = config_.fetch_string("manager.event_generator_name");
-    }
-  }
-
-  if (geant4Parameters_.eg_seed == mygsl::random_utils::SEED_INVALID) {
-    if (config_.has_key("manager.event_generator_seed")) {
-      geant4Parameters_.eg_seed = config_.fetch_integer("manager.event_generator_seed");
-    }
-  }
-
-  if (geant4Parameters_.shpf_seed == mygsl::random_utils::SEED_INVALID) {
-    if (config_.has_key("manager.shpf_seed")) {
-      geant4Parameters_.shpf_seed = config_.fetch_integer("manager.shpf_seed");
-    }
-  }
-
-  if (geant4Parameters_.input_prng_seeds_file.empty()) {
-    if (config_.has_key("manager.input_prng_seeds_file")) {
-      geant4Parameters_.input_prng_seeds_file =
-          config_.fetch_string("manager.input_prng_seeds_file");
-    }
-  }
-
-  if (geant4Parameters_.output_prng_seeds_file.empty()) {
-    if (config_.has_key("manager.output_prng_seeds_file")) {
-      geant4Parameters_.output_prng_seeds_file =
-          config_.fetch_string("manager.output_prng_seeds_file");
-    }
-  }
-
-  if (geant4Parameters_.input_prng_states_file.empty()) {
-    if (config_.has_key("manager.input_prng_states_file")) {
-      geant4Parameters_.input_prng_states_file =
-          config_.fetch_string("manager.input_prng_states_file");
-    }
-  }
-
-  if (geant4Parameters_.output_prng_states_file.empty()) {
-    if (config_.has_key("manager.output_prng_states_file")) {
-      geant4Parameters_.output_prng_states_file =
-          config_.fetch_string("manager.output_prng_states_file");
-    }
-  }
-
-  if (geant4Parameters_.prng_states_save_modulo == 0) {
-    if (config_.has_key("manager.prng_states_save_modulo")) {
-      geant4Parameters_.prng_states_save_modulo =
-          config_.fetch_integer("manager.prng_states_save_modulo");
-    }
-  }
-
-  if (geant4Parameters_.number_of_events_modulo == 0) {
-    if (config_.has_key("manager.number_of_events_modulo")) {
-      geant4Parameters_.number_of_events_modulo =
-          config_.fetch_integer("manager.number_of_events_modulo");
-    }
-  }
-
-  // More setup parameters can be added.
-
-  if (get_logging_priority() >= datatools::logger::PRIO_TRACE) {
+  //if (get_logging_priority() >= datatools::logger::PRIO_TRACE) {
     geant4Parameters_.tree_dump(std::clog, "", "[trace]: ");
-  }
-  // Parsing configuration stops here .
+  //}
 
-  // Initialization starts here :
-
+  // Services setup
   if (geometryManagerRef_ == nullptr) {
-    // Access to the Geometry Service :
-    DT_THROW_IF(geometryServiceName_.empty(), std::logic_error,
-                "Module '" << get_name() << "' has no valid '"
-                           << "Geo_label"
-                           << "' property !");
-    if (service_manager_.has(geometryServiceName_) &&
-        service_manager_.is_a<geomtools::geometry_service>(geometryServiceName_)) {
-      // Fetch a reference to the geometry service :
-      auto& Geo = service_manager_.grab<geomtools::geometry_service>(geometryServiceName_);
-      // Request for a reference to the geometry manager and installation
-      // in the simulation manager :
-      this->set_geometry_manager(Geo.get_geom_manager());
-    } else {
-      DT_THROW_IF(true, std::logic_error,
-                  "Module '" << get_name() << "' has no '" << geometryServiceName_
-                             << "' geometry service !");
-    }
+    snemo::service_handle<snemo::geometry_svc> tmpHandle{service_manager_};
+    this->set_geometry_manager(*(tmpHandle.operator->()));
+    // Double check (though service_handle should guarantee a non-nullptr)
+    DT_THROW_IF(geometryManagerRef_ == nullptr, std::logic_error, "Missing geometry manager !");
   }
-
-  DT_THROW_IF(geometryManagerRef_ == nullptr, std::logic_error, "Missing geometry manager !");
-
-  if (simdataBankName_.empty()) {
-    // Use the default label for the 'simulated data' bank :
-    simdataBankName_ = ::mctools::event_utils::EVENT_DEFAULT_SIMULATED_DATA_LABEL;  // "SD"
-  }
-
-  // Allocate internal resources :
   this->_initialize_manager(service_manager_);
   this->_set_initialized(true);
 }
