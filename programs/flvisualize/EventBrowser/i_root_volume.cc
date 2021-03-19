@@ -36,6 +36,17 @@ namespace visualization {
 
 namespace detector {
 
+// ctor:
+i_root_volume::i_root_volume(const std::string& name_, const std::string& category_) {
+  _name = name_;
+  _category = category_;
+  _geo_volume = nullptr;
+  _initialized = false;
+}
+
+// dtor:
+i_root_volume::~i_root_volume() { this->reset(); }
+
 bool i_root_volume::is_initialized() const { return _initialized; }
 
 void* i_root_volume::grab_volume() {
@@ -47,17 +58,6 @@ const void* i_root_volume::get_volume() const {
   DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
   return _geo_volume;
 }
-
-// ctor:
-i_root_volume::i_root_volume(const std::string& name_, const std::string& category_) {
-  _name = name_;
-  _category = category_;
-  _geo_volume = nullptr;
-  _initialized = false;
-}
-
-// dtor:
-i_root_volume::~i_root_volume() { this->reset(); }
 
 void i_root_volume::initialize(const geomtools::geom_info& ginfo_) {
   _placement = ginfo_.get_world_placement();
@@ -87,12 +87,8 @@ void i_root_volume::clear() {
 }
 
 void i_root_volume::reset() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
-
-  if (_geo_volume != nullptr) {
-    delete _geo_volume;
-    _geo_volume = nullptr;
-  }
+  delete _geo_volume;
+  _geo_volume = nullptr;
   _initialized = false;
 }
 
@@ -111,48 +107,6 @@ void i_root_volume::_highlight() {
   // data bank.
   // _geo_volume->SetVisibility(_visibility);
   _geo_volume->SetVisibility(true);
-}
-
-void i_root_volume::tree_dump(std::ostream& out_, const std::string& title_,
-                              const std::string& indent_, bool inherit_) const {
-  std::string indent;
-  if (!indent_.empty()) {
-    indent = indent_;
-  }
-  if (!title_.empty()) {
-    out_ << indent << title_ << std::endl;
-  }
-
-  out_ << indent << datatools::i_tree_dumpable::tag
-       << "Initialized : " << (is_initialized() ? "yes" : "no") << std::endl;
-
-  out_ << indent << datatools::i_tree_dumpable::tag;
-  if (!get_name().empty()) {
-    out_ << "Name : " << get_name() << std::endl;
-  } else {
-    out_ << "Name : "
-         << "<empty>" << std::endl;
-  }
-
-  out_ << indent << datatools::i_tree_dumpable::tag;
-  if (!get_category().empty()) {
-    out_ << "Category : " << get_category() << std::endl;
-  } else {
-    out_ << "Category : "
-         << "<empty>" << std::endl;
-  }
-
-  out_ << indent << datatools::i_tree_dumpable::tag << "Type : " << get_type() << std::endl;
-
-  out_ << indent << datatools::i_tree_dumpable::tag << get_placement().get_translation() / CLHEP::mm
-       << " mm" << std::endl;
-
-  out_ << indent << datatools::i_tree_dumpable::inherit_tag(inherit_)
-       << get_placement().get_rotation() << " radians" << std::endl;
-}
-
-void i_root_volume::dump() const {
-  this->tree_dump(std::clog, "snemo::visualization::detector::i_root_volume");
 }
 
 }  // end of namespace detector

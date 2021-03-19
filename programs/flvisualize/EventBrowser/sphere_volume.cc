@@ -66,24 +66,6 @@ void sphere_volume::_construct(const geomtools::i_shape_3d &shape_3d_) {
                                         _theta_min_, _theta_max_, _phi_min_, _phi_max_);
 }
 
-void sphere_volume::tree_dump(std::ostream &out_, const std::string &title_,
-                              const std::string &indent_, bool inherit_) const {
-  std::string indent;
-  if (!indent_.empty()) {
-    indent = indent_;
-  }
-  i_root_volume::tree_dump(out_, title_, indent_, true);
-
-  out_ << indent << datatools::i_tree_dumpable::inherit_tag(inherit_)
-       << "(r1, r2, th1, th2, ph1, ph2) : (" << _inner_radius_ << ", " << _outer_radius_ << ", "
-       << _theta_min_ << ", " << _theta_max_ << ", " << _phi_min_ << ", " << _phi_max_ << ")"
-       << std::endl;
-}
-
-void sphere_volume::dump() const {
-  this->tree_dump(std::clog, "snemo::visualization::detector::sphere_volume");
-}
-
 }  // end of namespace detector
 
 }  // end of namespace visualization

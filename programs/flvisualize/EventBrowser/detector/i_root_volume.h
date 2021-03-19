@@ -49,6 +49,12 @@ namespace detector {
 /// \brief A dedicated ROOT volume object
 class i_root_volume : public i_volume {
  public:
+  /// Default constructor
+  i_root_volume(const std::string& name_ = "", const std::string& category_ = "");
+
+  /// Destructor
+  virtual ~i_root_volume();
+
   /// Return initialization flag
   bool is_initialized() const;
 
@@ -72,19 +78,6 @@ class i_root_volume : public i_volume {
 
   /// Highlight volume
   virtual void highlight(const size_t color_ = 0);
-
-  /// Smart print
-  virtual void tree_dump(std::ostream& out_ = std::clog, const std::string& title_ = "",
-                         const std::string& indent_ = "", bool inherit_ = false) const;
-
-  /// Default dump
-  virtual void dump() const;
-
-  /// Default constructor
-  i_root_volume(const std::string& name_ = "", const std::string& category_ = "");
-
-  /// Destructor
-  virtual ~i_root_volume();
 
  protected:
   /// Implement dedicated highlight rendering

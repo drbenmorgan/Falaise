@@ -49,13 +49,6 @@ class cylinder_volume : public i_root_volume {
   /// Destructor
   virtual ~cylinder_volume();
 
-  /// Smart dump
-  virtual void tree_dump(std::ostream& out_ = std::clog, const std::string& title_ = "",
-                         const std::string& indent_ = "", bool inherit_ = false) const;
-
-  /// Default dump
-  virtual void dump() const;
-
  protected:
   /// Construct the cylinder volume
   virtual void _construct(const geomtools::i_shape_3d& shape_3d_);

@@ -44,9 +44,6 @@ namespace detector {
 // \brief A composite volume
 class composite_volume : public i_root_volume {
  public:
-  /// Default print
-  virtual void dump() const;
-
   /// Default constructor
   composite_volume(const std::string& name_ = "", const std::string& category_ = "");
 

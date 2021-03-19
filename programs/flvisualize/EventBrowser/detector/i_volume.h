@@ -33,7 +33,6 @@
 #define FALAISE_SNEMO_VISUALIZATION_DETECTOR_I_VOLUME_H 1
 
 #include <EventBrowser/detector/volume_model.h>
-#include <datatools/i_tree_dump.h>
 
 namespace geomtools {
 class geom_info;
@@ -46,8 +45,14 @@ namespace visualization {
 namespace detector {
 
 /// \brief A generic interface to volume object
-class i_volume : public datatools::i_tree_dumpable, public volume_model {
+class i_volume : public volume_model {
  public:
+  /// Default constructor
+  i_volume() = default;
+
+  /// Destructor
+  virtual ~i_volume() = default;
+
   /// Get a mutable pointer to volume
   virtual void* grab_volume() = 0;
 
@@ -68,19 +73,6 @@ class i_volume : public datatools::i_tree_dumpable, public volume_model {
 
   /// Virtual method to highlight the volume
   virtual void highlight(const size_t color_) = 0;
-
-  /// Smart print
-  virtual void tree_dump(std::ostream& out_ = std::clog, const std::string& title_ = "",
-                         const std::string& indent_ = "", bool inherit_ = false) const = 0;
-
-  /// Default dump
-  virtual void dump() const = 0;
-
-  /// Default constructor
-  i_volume();
-
-  /// Destructor
-  virtual ~i_volume();
 };
 
 }  // end of namespace detector

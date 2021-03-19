@@ -51,39 +51,49 @@ enum visibility_type { VISIBLE = 0, INVISIBLE = 1, DISABLE = 2 };
 class volume_model {
  public:
   /// Default constructor
-  volume_model();
+  volume_model() = default;
 
   /// Destructor
-  ~volume_model();
+  ~volume_model() = default;
 
   /// Return volume name
-  const std::string& get_name() const;
+  const std::string& get_name() const {
+    return _name;
+  }
 
   /// Return volume category
-  const std::string& get_category() const;
+  const std::string& get_category() const {
+    return _category;
+  }
 
   /// Return volume type
-  const std::string& get_type() const;
+  const std::string& get_type() const {
+    return _type;
+  }
 
   /// Return volume position
-  const geomtools::placement& get_placement() const;
+  const geomtools::placement& get_placement() const {
+    return _placement;
+  }
 
   /// Check if object is a composite volume
-  bool is_composite() const;
+  bool is_composite() const {
+    return _composite;
+  }
 
  protected:
   std::string _name;      //<! Volume name
   std::string _category;  //<! Volume category
   std::string _type;      //<! Volume type
 
-  bool _composite;  //<! Composite volume flag
+  bool _composite = false;  //<! Composite volume flag
 
   geomtools::placement _placement;  //<! Volume position
 
-  size_t _color;            //<! Volume color
-  size_t _highlight_color;  //<! Volume highlight color
-  size_t _transparency;     //<! Volume transparency level (OpenGL only)
-  bool _visibility;         //<! Volume visibility flag
+  size_t _color = 0;            //<! Volume color
+  size_t _highlight_color = 0;  //<! Volume highlight color
+  size_t _transparency = 0;     //<! Volume transparency level (OpenGL only)
+  bool _visibility = false;         //<! Volume visibility flag
 };
 
 }  // end of namespace detector

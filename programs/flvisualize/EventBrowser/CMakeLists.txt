@@ -151,7 +151,6 @@ endif()
 # Pretty basic!
 set(FalaiseEventBrowserPlugin_SOURCES
   ${_event_browser_root_dict}
-  i_volume.cc
   i_root_volume.cc
   box_volume.cc
   composite_volume.cc

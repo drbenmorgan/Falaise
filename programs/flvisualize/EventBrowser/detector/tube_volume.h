@@ -49,13 +49,6 @@ class tube_volume : public i_root_volume {
   /// Destructor
   virtual ~tube_volume();
 
-  /// Smart print
-  virtual void tree_dump(std::ostream& out_ = std::clog, const std::string& title_ = "",
-                         const std::string& indent_ = "", bool inherit_ = false) const;
-
-  /// Default dump
-  virtual void dump() const;
-
  protected:
   /// Construct the tube volume
   virtual void _construct(const geomtools::i_shape_3d& shape_3d_);

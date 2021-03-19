@@ -61,37 +61,6 @@ void polycone_volume::_construct(const geomtools::i_shape_3d& shape_3d_) {
   _geo_volume = new TGeoVolume(_name.c_str(), geo_shape, medium);
 }
 
-void polycone_volume::tree_dump(std::ostream& out_, const std::string& title_,
-                                const std::string& indent_, bool inherit_) const {
-  std::string indent;
-  if (!indent_.empty()) {
-    indent = indent_;
-  }
-  i_root_volume::tree_dump(out_, title_, indent_, true);
-
-  const auto* pgcon = dynamic_cast<const TGeoPcon*>(_geo_volume->GetShape());
-
-  out_ << indent << datatools::i_tree_dumpable::inherit_tag(inherit_)
-       << "number of z sections : " << _nbr_z_section_ << std::endl;
-
-  for (size_t iz = 0; iz < _nbr_z_section_; ++iz) {
-    std::ostringstream indent_oss;
-    indent_oss << indent;
-    indent_oss << datatools::i_tree_dumpable::inherit_skip_tag(inherit_);
-    if (iz == _nbr_z_section_ - 1) {
-      indent_oss << datatools::i_tree_dumpable::last_tag;
-    } else {
-      indent_oss << datatools::i_tree_dumpable::tag;
-    }
-    out_ << indent_oss.str() << "(z, rmin, rmax) = (" << pgcon->GetZ(iz) << ", "
-         << pgcon->GetRmin(iz) << ", " << pgcon->GetRmax(iz) << ")" << std::endl;
-  }
-}
-
-void polycone_volume::dump() const {
-  this->tree_dump(std::clog, "snemo::visualization::detector::polycone_volume");
-}
-
 }  // end of namespace detector
 
 }  // end of namespace visualization

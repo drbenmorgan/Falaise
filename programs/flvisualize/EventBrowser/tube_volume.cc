@@ -60,22 +60,6 @@ void tube_volume::_construct(const geomtools::i_shape_3d &shape_3d_) {
       gGeoManager->MakeTube(_name.c_str(), medium, _inner_radius_, _outer_radius_, _height_ / 2.);
 }
 
-void tube_volume::tree_dump(std::ostream &out_, const std::string &title_,
-                            const std::string &indent_, bool inherit_) const {
-  std::string indent;
-  if (!indent_.empty()) {
-    indent = indent_;
-  }
-  i_root_volume::tree_dump(out_, title_, indent_, true);
-
-  out_ << indent << datatools::i_tree_dumpable::inherit_tag(inherit_) << "(r1, r2, h) : ("
-       << _inner_radius_ << ", " << _outer_radius_ << ", " << _height_ << ")" << std::endl;
-}
-
-void tube_volume::dump() const {
-  this->tree_dump(std::clog, "snemo::visualization::detector::tube_volume");
-}
-
 }  // end of namespace detector
 
 }  // end of namespace visualization

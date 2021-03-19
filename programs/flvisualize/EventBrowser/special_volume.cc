@@ -85,26 +85,6 @@ void special_volume::draw() const {
   }
 }
 
-void special_volume::tree_dump(std::ostream &out_, const std::string &title_,
-                               const std::string &indent_, bool inherit_) const {
-  std::string indent;
-  if (!indent_.empty()) {
-    indent = indent_;
-  }
-  i_root_volume::tree_dump(out_, title_, indent_, true);
-
-  out_ << indent << datatools::i_tree_dumpable::inherit_tag(inherit_);
-  if (has_objects()) {
-    out_ << "Attached polylines : " << _objects_->GetEntriesFast() << std::endl;
-  } else {
-    out_ << "No attached polylines" << std::endl;
-  }
-}
-
-void special_volume::dump() const {
-  this->tree_dump(std::clog, "snemo::visualization::detector::special_volume");
-}
-
 }  // end of namespace detector
 
 }  // end of namespace visualization

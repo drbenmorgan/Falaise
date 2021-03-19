@@ -59,22 +59,6 @@ void box_volume::_construct(const geomtools::i_shape_3d &shape_3d_) {
       gGeoManager->MakeBox(_name.c_str(), medium, _length_ / 2., _width_ / 2., _height_ / 2.);
 }
 
-void box_volume::tree_dump(std::ostream &out_, const std::string &title_,
-                           const std::string &indent_, bool inherit_) const {
-  std::string indent;
-  if (!indent_.empty()) {
-    indent = indent_;
-  }
-  i_root_volume::tree_dump(out_, title_, indent_, true);
-
-  out_ << indent << datatools::i_tree_dumpable::inherit_tag(inherit_) << "(l, w, h) : (" << _length_
-       << ", " << _width_ << ", " << _height_ << ")" << std::endl;
-}
-
-void box_volume::dump() const {
-  this->tree_dump(std::clog, "snemo::visualization::detector::box_volume");
-}
-
 }  // end of namespace detector
 
 }  // end of namespace visualization

@@ -50,10 +50,6 @@ void composite_volume::_construct(const geomtools::i_shape_3d& shape_3d_) {
   _geo_volume = new TGeoVolume(_name.c_str(), geo_shape, medium);
 }
 
-void composite_volume::dump() const {
-  this->tree_dump(std::clog, "snemo::visualization::detector::composite_volume");
-}
-
 }  // end of namespace detector
 
 }  // end of namespace visualization
