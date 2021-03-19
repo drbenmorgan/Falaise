@@ -80,14 +80,6 @@ void event_browser_module::initialize(const datatools::properties &config_,
   }
   DT_THROW_IF(_geometry_manager_ == nullptr, std::logic_error, "Missing geometry manager !");
 
-  // Event browser settings
-  if (config_.has_key("browser.logging.priority")) {
-    datatools::logger::priority p =
-        datatools::logger::get_priority(config_.fetch_string("browser.logging.priority"));
-    if (p != datatools::logger::PRIO_UNDEFINED) {
-      options_manager::get_instance().set_logging_priority(p);
-    }
-  }
 
   if (config_.has_key("browser.style_config_file")) {
     std::string path = config_.fetch_string("browser.style_config_file");
@@ -104,7 +96,6 @@ void event_browser_module::initialize(const datatools::properties &config_,
 
 // Reset :
 void event_browser_module::reset() {
-  DT_LOG_TRACE(get_logging_priority(), "Entering...");
   DT_THROW_IF(!is_initialized(), std::logic_error,
               "Module '" << get_name() << "' is not initialized !");
 
@@ -123,8 +114,6 @@ void event_browser_module::reset() {
   _Geo_label_ = "";
 
   _set_initialized(false);
-
-  DT_LOG_TRACE(get_logging_priority(), "Exiting...");
 }
 
 // Processing :
@@ -162,17 +151,13 @@ void event_browser_module::_initialize_event_browser() {
   _event_browser_->initialize();
 
   // Set event server mode to external
-  _event_browser_->grab_event_server().set_initialized(true);
-  _event_browser_->grab_event_server().set_external(true);
+  _event_browser_->get_event_server().set_initialized(true);
+  _event_browser_->get_event_server().set_external(true);
 
   // Install an event controler in the browser:
   if (_event_browser_ctrl_ == nullptr) {
-    DT_LOG_TRACE(get_logging_priority(), "Allocating the 'event_browser_ctrl' object...");
     _event_browser_ctrl_ = new event_browser_ctrl(*_event_browser_);
-    DT_LOG_TRACE(get_logging_priority(), "Install the 'event_browser_ctrl' object "
-                                             << "in the event browser...");
     _event_browser_->set_thread_ctrl(*_event_browser_ctrl_);
-    DT_LOG_TRACE(get_logging_priority(), "New 'event_browser_ctrl' object is allocated.");
   }
 }
 
@@ -192,49 +177,29 @@ void event_browser_module::_terminate_event_browser() {
 
 dpp::base_module::process_status event_browser_module::_show_event(
     io::event_record &event_record_) {
-  //        static int debug_counter = 0;
-
-  DT_LOG_TRACE(get_logging_priority(), "Pass the event record object "
-                                           << "to the event server...");
-  _event_browser_->grab_event_server().set_external_event(event_record_);
+  _event_browser_->get_event_server().set_external_event(event_record_);
 
   {
     {
-      DT_LOG_TRACE(get_logging_priority(), "Acquire the event control lock...");
       boost::mutex::scoped_lock lock(*_event_browser_ctrl_->event_mutex);
 
       if (_event_browser_ctrl_->browser_thread == nullptr) {
-        DT_LOG_TRACE(get_logging_priority(),
-                     "Starting the ROOT application from its own thread...");
         _event_browser_ctrl_->start();
-        DT_LOG_TRACE(get_logging_priority(), "ROOT application thread started.");
-        DT_LOG_TRACE(get_logging_priority(), "Now wait for ROOT to run an event...");
       }
 
-      DT_LOG_TRACE(get_logging_priority(),
-                   "Notify that event control is now available for the ROOT application thread...");
       _event_browser_ctrl_->event_availability_status = event_browser_ctrl::AVAILABLE_FOR_ROOT;
       _event_browser_ctrl_->event_available_condition->notify_one();
     }
 
     // Wait for the release of the event control by the ROOT process :
     {
-      DT_LOG_TRACE(get_logging_priority(),
-                   "Wait for the release of the event control by the ROOT application thread...");
       boost::mutex::scoped_lock lock(*_event_browser_ctrl_->event_mutex);
       while (_event_browser_ctrl_->event_availability_status ==
              event_browser_ctrl::AVAILABLE_FOR_ROOT) {
         _event_browser_ctrl_->event_available_condition->wait(*_event_browser_ctrl_->event_mutex);
       }
-
-      DT_LOG_TRACE(get_logging_priority(), "Ok ! The event control is released "
-                                               << "by the ROOT application thread...");
     }
   }
-
-  // debug_counter++;
-  // if (debug_counter >= 3) return FAILURE;
-
   return dpp::base_module::PROCESS_SUCCESS;
 }
 

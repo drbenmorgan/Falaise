@@ -67,9 +67,6 @@ class root_utilities {
  public:
   class TLatex3D : public TLatex {
    public:
-    TLatex3D();
-    virtual ~TLatex3D();
-
     virtual bool IsEqual(const TObject* object_) const;
 
     void SetX(const double x_) { _x_ = x_; }
@@ -87,10 +84,10 @@ class root_utilities {
     double GetZ() const { return _z_; }
 
    private:
-    double _x_;
-    double _y_;
-    double _z_;
-    std::string _text_;
+    double _x_ = 0.0;
+    double _y_ = 0.0;
+    double _z_ = 0.0;
+    std::string _text_ = "";
   };
 
  public:

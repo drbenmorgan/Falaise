@@ -355,7 +355,7 @@ void detector_manager::_read_detector_config_() {
   // to the list of detector volume
   if (only_categories.empty()) {
     std::map<std::string, view::style_manager::volume_properties> &volumes =
-        style_mgr.grab_volumes_properties();
+        style_mgr.get_volumes_properties();
 
     const geomtools::id_mgr::categories_by_name_col_type &categories =
         gmgr.get_id_mgr().categories_by_name();
@@ -413,7 +413,7 @@ void detector_manager::_set_categories_(std::vector<std::string> &only_categorie
   view::style_manager &style_mgr = view::style_manager::get_instance();
 
   std::map<std::string, view::style_manager::volume_properties> &volumes =
-      style_mgr.grab_volumes_properties();
+      style_mgr.get_volumes_properties();
 
   // first get them from style file
   if (!volumes.empty()) {

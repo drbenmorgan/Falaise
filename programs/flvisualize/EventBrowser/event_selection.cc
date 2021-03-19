@@ -214,7 +214,7 @@ std::string selection_widget::get_cut_name() {
   }
 
   // Instantiate cut if needed
-  cuts::cut_manager &a_cut_mgr = _selection->grab_cut_manager();
+  cuts::cut_manager &a_cut_mgr = _selection->get_cut_manager();
   cuts::cut_handle_dict_type &the_cuts = a_cut_mgr.get_cuts();
   auto found = the_cuts.find(cut_name);
   DT_THROW_IF(found == the_cuts.end(), std::logic_error,
@@ -395,7 +395,7 @@ std::string event_header_selection_widget::get_cut_name() {
     return {};
   }
 
-  cuts::cut_manager &a_cut_mgr = _selection->grab_cut_manager();
+  cuts::cut_manager &a_cut_mgr = _selection->get_cut_manager();
   cuts::cut_handle_dict_type &the_cuts = a_cut_mgr.get_cuts();
   auto found = the_cuts.find(eh_cut_label());
   DT_THROW_IF(found == the_cuts.end(), std::logic_error,
@@ -543,7 +543,7 @@ const cuts::cut_manager &event_selection::get_cut_manager() const {
   return *_cut_manager_;
 }
 
-cuts::cut_manager &event_selection::grab_cut_manager() {
+cuts::cut_manager &event_selection::get_cut_manager() {
   DT_THROW_IF(_cut_manager_ == nullptr, std::logic_error, "Cut manager is not set !");
   return *_cut_manager_;
 }
@@ -655,14 +655,7 @@ void event_selection::select_events(const button_signals_type signal_, const int
   io::event_server &the_server = *_server_;
 
   if (the_server.has_external_data()) {
-    DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(),
-                 "No selection since data record comes from external part !");
     return;
-  }
-
-  if (is_selection_enable()) {
-    DT_LOG_DEBUG(options_manager::get_instance().get_logging_priority(),
-                 "Looking for event filling selection...");
   }
 
   button_signals_type the_signal = signal_;
@@ -700,7 +693,6 @@ void event_selection::select_events(const button_signals_type signal_, const int
     }
 
     if (is_selection_enable()) {
-      DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Selection enable");
       // Get selected events
       if (this->_check_cuts_()) {
         _server_->select_event(current_event_id);
@@ -804,11 +796,9 @@ bool event_selection::_check_cuts_() {
   }
 
   if (cut_status != cuts::SELECTION_ACCEPTED) {
-    DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Event rejected");
     return false;
   }
 
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Event accepted");
   return true;
 }
 

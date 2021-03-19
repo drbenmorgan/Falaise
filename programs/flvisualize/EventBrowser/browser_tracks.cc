@@ -241,7 +241,7 @@ void browser_tracks::_update_event_header() {
   // Grab event and other resources. Here nothing is constant
   // since properties will be modified here and used later
   // through 'checking' and 'double_clicking' actions:
-  const io::event_record &event = _server_->grab_event();
+  const io::event_record &event = _server_->get_event();
 
   std::ostringstream label;
   std::ostringstream tip_text;
@@ -282,7 +282,7 @@ void browser_tracks::_update_simulated_data() {
   // Grab event and other resources. Here nothing is constant
   // since properties will be modified here and used later
   // through 'checking' and 'double_clicking' actions:
-  io::event_record &event = _server_->grab_event();
+  io::event_record &event = _server_->get_event();
 
   // 'simulated_data' availability:
   if (!event.has(io::SD_LABEL)) {
@@ -621,7 +621,7 @@ void browser_tracks::_update_calibrated_data() {
   // Grab event and other resources. Here nothing is constant
   // since properties will be modified here and used later
   // through 'checking' and 'double_clicking' actions:
-  io::event_record &event = _server_->grab_event();
+  io::event_record &event = _server_->get_event();
 
   // 'calibrated_data' availability:
   if (!event.has(io::CD_LABEL)) {
@@ -760,7 +760,7 @@ void browser_tracks::_update_tracker_clustering_data() {
   // Grab event and other resources. Here nothing is constant
   // since properties will be modified here and used later
   // through 'checking' and 'double_clicking' actions:
-  io::event_record &event = _server_->grab_event();
+  io::event_record &event = _server_->get_event();
 
   // 'tracker_clustering_data' availability:
   if (!event.has(io::TCD_LABEL)) {
@@ -916,7 +916,7 @@ void browser_tracks::_update_tracker_trajectory_data() {
   // Grab event and other resources. Here nothing is constant
   // since properties will be modified here and used later
   // through 'checking' and 'double_clicking' actions:
-  io::event_record &event = _server_->grab_event();
+  io::event_record &event = _server_->get_event();
 
   // 'tracker_trajectory_data' availability:
   if (!event.has(io::TTD_LABEL)) {
@@ -1125,7 +1125,7 @@ void browser_tracks::_update_particle_track_data() {
   // Grab event and other resources. Here nothing is constant
   // since properties will be modified here and used later
   // through 'checking' and 'double_clicking' actions:
-  io::event_record &event = _server_->grab_event();
+  io::event_record &event = _server_->get_event();
 
   // 'tracker_trajectory_data' availability:
   if (!event.has(io::PTD_LABEL)) {

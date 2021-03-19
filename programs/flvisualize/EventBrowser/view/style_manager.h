@@ -53,7 +53,7 @@ namespace view {
 
 /// \brief A class that manages all the style configuration (color, line
 /// style...)
-class style_manager : public utils::singleton<style_manager>, public datatools::i_tree_dumpable {
+class style_manager : public utils::singleton<style_manager> {
  public:
   /// Structure that defines detector volume properties
   struct volume_properties {
@@ -124,7 +124,7 @@ class style_manager : public utils::singleton<style_manager>, public datatools::
   typedef std::map<std::string, volume_properties> volume_properties_dict_type;
 
   /// Get a mutable reference to volume properties
-  volume_properties_dict_type& grab_volumes_properties();
+  volume_properties_dict_type& get_volumes_properties();
 
   /// Get a non-mutable reference to volume properties
   const volume_properties_dict_type& get_volumes_properties() const;
@@ -145,7 +145,7 @@ class style_manager : public utils::singleton<style_manager>, public datatools::
   typedef std::map<std::string, particle_properties> particle_properties_dict_type;
 
   /// Get a mutable reference to particle properties
-  particle_properties_dict_type& grab_particles_properties();
+  particle_properties_dict_type& get_particles_properties();
 
   /// Get a non-mutable reference to particle properties
   const particle_properties_dict_type& get_particles_properties() const;
@@ -191,10 +191,6 @@ class style_manager : public utils::singleton<style_manager>, public datatools::
 
   /// Dump style configuration into file
   void dump_into_file(const std::string& filename_ = "");
-
-  /// Smart dump
-  virtual void tree_dump(std::ostream& out_ = std::clog, const std::string& title_ = "",
-                         const std::string& indent_ = "", bool inherit_ = false) const;
 
  private:
   /// Forbid default constructor

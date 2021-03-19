@@ -103,11 +103,7 @@ display_2d::display_2d(TGCompositeFrame* main_, io::event_server* server_, const
 // dtor:
 display_2d::~display_2d() {
   this->clear();
-
-  if (_2d_viewer_ != nullptr) {
-    delete _2d_viewer_;
-    _2d_viewer_ = nullptr;
-  }
+  delete _2d_viewer_;
 }
 
 void display_2d::set_drawer(i_draw_manager* draw_manager_) { _2d_drawer_ = draw_manager_; }

@@ -54,11 +54,11 @@ namespace view {
 bool style_manager::is_initialized() const { return _initialized_; }
 
 bool style_manager::use_opengl() const {
-  bool can_use_opengl = false;
 #ifdef EVENTBROWSER_USE_OPENGL
-  can_use_opengl = true;
+  return true;
+#else
+  return false;
 #endif
-  return can_use_opengl;
 }
 
 void style_manager::set_filename(const std::string& filename_) { _filename_ = filename_; }
@@ -101,7 +101,7 @@ size_t style_manager::get_color(const size_t id_) const {
   return id;
 }
 
-style_manager::volume_properties_dict_type& style_manager::grab_volumes_properties() {
+style_manager::volume_properties_dict_type& style_manager::get_volumes_properties() {
   return _volumes_properties_;
 }
 
@@ -133,7 +133,7 @@ size_t style_manager::get_volume_transparency(const std::string& volume_name_) c
   if (!this->use_opengl()) {
     return 50;
   }
-  { return volume_transparency; }
+  return volume_transparency;
 }
 
 detector::visibility_type style_manager::get_volume_visibility(
@@ -145,7 +145,7 @@ detector::visibility_type style_manager::get_volume_visibility(
   return volume_visibility;
 }
 
-style_manager::particle_properties_dict_type& style_manager::grab_particles_properties() {
+style_manager::particle_properties_dict_type& style_manager::get_particles_properties() {
   return _particles_properties_;
 }
 
@@ -155,8 +155,7 @@ const style_manager::particle_properties_dict_type& style_manager::get_particles
 }
 
 bool style_manager::add_particle_properties(const std::string& particle_name_) {
-  std::map<std::string, std::string>::const_iterator found =
-      _particle_name_dict_.find(particle_name_);
+  auto found = _particle_name_dict_.find(particle_name_);
 
   if (found == _particle_name_dict_.end()) {
     return false;
@@ -261,13 +260,9 @@ void style_manager::initialize(const std::string& style_filename_) {
 }
 
 void style_manager::reset() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
-
   _volumes_properties_.clear();
   _particles_properties_.clear();
-
   this->_set_default_();
-
   _initialized_ = false;
 }
 
@@ -290,8 +285,8 @@ void style_manager::_read_style_file_(const std::string& style_filename_) {
                    "Nor setup label neither filename given");
       return;
     }
-    _filename_ = falaise::get_data_root_dir() + "/flvisualize/styles/" + _setup_label_ +
-                 "_default.sty";
+    _filename_ =
+        falaise::get_data_root_dir() + "/flvisualize/styles/" + _setup_label_ + "_default.sty";
     // Replace double semi colon with underscore
     const size_t start_semi_colon = _filename_.find("::");
     if (start_semi_colon != std::string::npos) {
@@ -306,15 +301,9 @@ void style_manager::_read_style_file_(const std::string& style_filename_) {
                    "No default style file has been found!");
   }
 
-  DT_LOG_NOTICE(options_manager::get_instance().get_logging_priority(), "Opened " << _filename_);
-
   // Get multiproperties:
   datatools::multi_properties configuration("name", "");
   configuration.read(_filename_);
-  if (options_manager::get_instance().get_logging_priority() >= datatools::logger::PRIO_DEBUG) {
-    configuration.tree_dump(std::clog, "Style settings for the SuperNEMO event display program",
-                            "[debug]: ");
-  }
 
   // Browser settings:
   const datatools::properties& browser_config =
@@ -382,10 +371,7 @@ void style_manager::_set_geometry_settings_(const datatools::properties& config_
     DT_LOG_INFORMATION(options_manager::get_instance().get_logging_priority(),
                        "No volume category list found");
   } else {
-    for (std::vector<std::string>::const_iterator it_volume = volume_category_list.begin();
-         it_volume != volume_category_list.end(); ++it_volume) {
-      const std::string& volume_name = *it_volume;
-
+    for (const std::string& volume_name : volume_category_list) {
       // first: get visibility
       const std::string volume_visibility = volume_name + ".visibility";
       if (config_.has_key(volume_visibility)) {
@@ -427,9 +413,11 @@ void style_manager::_set_geometry_settings_(const datatools::properties& config_
 }
 
 void style_manager::_set_particle_settings_(const datatools::properties& config_) {
-  for (std::map<std::string, std::string>::const_iterator i = _particle_name_dict_.begin();
-       i != _particle_name_dict_.end(); ++i) {
-    const std::string particle_name = i->first;
+  for (const auto& np : _particle_name_dict_) {
+    const std::string particle_name = np.first;
+    // Set latex name
+    _particles_properties_[particle_name]._latex_name_ = np.second;
+
     std::string key = particle_name + ".color";
 
     if (!config_.has_key(key)) {
@@ -447,9 +435,6 @@ void style_manager::_set_particle_settings_(const datatools::properties& config_
     } else {
       _particles_properties_[particle_name]._visibility_ = true;
     }
-
-    // Set latex name
-    _particles_properties_[particle_name]._latex_name_ = i->second;
   }
 }
 
@@ -649,131 +634,6 @@ void style_manager::dump_into_file(const std::string& filename_) {
 
   DT_LOG_NOTICE(options_manager::get_instance().get_logging_priority(),
                 "Style definitions have been saved in " << filename);
-}
-
-void style_manager::tree_dump(std::ostream& out_, const std::string& title_,
-                              const std::string& indent_, bool /*inherit_*/) const {
-  std::string indent;
-  if (!indent_.empty()) {
-    indent = indent_;
-  }
-  if (!title_.empty()) {
-    out_ << indent << title_ << std::endl;
-  }
-
-  out_ << indent << datatools::i_tree_dumpable::tag
-       << "Initialized : " << (_initialized_ ? "Yes" : "No") << std::endl;
-
-  out_ << indent << datatools::i_tree_dumpable::tag
-       << "Filename    : " << (_filename_.empty() ? "<empty>" : _filename_) << std::endl;
-  out_ << indent << datatools::i_tree_dumpable::tag
-       << "Setup       : " << (_setup_label_.empty() ? "<empty>" : _setup_label_) << std::endl;
-
-  // Browser settings
-  {
-    out_ << indent << datatools::i_tree_dumpable::tag << "Browser settings : " << std::endl;
-
-    std::ostringstream oss;
-    oss << indent << datatools::i_tree_dumpable::skip_tag;
-    out_ << oss.str() << datatools::i_tree_dumpable::tag << "Startup tab : " << _startup_tab_
-         << std::endl;
-    out_ << oss.str() << datatools::i_tree_dumpable::last_tag
-         << "Back. color : " << _background_color_ << std::endl;
-  }
-
-  // Geometry settings
-  {
-    out_ << indent << datatools::i_tree_dumpable::tag
-         << "Geometry settings : " << _volumes_properties_.size() << " "
-         << "volume" << (_volumes_properties_.size() > 1 ? "s" : "") << std::endl;
-
-    for (auto i = _volumes_properties_.begin(); i != _volumes_properties_.end(); ++i) {
-      std::ostringstream oss;
-      oss << indent << datatools::i_tree_dumpable::skip_tag;
-      out_ << oss.str();
-
-      auto j = i;
-      if (++j == _volumes_properties_.end()) {
-        out_ << datatools::i_tree_dumpable::last_tag;
-        oss << datatools::i_tree_dumpable::last_skip_tag
-            << datatools::i_tree_dumpable::last_skip_tag;
-      } else {
-        out_ << datatools::i_tree_dumpable::tag;
-        oss << datatools::i_tree_dumpable::skip_tag << datatools::i_tree_dumpable::last_skip_tag;
-      }
-
-      out_ << "Volume[" << std::distance(_volumes_properties_.begin(), i) << "]: '" << i->first
-           << "'" << std::endl;
-
-      const volume_properties& vprop = i->second;
-      out_ << oss.str() << datatools::i_tree_dumpable::tag << "Visibility   : ";
-      if (vprop._visibility_ == detector::VISIBLE) {
-        out_ << "visible";
-      }
-      if (vprop._visibility_ == detector::INVISIBLE) {
-        out_ << "invisible";
-      }
-      if (vprop._visibility_ == detector::DISABLE) {
-        out_ << "disable";
-      }
-      out_ << std::endl;
-
-      out_ << oss.str() << datatools::i_tree_dumpable::tag << "Color (RGB)  : ";
-      utils::root_utilities::write_rgb_color(out_, vprop._color_);
-      out_ << std::endl;
-      out_ << oss.str() << datatools::i_tree_dumpable::last_tag
-           << "Transparency : " << vprop._transparency_ << "%" << std::endl;
-    }
-  }
-
-  // Particle settings
-  {
-    out_ << indent << datatools::i_tree_dumpable::tag
-         << "Particle settings : " << _particles_properties_.size() << " "
-         << "particle" << (_particles_properties_.size() > 1 ? "s" : "") << std::endl;
-
-    for (auto i = _particles_properties_.begin(); i != _particles_properties_.end(); ++i) {
-      std::ostringstream oss;
-      oss << indent << datatools::i_tree_dumpable::skip_tag;
-      out_ << oss.str();
-
-      auto j = i;
-      if (++j == _particles_properties_.end()) {
-        out_ << datatools::i_tree_dumpable::last_tag;
-        oss << datatools::i_tree_dumpable::last_skip_tag
-            << datatools::i_tree_dumpable::last_skip_tag;
-      } else {
-        out_ << datatools::i_tree_dumpable::tag;
-        oss << datatools::i_tree_dumpable::skip_tag << datatools::i_tree_dumpable::last_skip_tag;
-      }
-
-      out_ << "Particle[" << std::distance(_particles_properties_.begin(), i) << "]: '" << i->first
-           << "'" << std::endl;
-
-      const particle_properties& pprop = i->second;
-      out_ << oss.str() << datatools::i_tree_dumpable::tag
-           << "Visibility   : " << (pprop._visibility_ ? "Yes" : "No") << std::endl;
-
-      out_ << oss.str() << datatools::i_tree_dumpable::last_tag << "Color (RGB)  : ";
-      utils::root_utilities::write_rgb_color(out_, pprop._color_);
-      out_ << std::endl;
-    }
-  }
-
-  // Miscellaneous
-  {
-    out_ << indent << datatools::i_tree_dumpable::tag << "MC line style : " << _mc_line_style_
-         << std::endl;
-    out_ << indent << datatools::i_tree_dumpable::tag << "MC line width : " << _mc_line_width_
-         << std::endl;
-
-    out_ << indent << datatools::i_tree_dumpable::tag << "Save directory : '" << _save_directory_
-         << "'" << std::endl;
-    out_ << indent << datatools::i_tree_dumpable::tag << "Save extension : '" << _save_extension_
-         << "'" << std::endl;
-    out_ << indent << datatools::i_tree_dumpable::last_tag << "Save prefix    : '" << _save_prefix_
-         << "'" << std::endl;
-  }
 }
 
 }  // end of namespace view

@@ -154,8 +154,7 @@ void status_bar::update(const bool reset_, const bool disable_) {
     this->reset();
     const io::event_server::event_selection_list_type& event_selection_list =
         server.get_event_selection();
-    if (event_selection_list.empty()) {
-    } else {
+    if (!event_selection_list.empty()) {
 			_total_event_->SetNumber(server.get_number_of_events()-1);
     }
   }

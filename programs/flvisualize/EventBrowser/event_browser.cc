@@ -60,7 +60,7 @@ namespace view {
 
 const io::event_server& event_browser::get_event_server() const { return *_event_server_; }
 
-io::event_server& event_browser::grab_event_server() { return *_event_server_; }
+io::event_server& event_browser::get_event_server() { return *_event_server_; }
 
 bool event_browser::is_initialized() const { return _initialized_; }
 
@@ -404,7 +404,7 @@ void event_browser::change_tab(const button_signals_type signal_) {
 
 void event_browser::close_window() {
   if (has_thread_ctrl()) {
-    event_browser_ctrl& thread_ctrl = grab_thread_ctrl();
+    event_browser_ctrl& thread_ctrl = get_thread_ctrl();
     thread_ctrl.event_availability_status = event_browser_ctrl::ABORT;
     stop_threading();
     unlock_thread();
@@ -434,7 +434,7 @@ const event_browser_ctrl& event_browser::get_thread_ctrl() const {
   return *_thread_ctrl_;
 }
 
-event_browser_ctrl& event_browser::grab_thread_ctrl() {
+event_browser_ctrl& event_browser::get_thread_ctrl() {
   DT_THROW_IF(!has_thread_ctrl(), std::logic_error, "Manager has no 'thread ctrl' object !");
   return *_thread_ctrl_;
 }
@@ -445,40 +445,26 @@ void event_browser::unlock_thread() {
 
   // External threaded run control :
   if (has_thread_ctrl()) {
-    DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Using event control...");
-    event_browser_ctrl& thread_ctrl = grab_thread_ctrl();
+    event_browser_ctrl& thread_ctrl = get_thread_ctrl();
     {
-      DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(),
-                   "Acquire the event control lock...");
       boost::mutex::scoped_lock lock(*thread_ctrl.event_mutex);
-      DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(),
-                   "Wait for event control to be available again...");
       while (thread_ctrl.event_availability_status != event_browser_ctrl::AVAILABLE_FOR_ROOT) {
-        DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Not yet...");
         thread_ctrl.event_available_condition->wait(*thread_ctrl.event_mutex);
       }
-      DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Ok let's go on...");
       if (thread_ctrl.event_availability_status == event_browser_ctrl::ABORT) {
         must_abort_run = true;
       }
       thread_ctrl.event_availability_status = event_browser_ctrl::NOT_AVAILABLE_FOR_ROOT;
       thread_ctrl.counts++;
-      DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(),
-                   "Notify the event browser...");
       thread_ctrl.event_available_condition->notify_one();
     }
 
     // Wait for the release of the event control by the external process :
     {
-      DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(),
-                   "Wait for the release of the event control by the external process...");
       boost::mutex::scoped_lock lock(*thread_ctrl.event_mutex);
       while (thread_ctrl.event_availability_status == event_browser_ctrl::NOT_AVAILABLE_FOR_ROOT) {
-        DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Not yet...");
         thread_ctrl.event_available_condition->wait(*thread_ctrl.event_mutex);
       }
-      DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(),
-                   "Ok ! The event control is released by the external process...");
       if (thread_ctrl.event_availability_status == event_browser_ctrl::ABORT) {
         DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(),
                        "Detected an 'Abort' request from the external process...");
@@ -502,19 +488,12 @@ void event_browser::unlock_thread() {
 
 void event_browser::lock_thread() {
   if (!has_thread_ctrl()) {
-    DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "No thread ctrl !");
     return;
   }
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Check point.");
-  event_browser_ctrl& thread_ctrl = grab_thread_ctrl();
+  event_browser_ctrl& thread_ctrl = get_thread_ctrl();
   {
-    DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Acquire the lock...");
     boost::mutex::scoped_lock lock(*thread_ctrl.event_mutex);
-    DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(),
-                 "Wait for the event control to be available again for ROOT "
-                     << "and for event loop start ...");
     while (thread_ctrl.event_availability_status == event_browser_ctrl::NOT_AVAILABLE_FOR_ROOT) {
-      DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Not yet...");
       thread_ctrl.event_available_condition->wait(*thread_ctrl.event_mutex);
     }
     if (thread_ctrl.event_availability_status == event_browser_ctrl::ABORT) {
@@ -522,8 +501,6 @@ void event_browser::lock_thread() {
                      "Detect a 'Abort' request from the external process !");
       stop_threading();
     }
-    DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(),
-                 "Starting the ROOT browsing...");
   }
 }
 

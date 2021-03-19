@@ -102,7 +102,7 @@ class event_selection {
   const cuts::cut_manager& get_cut_manager() const;
 
   /// Return a mutable reference to cut manager
-  cuts::cut_manager& grab_cut_manager();
+  cuts::cut_manager& get_cut_manager();
 
   /// Main process method
   void process();

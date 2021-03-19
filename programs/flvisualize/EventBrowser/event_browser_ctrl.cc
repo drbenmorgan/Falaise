@@ -19,8 +19,6 @@ namespace view {
 void event_browser_ctrl::set_event_browser(event_browser& browser_) { browser = &browser_; }
 
 event_browser_ctrl::event_browser_ctrl(event_browser& browser_, size_t max_counts_) {
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Entering...");
-
   // test
   browser = nullptr;
   browser_thread = nullptr;
@@ -36,16 +34,11 @@ event_browser_ctrl::event_browser_ctrl(event_browser& browser_, size_t max_count
 
   event_mutex = new boost::mutex;
   event_available_condition = new boost::condition;
-
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Exiting.");
 }
 
 event_browser_ctrl::~event_browser_ctrl() {
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Entering...");
   set_stop_requested();
   if (event_mutex != nullptr) {
-    DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(),
-                 "Acquire the event control lock...");
     boost::mutex::scoped_lock lock(*event_mutex);
     event_availability_status = event_browser_ctrl::ABORT;
     event_available_condition->notify_one();
@@ -68,24 +61,13 @@ event_browser_ctrl::~event_browser_ctrl() {
     browser_thread = nullptr;
   }
   browser = nullptr;
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Exiting.");
 }
 
 void event_browser_ctrl::start() {
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Entering...");
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(),
-               "Allocating the event browser thread...");
-
   browser_thread = new boost::thread(boost::bind(&event_browser_ctrl::start_browsing_event, this));
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(),
-               "Event browser thread is allocated...");
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Exiting.");
 }
 
 void event_browser_ctrl::start_browsing_event() {
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Entering...");
-  // 2014-09-25 XG : lock variable must be enclosed within {} in order to
-  // kill them at the end of the check.
   {
     boost::mutex::scoped_lock lock(*event_mutex);
     while (event_availability_status == event_browser_ctrl::NOT_AVAILABLE_FOR_ROOT) {
@@ -93,7 +75,6 @@ void event_browser_ctrl::start_browsing_event() {
     }
   }
   browser->start_threading();
-  DT_LOG_TRACE(options_manager::get_instance().get_logging_priority(), "Exiting.");
 }
 
 void event_browser_ctrl::set_stop_requested() { stop_requested = true; }

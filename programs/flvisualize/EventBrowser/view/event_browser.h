@@ -115,7 +115,7 @@ class event_browser : public TGMainFrame {
   const io::event_server &get_event_server() const;
 
   /// Get a mutable reference to event server
-  io::event_server &grab_event_server();
+  io::event_server &get_event_server();
 
   /// Closing operation
   void close_window();
@@ -136,7 +136,7 @@ class event_browser : public TGMainFrame {
   const event_browser_ctrl &get_thread_ctrl() const;
 
   /// Get a mutable reference to control thred
-  event_browser_ctrl &grab_thread_ctrl();
+  event_browser_ctrl &get_thread_ctrl();
 
   /// Lock thread
   void lock_thread();

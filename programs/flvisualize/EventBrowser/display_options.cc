@@ -426,7 +426,7 @@ void display_options::process_volume_settings() {
   // Retrieve style manager to change volume properties
   style_manager& style_mgr = style_manager::get_instance();
   std::map<std::string, style_manager::volume_properties>& volumes =
-      style_mgr.grab_volumes_properties();
+      style_mgr.get_volumes_properties();
 
   // Get corresponding volume name wrt to button id. If id has
   // not been stored then signal comes from somewhere else. It
@@ -466,7 +466,7 @@ void display_options::process_particle_settings() {
   // Retrieve style manager to change volume properties
   style_manager& style_mgr = style_manager::get_instance();
   std::map<std::string, style_manager::particle_properties>& particles =
-      style_mgr.grab_particles_properties();
+      style_mgr.get_particles_properties();
 
   // Get corresponding volume name wrt to button id. If id has
   // not been stored then signal comes from somewhere else. It

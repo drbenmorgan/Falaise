@@ -37,6 +37,49 @@ namespace snemo {
 namespace visualization {
 
 namespace io {
+// ctor:
+event_server::event_server() {
+  _status_ = UNDEFINED;
+  _file_type_ = file_type::NONE;
+  _data_access_ = nullptr;
+  _current_event_number_ = -1;
+  _event_ = nullptr;
+}
+
+// dtor:
+event_server::~event_server() { reset(); }
+
+bool event_server::initialize(const std::vector<std::string>& filenames_) {
+  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
+
+  if (!_at_open_(filenames_)) {
+    return false;
+  }
+
+  this->fill_selection();
+
+  _event_ = new event_record;
+
+  set_initialized(true);
+  return true;
+}
+
+bool event_server::reset() {
+  delete _event_;
+  _event_ = nullptr;
+
+  delete _data_access_;
+  _data_access_ = nullptr;
+
+  _status_ = UNDEFINED;
+  _file_type_ = file_type::NONE;
+  _current_event_number_ = -1;
+  _event_selection_.clear();
+
+  set_initialized(false);
+  return true;
+}
+
 
 bool event_server::is_initialized() const { return (_status_ & INITIALIZED) != 0u; }
 
@@ -74,60 +117,8 @@ void event_server::set_external_event(event_record& external_event_) { _event_ =
 
 const event_record& event_server::get_event() const { return *_event_; }
 
-event_record& event_server::grab_event() { return *_event_; }
+event_record& event_server::get_event() { return *_event_; }
 
-// ctor:
-event_server::event_server() {
-  _status_ = UNDEFINED;
-  _file_type_ = NONE;
-  _data_access_ = nullptr;
-  _current_event_number_ = -1;
-  _event_ = nullptr;
-}
-
-// dtor:
-event_server::~event_server() { reset(); }
-
-bool event_server::initialize(const std::vector<std::string>& filenames_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
-
-  if (!_at_open_(filenames_)) {
-    return false;
-  }
-
-  this->fill_selection();
-
-  _event_ = new event_record;
-
-  set_initialized(true);
-  return true;
-}
-
-bool event_server::reset() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
-
-  if (_event_ != nullptr) {
-    delete _event_;
-    _event_ = nullptr;
-  }
-
-  if (_data_access_ != nullptr) {
-    delete _data_access_;
-    _data_access_ = nullptr;
-  }
-
-  _status_ = UNDEFINED;
-  _file_type_ = NONE;
-  _current_event_number_ = -1;
-  _event_selection_.clear();
-
-  set_initialized(false);
-  return true;
-}
-
-bool event_server::open(const std::vector<std::string>& filenames_) {
-  return initialize(filenames_);
-}
 
 bool event_server::next_event() {
   if (!read_event(++_current_event_number_)) {
@@ -139,7 +130,7 @@ bool event_server::next_event() {
 
 bool event_server::read_event(const unsigned int event_number_) {
   DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
-  if (_data_access_->retrieve_event(grab_event(), event_number_)) {
+  if (_data_access_->retrieve_event(get_event(), event_number_)) {
     _current_event_number_ = event_number_;
     return true;
   }
@@ -186,65 +177,45 @@ bool event_server::store_event(const std::string& filename_) const {
 
 void event_server::dump_event(std::ostream& out_, const std::string& title_,
                               const std::string& indent_) const {
-  const snemo::datamodel::event_header* eh_ptr = nullptr;
-  const mctools::simulated_data* sd_ptr = nullptr;
-  const snemo::datamodel::calibrated_data* cd_ptr = nullptr;
-  const snemo::datamodel::tracker_clustering_data* tc_ptr = nullptr;
-  const snemo::datamodel::tracker_trajectory_data* tt_ptr = nullptr;
-  const snemo::datamodel::particle_track_data* ptd_ptr = nullptr;
-
-  if (_event_->has(EH_LABEL)) {
-    eh_ptr = &(_event_->get<snemo::datamodel::event_header>(EH_LABEL));
-  }
-  if (_event_->has(SD_LABEL)) {
-    sd_ptr = &(_event_->get<mctools::simulated_data>(SD_LABEL));
-  }
-  if (_event_->has(CD_LABEL)) {
-    cd_ptr = &(_event_->get<snemo::datamodel::calibrated_data>(CD_LABEL));
-  }
-  if (_event_->has(TCD_LABEL)) {
-    tc_ptr = &(_event_->get<snemo::datamodel::tracker_clustering_data>(TCD_LABEL));
-  }
-  if (_event_->has(TTD_LABEL)) {
-    tt_ptr = &(_event_->get<snemo::datamodel::tracker_trajectory_data>(TTD_LABEL));
-  }
-  if (_event_->has(PTD_LABEL)) {
-    ptd_ptr = &(_event_->get<snemo::datamodel::particle_track_data>(PTD_LABEL));
-  }
-
   out_ << indent_ << title_ << "Event data #" << _current_event_number_ << std::endl;
 
-  if (eh_ptr != nullptr) {
+  if (_event_->has(EH_LABEL)) {
+    auto* eh_ptr = &(_event_->get<snemo::datamodel::event_header>(EH_LABEL));
     eh_ptr->tree_dump(out_, "Event header", indent_);
   } else {
     out_ << indent_ << "No event header." << std::endl;
   }
 
-  if (sd_ptr != nullptr) {
+  if (_event_->has(SD_LABEL)) {
+    auto* sd_ptr = &(_event_->get<mctools::simulated_data>(SD_LABEL));
     sd_ptr->tree_dump(out_, "Simulated data", indent_);
   } else {
     out_ << indent_ << "No simulated data." << std::endl;
   }
 
-  if (cd_ptr != nullptr) {
+  if (_event_->has(CD_LABEL)) {
+    auto* cd_ptr = &(_event_->get<snemo::datamodel::calibrated_data>(CD_LABEL));
     cd_ptr->tree_dump(out_, "Calibrated data", indent_);
   } else {
     out_ << indent_ << "No calibrated data." << std::endl;
   }
 
-  if (tc_ptr != nullptr) {
+  if (_event_->has(TCD_LABEL)) {
+    auto* tc_ptr = &(_event_->get<snemo::datamodel::tracker_clustering_data>(TCD_LABEL));
     tc_ptr->tree_dump(out_, "Tracker clustering data", indent_);
   } else {
     out_ << indent_ << "No tracker clustering data." << std::endl;
   }
 
-  if (tt_ptr != nullptr) {
+  if (_event_->has(TTD_LABEL)) {
+    auto* tt_ptr = &(_event_->get<snemo::datamodel::tracker_trajectory_data>(TTD_LABEL));
     tt_ptr->tree_dump(out_, "Tracker trajectory data", indent_);
   } else {
     out_ << indent_ << "No tracker trajectory data." << std::endl;
   }
 
-  if (ptd_ptr != nullptr) {
+  if (_event_->has(PTD_LABEL)) {
+    auto* ptd_ptr = &(_event_->get<snemo::datamodel::particle_track_data>(PTD_LABEL));
     ptd_ptr->tree_dump(out_, "Particle track data", indent_);
   } else {
     out_ << indent_ << "No particle track data." << std::endl;
@@ -324,7 +295,7 @@ bool event_server::_at_open_(const std::vector<std::string>& filenames_) {
   {
     auto* try_access = new brio_access;
     if (try_access->is_valid(filenames_)) {
-      set_file_type(BRIO);
+      set_file_type(file_type::BRIO);
       set_sequential(false);
       _data_access_ = try_access;
       return try_access->open(filenames_);
@@ -337,7 +308,7 @@ bool event_server::_at_open_(const std::vector<std::string>& filenames_) {
   {
     auto* try_access = new boost_access;
     if (try_access->is_valid(filenames_)) {
-      set_file_type(BOOST_SERIAL);
+      set_file_type(file_type::BOOST_SERIAL);
       set_sequential(!view::options_manager::get_instance().is_preload_required());
       try_access->set_sequential(has_sequential_data());
       _data_access_ = try_access;

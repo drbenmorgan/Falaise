@@ -60,14 +60,6 @@ namespace visualization {
 
 namespace utils {
 
-root_utilities::TLatex3D::TLatex3D() {
-  _x_ = 0.0;
-  _y_ = 0.0;
-  _z_ = 0.0;
-}
-
-root_utilities::TLatex3D::~TLatex3D() = default;
-
 void root_utilities::TLatex3D::SetText(const std::string &text_) {
   _text_ = text_;
   TLatex::SetTitle(text_.c_str());
@@ -320,9 +312,6 @@ bool root_utilities::save_view_as(TCanvas *canvas_, const std::string &filename_
 
   if (!filename_.empty()) {
     canvas_->SaveAs(filename_.c_str());
-
-    DT_LOG_NOTICE(view::options_manager::get_instance().get_logging_priority(),
-                  filename_ << " saved in " << gSystem->Getenv("PWD"));
     return true;
   }
 
@@ -397,20 +386,13 @@ bool root_utilities::save_view_as(TCanvas *canvas_, const std::string &filename_
   style_mgr.set_save_extension(file_type);
 
   canvas_->SaveAs(file_name.c_str());
-
-  DT_LOG_NOTICE(view::options_manager::get_instance().get_logging_priority(),
-                file_name << " saved");
   return true;
 }
 
 TGeoShape *root_utilities::get_geo_shape(const geomtools::i_shape_3d &shape_3d_) {
-  datatools::logger::priority local_priority = datatools::logger::PRIO_WARNING;
-
   TGeoShape *shape = nullptr;
 
   const std::string &shape_name = shape_3d_.get_shape_name();
-
-  DT_LOG_TRACE(local_priority, "Shape_name = " << shape_name);
 
   if (shape_3d_.is_composite()) {
     const auto &sub_shape = dynamic_cast<const geomtools::i_composite_shape_3d &>(shape_3d_);
@@ -419,9 +401,6 @@ TGeoShape *root_utilities::get_geo_shape(const geomtools::i_shape_3d &shape_3d_)
     const geomtools::i_composite_shape_3d::shape_type &s2 = sub_shape.get_shape2();
     const geomtools::i_shape_3d &sh1 = s1.get_shape();
     const geomtools::i_shape_3d &sh2 = s2.get_shape();
-
-    DT_LOG_TRACE(local_priority, "shape_name1 = " << sh1.get_shape_name() << " "
-                                                  << "shape_name2 = " << sh2.get_shape_name());
 
     TGeoShape *geo_shape1 = get_geo_shape(sh1);
     geo_shape1->SetName(get_unique_geo_name().c_str());
@@ -432,13 +411,6 @@ TGeoShape *root_utilities::get_geo_shape(const geomtools::i_shape_3d &shape_3d_)
       const geomtools::placement &g_placement = s1.get_placement();
       const geomtools::vector_3d &g_translation = g_placement.get_translation();
       ct1->SetTranslation(g_translation.x(), g_translation.y(), g_translation.z());
-
-      DT_LOG_TRACE(local_priority, "geo_shape_name = " << geo_shape1->GetName());
-      DT_LOG_TRACE(local_priority, "(x, y, z) = (" << g_translation.x() << ", " << g_translation.y()
-                                                   << ", " << g_translation.z() << ")");
-      DT_LOG_TRACE(local_priority, "(phi, theta, psi) = (" << g_placement.get_phi() << ", "
-                                                           << g_placement.get_theta() << ", "
-                                                           << g_placement.get_delta() << ")");
     }
 
     TGeoShape *geo_shape2 = get_geo_shape(sh2);
@@ -450,22 +422,14 @@ TGeoShape *root_utilities::get_geo_shape(const geomtools::i_shape_3d &shape_3d_)
       const geomtools::placement &g_placement = s2.get_placement();
       const geomtools::vector_3d &g_translation = g_placement.get_translation();
       ct2->SetTranslation(g_translation.x(), g_translation.y(), g_translation.z());
-
-      DT_LOG_TRACE(local_priority, "geo_shape_name = " << geo_shape2->GetName());
-      DT_LOG_TRACE(local_priority, "(x, y, z) = (" << g_translation.x() << ", " << g_translation.y()
-                                                   << ", " << g_translation.z() << ")");
-      DT_LOG_TRACE(local_priority, "(phi, theta, psi) = (" << g_placement.get_phi() << ", "
-                                                           << g_placement.get_theta() << ", "
-                                                           << g_placement.get_delta() << ")");
     }
 
     bool keep_it_simple = !view::style_manager::get_instance().use_opengl();
-    ;
     if (keep_it_simple) {
       if (!sh1.is_composite()) {
         return geo_shape1;
       }
-      { return geo_shape2; }
+      return geo_shape2;
     }
 
     std::ostringstream oss1, oss2;
@@ -485,33 +449,33 @@ TGeoShape *root_utilities::get_geo_shape(const geomtools::i_shape_3d &shape_3d_)
     }
 
     shape = new TGeoCompositeShape("composite_shape", node_expr.c_str());
+
   } else if (shape_name == "box") {
     const auto &mbox = dynamic_cast<const geomtools::box &>(shape_3d_);
-
     shape = new TGeoBBox(mbox.get_x() / 2., mbox.get_y() / 2., mbox.get_z() / 2.);
+
   } else if (shape_name == "cylinder") {
     const auto &mcylinder = dynamic_cast<const geomtools::cylinder &>(shape_3d_);
-
     shape = new TGeoTube(0.0, mcylinder.get_radius(), mcylinder.get_z());
+
   } else if (shape_name == "sphere") {
     const auto &msphere = dynamic_cast<const geomtools::sphere &>(shape_3d_);
-
     shape = new TGeoSphere(0.0, msphere.get_radius());
+
   } else if (shape_name == "polycone") {
     const auto &mpolycone = dynamic_cast<const geomtools::polycone &>(shape_3d_);
-
     auto *polycone = new TGeoPcon(0, 360, mpolycone.points().size());
 
     size_t i_section = 0;
-    for (auto it_section = mpolycone.points().begin(); it_section != mpolycone.points().end();
-         ++it_section, ++i_section) {
+    for (const auto& it_section : mpolycone.points()) {
       polycone->DefineSection(i_section,
-                              it_section->first,        // z value
-                              it_section->second.rmin,  // rmin value
-                              it_section->second.rmax   // rmax value
-      );
+                              it_section.first,        // z value
+                              it_section.second.rmin,  // rmin value
+                              it_section.second.rmax);   // rmax value
+      ++i_section;
     }
     shape = dynamic_cast<TGeoShape *>(polycone);
+
   } else {
     DT_LOG_ERROR(view::options_manager::get_instance().get_logging_priority(),
                  shape_name << "' not yet implemented !");
@@ -539,10 +503,9 @@ TObjArray *root_utilities::wires_to_root_draw(const geomtools::vector_3d &positi
     geomtools::wires_type wires;
     a_drawer.generate_wires(wires, position_, rotation_);
 
-    for (geomtools::wires_type::const_iterator i = wires.begin(); i != wires.end(); ++i) {
+    for(const geomtools::polyline_type& pl : wires) {
       auto *pl3D = new TPolyLine3D;
       obj_array->Add(pl3D);
-      const geomtools::polyline_type &pl = *i;
       size_t k = 0;
       for (const auto &v3d : pl) {
         pl3D->SetPoint(k++, v3d.x(), v3d.y(), v3d.z());

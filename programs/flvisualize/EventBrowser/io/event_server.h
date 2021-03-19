@@ -64,7 +64,7 @@ class i_data_access;
 class event_server {
  public:
   /// File type enumeration
-  enum file_type {
+  enum class file_type {
     NONE = 0,
     UNKNOWN = 1,
     CORRUPT = 2,
@@ -82,6 +82,15 @@ class event_server {
     SEQUENTIAL = datatools::bit_mask::bit02,
     EXTERNAL = datatools::bit_mask::bit03
   };
+
+  /// Default constructor
+  event_server();
+
+  /// Destructor
+  virtual ~event_server();
+
+  /// Connect to the server
+  bool initialize(const std::vector<std::string>& filenames_);
 
   /// Return initialization flag
   bool is_initialized() const;
@@ -112,18 +121,6 @@ class event_server {
 
   /// Return file type status as string
   std::string get_file_type_as_string() const;
-
-  /// Default constructor
-  event_server();
-
-  /// Destructor
-  virtual ~event_server();
-
-  /// Initialization
-  bool initialize(const std::vector<std::string>& filenames_);
-
-  /// Opening files
-  bool open(const std::vector<std::string>& filenames_);
 
   /// Check if event server has opened data stream
   bool is_opened() const;
@@ -169,7 +166,7 @@ class event_server {
   const event_record& get_event() const;
 
   /// Getting a mutable reference to event
-  event_record& grab_event();
+  event_record& get_event();
 
   /// Event selection
   typedef std::set<int32_t> event_selection_list_type;
