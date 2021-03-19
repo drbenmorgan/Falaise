@@ -325,7 +325,7 @@ void detector_manager::_read_detector_config_() {
   // Initialize geometry manager
   geomtools::manager &gmgr = this->get_geometry_manager();
   gmgr.set_logging_priority(view::options_manager::get_instance().get_logging_priority());
-  if (_has_external_geometry_manager_) {
+  if (!_has_external_geometry_manager_) {
     // Set the 'only' property
     // gmanager_config.update("mapping.only_categories", only_categories);
     gmgr.initialize(gmanager_config);
