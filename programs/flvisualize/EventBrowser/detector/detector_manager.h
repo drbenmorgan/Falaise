@@ -64,8 +64,7 @@ namespace detector {
 class i_volume;
 
 /// \brief The detector manager which handle all geometry volumes
-class detector_manager : public utils::singleton<detector_manager>,
-                         public datatools::i_tree_dumpable {
+class detector_manager : public utils::singleton<detector_manager> {
  public:
   /// Experimental setup enum
   enum setup_label_type {
@@ -78,9 +77,6 @@ class detector_manager : public utils::singleton<detector_manager>,
     TRACKER_COMMISSIONING = 5,
     SNEMO_DEMONSTRATOR = 6
   };
-
-  /// Volume dictionnary
-  typedef std::map<geomtools::geom_id, i_volume*> volume_dict_type;
 
   /// Compute world coordinates
   void compute_world_coordinates(const geomtools::vector_3d& mother_pos_,
@@ -102,7 +98,7 @@ class detector_manager : public utils::singleton<detector_manager>,
   bool is_special_volume(const std::string& volume_name_) const;
 
   /// Get a mutable reference to volume
-  i_volume* grab_volume(const geomtools::geom_id& id_);
+  i_volume* get_volume(const geomtools::geom_id& id_);
 
   /// Get a non-mutable reference to volume
   const i_volume* get_volume(const geomtools::geom_id& id_) const;
@@ -117,20 +113,17 @@ class detector_manager : public utils::singleton<detector_manager>,
   /// Get volume category associated to geom_id
   std::string get_volume_category(const geomtools::geom_id& id_) const;
 
-  /// Check if geometry manager has been externalized
-  bool has_external_geometry_manager() const;
-
   /// Set external geometry manager
   void set_external_geometry_manager(geomtools::manager& geometry_manager_);
 
   /// Get a mutable reference to geometry manager
-  geomtools::manager& grab_geometry_manager();
+  geomtools::manager& get_geometry_manager();
 
   /// Get a non-mutable reference to geometry manager
   const geomtools::manager& get_geometry_manager() const;
 
   /// Get a mutable reference to the 'world' volume
-  TGeoVolume* grab_world_volume();
+  TGeoVolume* get_world_volume();
 
   /// Get non-mutable reference to the 'world' volume
   const TGeoVolume* get_world_volume() const;
@@ -149,13 +142,6 @@ class detector_manager : public utils::singleton<detector_manager>,
 
   /// Reset detector manager
   void reset();
-
-  /// Smart print
-  virtual void tree_dump(std::ostream& out_ = std::clog, const std::string& title_ = "",
-                         const std::string& indent_ = "", bool inherit_ = false) const;
-
-  /// Default print
-  void dump() const;
 
  private:
   /// Forbid default constructor
@@ -203,6 +189,8 @@ class detector_manager : public utils::singleton<detector_manager>,
 
   std::vector<std::string> _special_volume_name_;  //!< List of special volumes
 
+  /// Volume dictionnary
+  typedef std::map<geomtools::geom_id, i_volume*> volume_dict_type;
   volume_dict_type _volumes_;  //!< Volume dictionnary
 
   bool _has_external_geometry_manager_;  //!< External geometry manager

@@ -83,7 +83,7 @@ void base_renderer::initialize(const io::event_server* server_, TObjArray* objec
 void base_renderer::clear() {
   for (const auto& gid : _highlighted_geom_id) {
     detector::detector_manager& detector_mgr = detector::detector_manager::get_instance();
-    detector::i_volume* volume_hit = detector_mgr.grab_volume(gid);
+    detector::i_volume* volume_hit = detector_mgr.get_volume(gid);
     volume_hit->clear();
   }
   _highlighted_geom_id.clear();
@@ -117,14 +117,14 @@ void base_renderer::highlight_geom_id(const geomtools::geom_id& gid_, const size
 
   if (text_.empty()) {
     for (auto& igid : gid_list) {
-      auto* volume_hit = dynamic_cast<detector::i_root_volume*>(detector_mgr.grab_volume(igid));
+      auto* volume_hit = dynamic_cast<detector::i_root_volume*>(detector_mgr.get_volume(igid));
       volume_hit->highlight(color_);
       _highlighted_geom_id.insert(igid);
     }
   } else {
     // Here we get the first element :
     auto* volume_hit =
-        dynamic_cast<detector::i_root_volume*>(detector_mgr.grab_volume(gid_list.front()));
+        dynamic_cast<detector::i_root_volume*>(detector_mgr.get_volume(gid_list.front()));
     auto* new_text_obj = new utils::root_utilities::TLatex3D;
     _text_objects->Add(new_text_obj);
     const geomtools::vector_3d& position = volume_hit->get_placement().get_translation();

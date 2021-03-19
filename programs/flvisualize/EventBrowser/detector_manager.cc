@@ -59,6 +59,57 @@ namespace visualization {
 
 namespace detector {
 
+// ctor:
+detector_manager::detector_manager() {
+  _initialized_ = false;
+  _constructed_ = false;
+  _setup_label_name_ = "";
+  _setup_label_ = SNEMO;
+  _has_external_geometry_manager_ = false;
+  _geo_manager_config_file_ = "";
+  _geo_manager_ = nullptr;
+  _world_volume_ = nullptr;
+  _world_length_ = 0.0;
+  _world_width_ = 0.0;
+  _world_height_ = 0.0;
+}
+
+// dtor:
+detector_manager::~detector_manager() { this->reset(); }
+
+void detector_manager::initialize(const std::string &geo_manager_config_file_) {
+  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
+  this->_at_init_(geo_manager_config_file_);
+  _initialized_ = true;
+}
+
+void detector_manager::construct() {
+  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
+  this->_at_construct_();
+  _constructed_ = true;
+}
+
+void detector_manager::update() {
+  for (const auto &it_volume : _volumes_) {
+    (it_volume.second)->update();
+  }
+}
+
+void detector_manager::reset() {
+  if (!_has_external_geometry_manager_) {
+    delete _geo_manager_;
+    _geo_manager_ = nullptr;
+  }
+
+  delete gGeoManager;
+
+  _volumes_.clear();
+  _special_volume_name_.clear();
+
+  _constructed_ = false;
+  _initialized_ = false;
+}
+
 bool detector_manager::is_initialized() const { return _initialized_; }
 
 bool detector_manager::is_constructed() const { return _constructed_; }
@@ -75,7 +126,7 @@ bool detector_manager::is_special_volume(const std::string &volume_name_) const 
   return (name_iter != _special_volume_name_.end());
 }
 
-i_volume *detector_manager::grab_volume(const geomtools::geom_id &id_) {
+i_volume *detector_manager::get_volume(const geomtools::geom_id &id_) {
   i_volume *volume = nullptr;
   auto volume_iter = _volumes_.find(id_);
 
@@ -120,75 +171,29 @@ std::string detector_manager::get_volume_category(const geomtools::geom_id &id_)
   return volume_category;
 }
 
-bool detector_manager::has_external_geometry_manager() const {
-  return _has_external_geometry_manager_;
-}
-
 void detector_manager::set_external_geometry_manager(geomtools::manager &geometry_manager_) {
   _has_external_geometry_manager_ = true;
   _geo_manager_ = &geometry_manager_;
 }
 
-geomtools::manager &detector_manager::grab_geometry_manager() { return *_geo_manager_; }
+geomtools::manager &detector_manager::get_geometry_manager() { return *_geo_manager_; }
 
 const geomtools::manager &detector_manager::get_geometry_manager() const { return *_geo_manager_; }
 
-TGeoVolume *detector_manager::grab_world_volume() { return _world_volume_; }
+TGeoVolume *detector_manager::get_world_volume() { return _world_volume_; }
 
 const TGeoVolume *detector_manager::get_world_volume() const { return _world_volume_; }
-
-// ctor:
-detector_manager::detector_manager() {
-  _initialized_ = false;
-  _constructed_ = false;
-  _setup_label_name_ = "";
-  _setup_label_ = SNEMO;
-  _has_external_geometry_manager_ = false;
-  _geo_manager_config_file_ = "";
-  _geo_manager_ = nullptr;
-  _world_volume_ = nullptr;
-  _world_length_ = 0.0;
-  _world_width_ = 0.0;
-  _world_height_ = 0.0;
-}
-
-// dtor:
-detector_manager::~detector_manager() {
-  if (is_initialized()) {
-    this->reset();
-  }
-}
-
-void detector_manager::initialize(const std::string &geo_manager_config_file_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
-  this->_at_init_(geo_manager_config_file_);
-  _initialized_ = true;
-}
-
-void detector_manager::construct() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
-  this->_at_construct_();
-  _constructed_ = true;
-}
-
-void detector_manager::update() {
-  for (volume_dict_type::const_iterator it_volume = _volumes_.begin(); it_volume != _volumes_.end();
-       ++it_volume) {
-    it_volume->second->update();
-  }
-}
 
 void detector_manager::draw() {
   DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
   DT_THROW_IF(!is_constructed(), std::logic_error, "Not constructed !");
 
-  TGeoVolume *world_volume = this->grab_world_volume();
+  TGeoVolume *world_volume = this->get_world_volume();
   world_volume->Draw();
 
   // Special treatment for special volumes
-  for (volume_dict_type::const_iterator it_volume = _volumes_.begin(); it_volume != _volumes_.end();
-       ++it_volume) {
-    const i_volume &a_volume = *(it_volume->second);
+  for (const auto &it_volume : _volumes_) {
+    const i_volume &a_volume = *(it_volume.second);
 
     // Discard other type of volume
     if (a_volume.get_type() != "special") {
@@ -199,99 +204,6 @@ void detector_manager::draw() {
     const auto &a_special_volume = dynamic_cast<const special_volume &>(a_volume);
     a_special_volume.draw();
   }
-}
-
-void detector_manager::reset() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
-
-  if (!has_external_geometry_manager()) {
-    if (_geo_manager_ != nullptr) {
-      delete _geo_manager_;
-      _geo_manager_ = nullptr;
-    }
-  }
-
-  delete gGeoManager;
-
-  _volumes_.clear();
-  _special_volume_name_.clear();
-
-  _constructed_ = false;
-  _initialized_ = false;
-}
-
-void detector_manager::tree_dump(std::ostream &out_, const std::string &title_,
-                                 const std::string &indent_, bool inherit_) const {
-  std::string indent;
-  if (!indent_.empty()) {
-    indent = indent_;
-  }
-  if (!title_.empty()) {
-    out_ << indent << title_ << std::endl;
-  }
-
-  out_ << indent << datatools::i_tree_dumpable::tag
-       << "Initialized : " << (is_initialized() ? "Yes" : "No") << std::endl;
-
-  out_ << indent << datatools::i_tree_dumpable::tag
-       << "Constructed : " << (is_constructed() ? "Yes" : "No") << std::endl;
-
-  out_ << indent << datatools::i_tree_dumpable::tag << "Setup       : " << _setup_label_name_
-       << std::endl;
-
-  if (_world_volume_ != nullptr) {
-    out_ << indent << datatools::i_tree_dumpable::tag << "World volume : " << std::endl;
-    std::ostringstream indent_oss;
-    indent_oss << indent;
-    indent_oss << datatools::i_tree_dumpable::skip_tag;
-    out_ << indent_oss.str() << datatools::i_tree_dumpable::tag
-         << "length : " << _world_length_ / CLHEP::m << " m" << std::endl;
-    out_ << indent_oss.str() << datatools::i_tree_dumpable::tag
-         << "width  : " << _world_width_ / CLHEP::m << " m" << std::endl;
-    out_ << indent_oss.str() << datatools::i_tree_dumpable::last_tag
-         << "height : " << _world_height_ / CLHEP::m << " m" << std::endl;
-  } else {
-    out_ << indent << datatools::i_tree_dumpable::tag << "World volume : "
-         << "<empty>" << std::endl;
-  }
-
-  out_ << indent << datatools::i_tree_dumpable::tag
-       << "Special volumes : " << _special_volume_name_.size() << std::endl;
-  for (auto it_volume = _special_volume_name_.begin(); it_volume != _special_volume_name_.end();
-       ++it_volume) {
-    std::ostringstream indent_oss;
-    auto jt_volume = it_volume;
-    if (++jt_volume == _special_volume_name_.end()) {
-      indent_oss << indent << datatools::i_tree_dumpable::last_skip_tag;
-      out_ << indent << datatools::i_tree_dumpable::last_tag;
-    } else {
-      indent_oss << indent << datatools::i_tree_dumpable::skip_tag;
-      out_ << indent << datatools::i_tree_dumpable::tag;
-    }
-    out_ << "Special volume[" << std::distance(_special_volume_name_.begin(), it_volume)
-         << "]: " << *it_volume << std::endl;
-  }
-
-  out_ << indent << datatools::i_tree_dumpable::tag << "Attached volumes : " << _volumes_.size()
-       << std::endl;
-  for (auto it_volume = _volumes_.begin(); it_volume != _volumes_.end(); ++it_volume) {
-    std::ostringstream indent_oss;
-    auto jt_volume = it_volume;
-    if (++jt_volume == _volumes_.end()) {
-      indent_oss << indent << datatools::i_tree_dumpable::last_skip_tag;
-      out_ << indent << datatools::i_tree_dumpable::last_tag;
-    } else {
-      indent_oss << indent << datatools::i_tree_dumpable::skip_tag;
-      out_ << indent << datatools::i_tree_dumpable::tag;
-    }
-    out_ << "Volume[" << std::distance(_volumes_.begin(), it_volume) << "]: " << std::endl;
-    indent_oss << datatools::i_tree_dumpable::inherit_skip_tag(inherit_);
-    it_volume->second->tree_dump(out_, "", indent_oss.str());
-  }
-}
-
-void detector_manager::dump() const {
-  this->tree_dump(std::clog, "snemo::visualization::detector::detector_manager");
 }
 
 void detector_manager::compute_world_coordinates(const geomtools::vector_3d &mother_pos_,
@@ -314,7 +226,7 @@ void detector_manager::_at_init_(const std::string &geo_manager_config_file_) {
   new TGeoManager("ROOT TGeo Manager", "ROOT TGeo Manager");
 
   // Setting geometry manager file
-  if (has_external_geometry_manager()) {
+  if (_has_external_geometry_manager_) {
     _setup_label_name_ = _geo_manager_->get_setup_label();
   } else {
     _geo_manager_ = new geomtools::manager;
@@ -365,20 +277,13 @@ void detector_manager::_at_construct_() {
 
   // closing geometry to not to modify it later
   gGeoManager->CloseGeometry();
-
-  if (view::options_manager::get_instance().get_logging_priority() >=
-      datatools::logger::PRIO_DEBUG) {
-    DT_LOG_DEBUG(view::options_manager::get_instance().get_logging_priority(),
-                 "Detector manager dump:");
-    this->tree_dump(std::clog);
-  }
 }
 
 void detector_manager::_read_detector_config_() {
   // Geometry manager property config
   datatools::properties gmanager_config;
 
-  if (!has_external_geometry_manager()) {
+  if (_has_external_geometry_manager_) {
     const std::string gmanager_config_file = _geo_manager_config_file_;
 
     // Load properties from the configuration file
@@ -436,9 +341,9 @@ void detector_manager::_read_detector_config_() {
   this->_set_categories_(only_categories);
 
   // Initialize geometry manager
-  geomtools::manager &gmgr = this->grab_geometry_manager();
+  geomtools::manager &gmgr = this->get_geometry_manager();
   gmgr.set_logging_priority(view::options_manager::get_instance().get_logging_priority());
-  if (!has_external_geometry_manager()) {
+  if (_has_external_geometry_manager_) {
     // Set the 'only' property
     // gmanager_config.update("mapping.only_categories", only_categories);
     gmgr.initialize(gmanager_config);
@@ -462,16 +367,12 @@ void detector_manager::_read_detector_config_() {
     }
   }
 
-  for (std::vector<std::string>::const_iterator it_category = only_categories.begin();
-       it_category != only_categories.end(); ++it_category) {
-    const std::string &volume_category_name = *it_category;
-
+  for (const std::string &volume_category_name : only_categories) {
     const geomtools::mapping &mapping = gmgr.get_mapping();
     const geomtools::id_mgr::categories_by_name_col_type &categories =
         gmgr.get_id_mgr().categories_by_name();
 
-    const geomtools::id_mgr::categories_by_name_col_type::const_iterator found =
-        categories.find(volume_category_name);
+    auto found = categories.find(volume_category_name);
     if (found == categories.end()) {
       DT_LOG_WARNING(
           view::options_manager::get_instance().get_logging_priority(),
@@ -514,13 +415,13 @@ void detector_manager::_set_categories_(std::vector<std::string> &only_categorie
 
   // first get them from style file
   if (!volumes.empty()) {
-    for (auto it_volume = volumes.begin(); it_volume != volumes.end(); ++it_volume) {
-      if (it_volume->second._visibility_ == DISABLE) {
+    for (const auto &it_volume : volumes) {
+      if ((it_volume.second)._visibility_ == DISABLE) {
         continue;
       }
       DT_LOG_DEBUG(view::options_manager::get_instance().get_logging_priority(),
-                   "Add '" << it_volume->first << "' category");
-      only_categories_.push_back(it_volume->first);
+                   "Add '" << it_volume.first << "' category");
+      only_categories_.push_back(it_volume.first);
     }
 
     // special treatment in case of all volumes disabled
@@ -587,9 +488,8 @@ void detector_manager::_set_categories_(std::vector<std::string> &only_categorie
     }
 
     // adding the default detectors to detector_to_show list
-    for (std::vector<std::string>::const_iterator it_category = only_categories_.begin();
-         it_category != only_categories_.end(); ++it_category) {
-      volumes[*it_category]._visibility_ = VISIBLE;
+    for (const auto &it_category : only_categories_) {
+      volumes[it_category]._visibility_ = VISIBLE;
     }
   }
 }
@@ -605,8 +505,6 @@ void detector_manager::_set_volume_(const geomtools::geom_info &ginfo_) {
   const std::string &shape_name = a_shape.get_shape_name();
 
   if (is_special_volume(volume_category)) {
-    DT_LOG_INFORMATION(view::options_manager::get_instance().get_logging_priority(),
-                       "'" << volume_category << "' is a special volume !");
     _volumes_[volume_id] = new special_volume(volume_name, volume_category);
   } else if (a_shape.is_composite()) {
     _volumes_[volume_id] = new composite_volume(volume_name, volume_category);
