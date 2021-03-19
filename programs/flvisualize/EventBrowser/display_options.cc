@@ -65,23 +65,14 @@ namespace visualization {
 
 namespace view {
 
-bool display_options::is_initialized() const { return _initialized_; }
 
 // ctor:
-display_options::display_options() {
-  _initialized_ = false;
-  _browser_ = nullptr;
-  _main_ = nullptr;
+display_options::display_options(TGCompositeFrame* main) {
+  this->_at_init_(main);
 }
 
 // dtor:
 display_options::~display_options() { this->reset(); }
-
-void display_options::initialize(TGCompositeFrame* main_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
-  this->_at_init_(main_);
-  _initialized_ = true;
-}
 
 void display_options::_at_init_(TGCompositeFrame* main_) {
   // Keep track of main frame in order to regenerate it for
@@ -210,27 +201,9 @@ void display_options::_build_volume_buttons_() {
                             "snemo::visualization::view::display_options", this,
                             "process_volume_settings ()");
     cframe->AddFrame(color_selector);
-    // , new TGLayoutHints (kLHintsTop | kLHintsExpandX,
-    //                      2, 2, 2, 2));
 
     _volumes_widgets_[volume_name]._tg_color_ = color_selector;
     _button_dictionnary_[id_button++] = volume_name;
-
-    // // Add transparency slider
-    // TGNumberEntryField* transparency_entry
-    //   = new TGNumberEntryField (cframe, id_button,
-    //                             style_mgr.get_volume_transparency (volume_name),
-    //                             TGNumberFormat::kNESInteger,
-    //                             TGNumberFormat::kNEANonNegative);
-    // transparency_entry->SetLimits (TGNumberFormat::kNELLimitMinMax, 0, 100);
-    // transparency_entry->Connect ("TextChanged (char*)",
-    //                              "snemo::visualization::view::display_options",
-    //                              this, "process_volume_settings ()");
-    // cframe->AddFrame (transparency_entry);
-    // // , new TGLayoutHints (kLHintsTop |
-    // //                      kLHintsLeft, 2, 2, 2, 2));
-    // _volumes_widgets_[volume_name]._tg_transparency_ = transparency_entry;
-    // _button_dictionnary_[id_button++] = volume_name;
   }
 }
 
@@ -362,10 +335,6 @@ void display_options::_set_button_values_() {
     TGColorSelect* color_selector = _volumes_widget.second._tg_color_;
     const unsigned int color = style_mgr.get_volume_color(volume_name);
     color_selector->SetColor(TColor::Number2Pixel(color), false);
-
-    // TGNumberEntryField* transparency_entry = it_widget->second._tg_transparency_;
-    // const unsigned int value = style_mgr.get_volume_transparency (volume_name);
-    // transparency_entry->SetNumber (value);
   }
 
   // MC particle settings
@@ -393,28 +362,12 @@ void display_options::_set_button_values_() {
 void display_options::update() {}
 
 void display_options::clear() {
-  // for (map<string, volume_widgets>::iterator
-  //        it_widget = _volumes_widgets_.begin ();
-  //      it_widget != _volumes_widgets_.end (); ++it_widget)
-  //   {
-  //     it_widget->second._tg_frame_->DestroyWindow ();
-  //     it_widget->second._tg_frame_->Cleanup ();
-  //     _main_->RemoveFrame (it_widget->second._tg_frame_);
-
-  //     // delete it_widget->second._tg_color_;
-  //     // delete it_widget->second._tg_transparency_;
-  //     // delete it_widget->second._tg_visibility_;
-  //     delete it_widget->second._tg_frame_;
-  //   }
-
   _volumes_widgets_.clear();
   _button_dictionnary_.clear();
 }
 
 void display_options::reset() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
   this->clear();
-  _initialized_ = false;
 }
 
 void display_options::process_volume_settings() {
@@ -445,11 +398,6 @@ void display_options::process_volume_settings() {
   // Set color: convert Pixel_t value to integer
   unsigned int color = TColor::GetColor(_volumes_widgets_[volume_name]._tg_color_->GetColor());
   volumes[volume_name]._color_ = color;
-
-  // // Set transparency
-  // unsigned int transparency
-  //   = _volumes_widgets_[volume_name]._tg_transparency_->GetNumber ();
-  // volumes[volume_name]._transparency_ = transparency;
 
   // Update detector and event browser
   detector::detector_manager::get_instance().update();
@@ -608,8 +556,6 @@ void display_options::save_style_settings() {
     file_name += file_type;
   }
 
-  DT_LOG_NOTICE(datatools::logger::PRIO_NOTICE, file_name << " saved");
-
   style_manager::get_instance().dump_into_file(file_name);
 }
 
@@ -619,29 +565,6 @@ void display_options::do_slider(const int delay_) {
   std::ostringstream oss;
   oss << delay_;
   _show_delay_->SetText(oss.str().c_str());
-}
-
-void display_options::test_add_frame() {
-  // this->clear ();
-
-  // cout << "cocuou" << endl;
-  // this->_build_volume_buttons_ ();
-  // cout << "caca" << endl;
-
-  // _main_->UnmapWindow ();
-  // _main_->RemoveAll ();
-
-  auto* volume_group = new TGGroupFrame(_main_, "toto", kHorizontalFrame);
-  volume_group->SetTitlePos(TGGroupFrame::kLeft);
-  _main_->AddFrame(volume_group);
-
-  auto* test = new TGCheckButton(volume_group, "test toto", 10000);
-  volume_group->AddFrame(test, new TGLayoutHints(kLHintsTop & kLHintsLeft, 2, 2, 2, 2));
-
-  volume_group->MapWindow();
-  // _main_->MapWindow ();
-  // _browser_->MapSubwindows ();
-  // _browser_->MapWindow ();
 }
 
 }  // end of namespace view

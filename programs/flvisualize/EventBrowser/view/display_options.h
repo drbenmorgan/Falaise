@@ -57,27 +57,14 @@ class event_browser;
 
 class display_options {
  public:
-  struct volume_widgets {
-    TGGroupFrame* _tg_frame_;
-    TGColorSelect* _tg_color_;
-    TGNumberEntryField* _tg_transparency_;
-    TGCheckButton* _tg_visibility_;
-  };
-
-  struct particle_widgets {
-    TGColorSelect* _tg_color_;
-    TGCheckButton* _tg_visibility_;
-  };
-
- public:
-  display_options();
+  // Explicit default constructor required for ROOT dictionary generation
+  display_options() = default;
+  display_options(TGCompositeFrame* main);
   virtual ~display_options();
 
-  void initialize(TGCompositeFrame* main_);
-
-  bool is_initialized() const;
-
   void update();
+
+ private:
   void clear();
   void reset();
 
@@ -94,7 +81,6 @@ class display_options {
 
   void test_add_frame();
 
- private:
   void _at_init_(TGCompositeFrame* main_);
   void _at_construct_();
 
@@ -105,19 +91,29 @@ class display_options {
   void _set_button_values_();
 
  private:
-  bool _initialized_;
+  struct volume_widgets {
+    TGGroupFrame* _tg_frame_;
+    TGColorSelect* _tg_color_;
+    TGNumberEntryField* _tg_transparency_;
+    TGCheckButton* _tg_visibility_;
+  };
 
-  TGCompositeFrame* _main_;
-  event_browser* _browser_;
+  struct particle_widgets {
+    TGColorSelect* _tg_color_;
+    TGCheckButton* _tg_visibility_;
+  };
+
+  TGCompositeFrame* _main_ = nullptr;
+  event_browser* _browser_ = nullptr;
 
   std::map<unsigned int, std::string> _button_dictionnary_;
   std::map<std::string, volume_widgets> _volumes_widgets_;
   std::map<std::string, particle_widgets> _particles_widgets_;
 
-  TGColorSelect* _background_color_;
-  TGLineWidthComboBox* _line_width_;
-  TGLineStyleComboBox* _line_style_;
-  TGTextEntry* _show_delay_;
+  TGColorSelect* _background_color_ = nullptr;
+  TGLineWidthComboBox* _line_width_ = nullptr;
+  TGLineStyleComboBox* _line_style_ = nullptr;
+  TGTextEntry* _show_delay_ = nullptr;
 
   // No I/O so ClassDefVersionID = 0
   ClassDef(display_options, 0);

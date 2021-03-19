@@ -178,8 +178,7 @@ void event_display::_at_init_(TGCompositeFrame* main_) {
     _browser_tracks_ = new browser_tracks(tracks_frame, _server_);
 
     // Display options
-    _options_ = new display_options;
-    _options_->initialize(options_frame);
+    _options_ = new display_options(options_frame);
 
     // Selection options
     _selection_ = new event_selection;
