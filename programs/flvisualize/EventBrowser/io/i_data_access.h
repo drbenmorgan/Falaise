@@ -46,11 +46,11 @@ namespace visualization {
 
 namespace io {
 
-class i_data_access : public datatools::i_tree_dumpable {
+class i_data_access {
  public:
-  i_data_access();
+  i_data_access() = default;
 
-  virtual ~i_data_access();
+  virtual ~i_data_access() = default;
 
   virtual size_t get_number_of_entries() const = 0;
 
@@ -71,11 +71,6 @@ class i_data_access : public datatools::i_tree_dumpable {
   virtual bool reset() = 0;
 
   virtual bool close() = 0;
-
-  virtual void tree_dump(std::ostream& out_ = std::clog, const std::string& title_ = "",
-                         const std::string& indent_ = "", bool inherit_ = false) const = 0;
-
-  virtual void dump() const = 0;
 
   // Need probably a better name
   virtual bool build_list() = 0;

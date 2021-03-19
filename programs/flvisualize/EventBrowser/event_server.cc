@@ -274,36 +274,6 @@ std::string event_server::get_current_filename() const {
   return (_data_access_ != nullptr ? _data_access_->get_current_filename() : "");
 }
 
-void event_server::tree_dump(std::ostream& out_, const std::string& title_,
-                             const std::string& indent_, bool inherit_) const {
-  std::string indent;
-  if (!indent_.empty()) {
-    indent = indent_;
-  }
-  if (!title_.empty()) {
-    out_ << indent << title_ << std::endl;
-  }
-
-  out_ << indent << datatools::i_tree_dumpable::tag
-       << "Sequential    : " << (has_sequential_data() ? "Yes" : "No") << std::endl;
-
-  out_ << indent << datatools::i_tree_dumpable::tag
-       << "External data : " << (has_external_data() ? "Yes" : "No") << std::endl;
-
-  out_ << indent << datatools::i_tree_dumpable::tag
-       << "Random access data : " << (has_random_data() ? "Yes" : "No") << std::endl;
-
-  out_ << indent << datatools::i_tree_dumpable::inherit_tag(inherit_)
-       << "Data access  : " << std::endl;
-  if (_data_access_ != nullptr) {
-    _data_access_->tree_dump(out_, "", indent_, true);
-  }
-}
-
-void event_server::dump() const {
-  this->tree_dump(std::clog, "snemo::visualization::io::event_server");
-}
-
 event_server::event_selection_list_type& event_server::get_event_selection() {
   return _event_selection_;
 }

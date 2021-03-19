@@ -301,40 +301,6 @@ bool boost_access::retrieve_event(event_record& event_, const size_t event_numbe
   return true;
 }
 
-void boost_access::tree_dump(std::ostream& out_, const std::string& title_,
-                             const std::string& indent_, bool /*inherit_*/) const {
-  std::string indent;
-  if (!indent_.empty()) {
-    indent = indent_;
-  }
-  if (!title_.empty()) {
-    out_ << indent << title_ << std::endl;
-  }
-
-  out_ << indent << datatools::i_tree_dumpable::tag << "File type : " << get_file_type_as_string()
-       << std::endl;
-
-  // File list
-  out_ << indent << datatools::i_tree_dumpable::last_tag
-       << "Attached files : " << _file_list_.size() << std::endl;
-
-  for (auto ifile = _file_list_.begin(); ifile != _file_list_.end(); ++ifile) {
-    out_ << indent << datatools::i_tree_dumpable::last_skip_tag;
-    auto jfile = ifile;
-    if (++jfile == _file_list_.end()) {
-      out_ << datatools::i_tree_dumpable::last_tag;
-    } else {
-      out_ << datatools::i_tree_dumpable::tag;
-    }
-    out_ << "File[" << std::distance(_file_list_.begin(), ifile) << "]: '" << *ifile << "'"
-         << std::endl;
-  }
-}
-
-void boost_access::dump() const {
-  this->tree_dump(std::clog, "snemo::visualization::io::boost_access");
-}
-
 }  // end of namespace io
 
 }  // end of namespace visualization

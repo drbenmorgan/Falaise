@@ -52,17 +52,17 @@ namespace io {
 /// \brief A data access to read Boost archive file
 class boost_access : public i_data_access {
  public:
-  /// Set reader as sequential
-  void set_sequential(const bool sequential_ = true);
-
-  /// Check if reader is sequential
-  bool is_sequential() const;
-
   /// Default constructor
   boost_access();
 
   /// Destructor
   virtual ~boost_access();
+
+  /// Set reader as sequential
+  void set_sequential(const bool sequential_ = true);
+
+  /// Check if reader is sequential
+  bool is_sequential() const;
 
   /// Return the total number of entry
   virtual size_t get_number_of_entries() const;
@@ -93,13 +93,6 @@ class boost_access : public i_data_access {
 
   /// Close data stream
   virtual bool close();
-
-  /// Smart print
-  virtual void tree_dump(std::ostream& out_ = std::clog, const std::string& title_ = "",
-                         const std::string& indent_ = "", bool inherit_ = false) const;
-
-  /// Default dump
-  virtual void dump() const;
 
   /// Build list of event
   virtual bool build_list();

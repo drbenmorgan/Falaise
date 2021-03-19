@@ -164,7 +164,6 @@ set(FalaiseEventBrowserPlugin_SOURCES
   boost_access.cc
   brio_access.cc
   event_server.cc
-  i_data_access.cc
   root_utilities.cc
   base_renderer.cc
   # bipo_draw_manager.cc

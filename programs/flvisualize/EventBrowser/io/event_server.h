@@ -61,7 +61,7 @@ class i_data_access;
 /// This class allows the access to data through an interface
 /// ```i_data_access``` that can read data from BRIO files as well as
 /// Boost archive.
-class event_server : public datatools::i_tree_dumpable {
+class event_server {
  public:
   /// File type enumeration
   enum file_type {
@@ -170,13 +170,6 @@ class event_server : public datatools::i_tree_dumpable {
 
   /// Getting a mutable reference to event
   event_record& grab_event();
-
-  /// Smart printing
-  void tree_dump(std::ostream& out_ = std::clog, const std::string& title_ = "",
-                 const std::string& indent_ = "", bool inherit_ = false) const;
-
-  /// Default dump
-  void dump() const;
 
   /// Event selection
   typedef std::set<int32_t> event_selection_list_type;

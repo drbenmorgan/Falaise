@@ -89,13 +89,6 @@ class brio_access : public i_data_access {
   /// Close data stream
   virtual bool close();
 
-  /// Smart print
-  virtual void tree_dump(std::ostream& out_ = std::clog, const std::string& title_ = "",
-                         const std::string& indent_ = "", bool inherit_ = false) const;
-
-  /// Default dump
-  virtual void dump() const;
-
   /// Build list of event
   virtual bool build_list();
 
