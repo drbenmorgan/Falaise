@@ -270,7 +270,7 @@ void detector_manager::_read_detector_config_() {
   // Geometry manager property config
   datatools::properties gmanager_config;
 
-  if (_has_external_geometry_manager_) {
+  if (!_has_external_geometry_manager_) {
     const std::string gmanager_config_file = _geo_manager_config_file_;
 
     // Load properties from the configuration file
