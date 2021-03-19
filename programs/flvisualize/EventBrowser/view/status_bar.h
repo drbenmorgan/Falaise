@@ -61,20 +61,13 @@ namespace view {
 /// events
 class status_bar {
  public:
-  /// Default constructor
+  /// Default constructor (doesn't really make much sense, so should probably delete)
   status_bar();
+
+  status_bar(TGCompositeFrame* main_, io::event_server* server_);
 
   /// Destructor
   virtual ~status_bar();
-
-  /// Set event server reference
-  void set_event_server(io::event_server* server_);
-
-  /// Return initialization flag
-  bool is_initialized() const;
-
-  /// Initialize status bar
-  void initialize(TGCompositeFrame* main_);
 
   /// Update method
   void update(const bool reset_ = false, const bool disable_ = false);
@@ -92,6 +85,12 @@ class status_bar {
   void process();
 
  private:
+  /// Return initialization flag
+  bool is_initialized() const;
+
+  /// Initialize status bar
+  void initialize(TGCompositeFrame* main_);
+
   /// Main initialization method
   void _at_init_(TGCompositeFrame* main_);
 

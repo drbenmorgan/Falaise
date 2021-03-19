@@ -108,10 +108,8 @@ void event_browser::reset() {
   delete _display_;
   _display_ = nullptr;
 
-  if (_full_2d_display_ != nullptr) {
-    delete _full_2d_display_;
-    _full_2d_display_ = nullptr;
-  }
+  delete _full_2d_display_;
+  _full_2d_display_ = nullptr;
 
   delete _status_;
   _status_ = nullptr;
@@ -170,9 +168,7 @@ void event_browser::initialize_gui() {
   this->AddFrame(_tabs_, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 3, 3, 3, 3));
 
   // Status bar
-  _status_ = new status_bar;
-  _status_->set_event_server(_event_server_);
-  _status_->initialize(this);
+  _status_ = new status_bar{this, _event_server_};
 
   // Create plot objects
   _display_ = new event_display;

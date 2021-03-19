@@ -56,13 +56,14 @@ status_bar::status_bar() {
   _initialized_ = false;
 }
 
+status_bar::status_bar(TGCompositeFrame* main_, io::event_server* server_) {
+  // Implicit assertion that server_ is not nullptr
+  _server_ = server_;
+  this->initialize(main_);
+}
+
 // dtor:
 status_bar::~status_bar() { this->reset(); }
-
-void status_bar::set_event_server(io::event_server* server_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
-  _server_ = server_;
-}
 
 void status_bar::initialize(TGCompositeFrame* main_) {
   DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
@@ -133,17 +134,15 @@ void status_bar::reset() {
 }
 
 void status_bar::update(const bool reset_, const bool disable_) {
-  io::event_server& server = *_server_;
-
   // Special mode
-  if (!server.has_random_data()) {
-    const int event_number = server.get_current_event_number();
+  if (!_server_->has_random_data()) {
+    const int event_number = _server_->get_current_event_number();
     std::ostringstream status;
     status << " +++ EVENT " << event_number;
-    if (server.has_sequential_data()) {
+    if (_server_->has_sequential_data()) {
       status << " +++ SEQUENTIAL READING ONLY +++ ";
     }
-    if (server.has_external_data()) {
+    if (_server_->has_external_data()) {
       status << " +++ EXTERNAL PROCESSING +++ ";
     }
     _goto_event_->SetEnabled(false);
@@ -152,13 +151,12 @@ void status_bar::update(const bool reset_, const bool disable_) {
 
   if (reset_) {
     this->reset();
-    const io::event_server::event_selection_list_type& event_selection_list =
-        server.get_event_selection();
+    const auto& event_selection_list = _server_->get_event_selection();
     if (!event_selection_list.empty()) {
-			_total_event_->SetNumber(server.get_number_of_events()-1);
+			_total_event_->SetNumber(_server_->get_number_of_events()-1);
     }
   }
-	_goto_event_->SetNumber(server.get_current_event_number());
+	_goto_event_->SetNumber(_server_->get_current_event_number());
   _goto_event_->SetEnabled(!disable_);
 }
 
