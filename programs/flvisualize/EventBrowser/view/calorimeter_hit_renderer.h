@@ -48,12 +48,6 @@ namespace view {
 /// \brief A ROOT renderer dedicated to calorimeter hit visualization.
 class calorimeter_hit_renderer : public base_renderer {
  public:
-  /// Default constructor
-  calorimeter_hit_renderer();
-
-  /// Destructor
-  virtual ~calorimeter_hit_renderer();
-
   /// Build simulated calorimeter hits
   void push_simulated_hits(const std::string& hit_category_ = "");
 

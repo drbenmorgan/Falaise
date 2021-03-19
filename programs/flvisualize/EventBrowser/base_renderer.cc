@@ -45,21 +45,6 @@ namespace snemo {
 namespace visualization {
 
 namespace view {
-
-bool base_renderer::is_initialized() const { return _initialized; }
-
-bool base_renderer::has_server() const { return _server != nullptr; }
-
-void base_renderer::set_server(const io::event_server* server_) { _server = server_; }
-
-bool base_renderer::has_graphical_objects() const { return _objects != nullptr; }
-
-void base_renderer::set_graphical_objects(TObjArray* objects_) { _objects = objects_; }
-
-bool base_renderer::has_text_objects() const { return _text_objects != nullptr; }
-
-void base_renderer::set_text_objects(TObjArray* text_objects_) { _text_objects = text_objects_; }
-
 // ctor:
 base_renderer::base_renderer() {
   _initialized = false;
@@ -90,22 +75,32 @@ void base_renderer::clear() {
 }
 
 void base_renderer::reset() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
   this->clear();
   _initialized = false;
 }
 
+bool base_renderer::is_initialized() const { return _initialized; }
+
+bool base_renderer::has_server() const { return _server != nullptr; }
+
+void base_renderer::set_server(const io::event_server* server_) { _server = server_; }
+
+bool base_renderer::has_graphical_objects() const { return _objects != nullptr; }
+
+void base_renderer::set_graphical_objects(TObjArray* objects_) { _objects = objects_; }
+
+bool base_renderer::has_text_objects() const { return _text_objects != nullptr; }
+
+void base_renderer::set_text_objects(TObjArray* text_objects_) { _text_objects = text_objects_; }
+
+
 void base_renderer::highlight_geom_id(const geomtools::geom_id& gid_, const size_t color_,
                                       const std::string& text_) {
-  DT_LOG_DEBUG(options_manager::get_instance().get_logging_priority(),
-               "Geom id '" << gid_ << "' is hit");
-
   // Highlight calorimeter block
-  detector::detector_manager& detector_mgr = detector::detector_manager::get_instance();
+  auto& detector_mgr = detector::detector_manager::get_instance();
 
   // Get matching list of geom_id (using 'any_adress' concept)
-  std::vector<geomtools::geom_id> gid_list;
-  detector_mgr.get_matching_ids(gid_, gid_list);
+  std::vector<geomtools::geom_id> gid_list = detector_mgr.get_matching_ids(gid_);
 
   if (gid_list.empty()) {
     DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(),

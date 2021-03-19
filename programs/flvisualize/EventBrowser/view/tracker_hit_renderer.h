@@ -50,12 +50,6 @@ namespace view {
 /// \brief A dedicated renderer for tracker hits
 class tracker_hit_renderer : public base_renderer {
  public:
-  /// Default constructor
-  tracker_hit_renderer();
-
-  /// Destructor
-  virtual ~tracker_hit_renderer();
-
   /// Add objects from simulated hits
   void push_simulated_hits(const std::string& hit_category_ = "");
 

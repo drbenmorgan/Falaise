@@ -55,19 +55,11 @@ namespace visualization {
 
 namespace view {
 
-// ctor:
-tracker_hit_renderer::tracker_hit_renderer() = default;
-
-// dtor:
-tracker_hit_renderer::~tracker_hit_renderer() = default;
-
 void tracker_hit_renderer::push_simulated_hits(const std::string &hit_category_) {
   const io::event_record &event = _server->get_event();
   const auto &sim_data = event.get<mctools::simulated_data>(io::SD_LABEL);
 
   if (!sim_data.has_step_hits(hit_category_)) {
-    DT_LOG_INFORMATION(options_manager::get_instance().get_logging_priority(),
-                       "Event has no '" << hit_category_ << "' tracker hits");
     return;
   }
 
@@ -75,7 +67,6 @@ void tracker_hit_renderer::push_simulated_hits(const std::string &hit_category_)
       sim_data.get_step_hits(hit_category_);
 
   if (hit_collection.empty()) {
-    DT_LOG_INFORMATION(options_manager::get_instance().get_logging_priority(), "No tracker hits");
     return;
   }
 
@@ -87,30 +78,30 @@ void tracker_hit_renderer::push_simulated_hits(const std::string &hit_category_)
       options_manager::get_instance().get_option_flag(SHOW_GG_TIME_GRADIENT);
   if (geiger_with_gradient) {
     for (const auto &it_hit : hit_collection) {
-      hit_start_time = std::min(it_hit.get().get_time_start(), hit_start_time);
-      hit_stop_time = std::max(it_hit.get().get_time_start(), hit_stop_time);
+      hit_start_time = std::min(it_hit->get_time_start(), hit_start_time);
+      hit_stop_time = std::max(it_hit->get_time_start(), hit_stop_time);
     }
   }
 
-  for (const auto &it_hit : hit_collection) {
-    const mctools::base_step_hit &a_step = it_hit.get();
+  for (const auto &a_step : hit_collection) {
+    const auto &startPos = a_step->get_position_start();
+    const auto &stopPos = a_step->get_position_stop();
+    const double startTime = a_step->get_time_start();
 
     // draw the Geiger avalanche path:
     auto *gg_path = new TPolyLine3D;
     _objects->Add(gg_path);
-    gg_path->SetPoint(0, a_step.get_position_start().x(), a_step.get_position_start().y(),
-                      a_step.get_position_start().z());
-    gg_path->SetPoint(1, a_step.get_position_stop().x(), a_step.get_position_stop().y(),
-                      a_step.get_position_stop().z());
+    gg_path->SetPoint(0, startPos.x(), startPos.y(), startPos.z());
+    gg_path->SetPoint(1, stopPos.x(), stopPos.y(), stopPos.z());
 
     const auto time_percent =
-        (size_t)((TColor::GetNumberOfColors() - 1) * (a_step.get_time_start() - hit_start_time) /
+        (size_t)((TColor::GetNumberOfColors() - 1) * (startTime - hit_start_time) /
                  (hit_stop_time - hit_start_time));
     const size_t color = geiger_with_gradient ? TColor::GetColorPalette(time_percent) : kSpring;
     gg_path->SetLineColor(color);
 
     // Store this value into cluster properties:
-    auto *mutable_hit = const_cast<mctools::base_step_hit *>(&(a_step));
+    auto *mutable_hit = const_cast<mctools::base_step_hit *>(&(*a_step));
     datatools::properties &hit_properties = mutable_hit->grab_auxiliaries();
     const long pixel = TColor::Number2Pixel(color);
     const std::string hex_str = TColor::PixelAsHexString(pixel);
@@ -146,25 +137,19 @@ void tracker_hit_renderer::push_simulated_hits(const std::string &hit_category_)
 
       geomtools::polyline_type points;
       if (cell_axis == 'z') {
-        TVector3 current_pos((a_step.get_position_start() - a_step.get_position_stop()).x(),
-                             (a_step.get_position_start() - a_step.get_position_stop()).y(),
-                             a_step.get_position_stop().z());
+        TVector3 current_pos((startPos - stopPos).x(), (startPos - stopPos).y(), stopPos.z());
         for (size_t i_point = 0; i_point <= n_point; ++i_point) {
           current_pos *= dr;
-          points.push_back(geomtools::vector_3d(current_pos.x() + a_step.get_position_stop().x(),
-                                                current_pos.y() + a_step.get_position_stop().y(),
-                                                current_pos.z()));
+          points.push_back(geomtools::vector_3d(current_pos.x() + stopPos.x(),
+                                                current_pos.y() + stopPos.y(), current_pos.z()));
         }
       } else if (cell_axis == 'x') {
-        TVector3 current_pos(a_step.get_position_stop().x(),
-                             (a_step.get_position_start() - a_step.get_position_stop()).y(),
-                             (a_step.get_position_start() - a_step.get_position_stop()).z());
+        TVector3 current_pos(stopPos.x(), (startPos - stopPos).y(), (startPos - stopPos).z());
 
         for (size_t i_point = 0; i_point <= n_point; ++i_point) {
           current_pos *= dr;
-          points.push_back(geomtools::vector_3d(current_pos.x(),
-                                                current_pos.y() + a_step.get_position_stop().y(),
-                                                current_pos.z() + a_step.get_position_stop().z()));
+          points.push_back(geomtools::vector_3d(current_pos.x(), current_pos.y() + stopPos.y(),
+                                                current_pos.z() + stopPos.z()));
         }
       }
 
@@ -183,14 +168,11 @@ void tracker_hit_renderer::push_calibrated_hits() {
   const snemo::datamodel::TrackerHitHdlCollection &ct_collection = calib_data.tracker_hits();
 
   if (ct_collection.empty()) {
-    DT_LOG_INFORMATION(options_manager::get_instance().get_logging_priority(),
-                       "No calibrated tracker hits");
     return;
   }
 
-  for (const auto &it_hit : ct_collection) {
-    const snemo::datamodel::calibrated_tracker_hit &a_hit = it_hit.get();
-    tracker_hit_renderer::_make_calibrated_geiger_hit(a_hit, false);
+  for (const auto &a_hit : ct_collection) {
+    tracker_hit_renderer::_make_calibrated_geiger_hit(*a_hit, false);
   }
 }
 
@@ -199,49 +181,38 @@ void tracker_hit_renderer::push_clustered_hits() {
   const auto &tracker_clustered_data =
       event.get<snemo::datamodel::tracker_clustering_data>(io::TCD_LABEL);
 
-  for (const auto &cluster_solution : tracker_clustered_data.solutions()) {
-    // Get current tracker solution:
-    const snemo::datamodel::tracker_clustering_solution &a_solution = cluster_solution.get();
-
+  for (const auto &a_solution : tracker_clustered_data.solutions()) {
     // Check solution properties:
-    if (a_solution.get_auxiliaries().has_key(browser_tracks::CHECKED_FLAG) &&
-        !a_solution.get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG)) {
+    if (a_solution->get_auxiliaries().has_key(browser_tracks::CHECKED_FLAG) &&
+        !a_solution->get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG)) {
       continue;
     }
 
     // Get clusters stored in the current tracker solution:
-    const snemo::datamodel::TrackerClusterHdlCollection &clusters = a_solution.get_clusters();
-
-    for (auto icluster = clusters.begin(); icluster != clusters.end(); ++icluster) {
-      // Get current tracker cluster:
-      const snemo::datamodel::tracker_cluster &a_cluster = icluster->get();
-
+    size_t clusterIndex = 0;
+    for (const auto &a_cluster : a_solution->get_clusters()) {
       // Check cluster properties:
-      if (a_cluster.get_auxiliaries().has_key(browser_tracks::CHECKED_FLAG) &&
-          !a_cluster.get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG)) {
+      if (a_cluster->get_auxiliaries().has_key(browser_tracks::CHECKED_FLAG) &&
+          !a_cluster->get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG)) {
         continue;
       }
 
       // Determine cluster color
-      const size_t cluster_color =
-          style_manager::get_instance().get_color(std::distance(clusters.begin(), icluster));
+      const size_t cluster_color = style_manager::get_instance().get_color(clusterIndex);
+      ++clusterIndex;
 
       // Store this value into cluster properties:
-      auto *mutable_cluster = const_cast<snemo::datamodel::tracker_cluster *>(&(a_cluster));
+      auto *mutable_cluster = const_cast<snemo::datamodel::tracker_cluster *>(&(*a_cluster));
       datatools::properties &cluster_properties = mutable_cluster->grab_auxiliaries();
       const long pixel = TColor::Number2Pixel(cluster_color);
       const std::string hex_str = TColor::PixelAsHexString(pixel);
       cluster_properties.update(browser_tracks::COLOR_FLAG, hex_str);
 
       // Get tracker hits stored in the current tracker cluster:
-      const snemo::datamodel::TrackerHitHdlCollection &hits = a_cluster.hits();
-
       // Make a gradient color starting from color_solution:
-      for (const auto &hit : hits) {
-        const snemo::datamodel::calibrated_tracker_hit &a_gg_hit = hit.get();
-
+      for (const auto &a_gg_hit : a_cluster->hits()) {
         // Retrieve a mutable reference to calibrated_tracker_hit:
-        auto *mutable_hit = const_cast<snemo::datamodel::calibrated_tracker_hit *>(&(a_gg_hit));
+        auto *mutable_hit = const_cast<snemo::datamodel::calibrated_tracker_hit *>(&(*a_gg_hit));
         datatools::properties &gg_properties = mutable_hit->grab_auxiliaries();
 
         // Store current color to be used by calibrated_tracker_hit renderer:
@@ -251,10 +222,10 @@ void tracker_hit_renderer::push_clustered_hits() {
 
         const options_manager &options_mgr = options_manager::get_instance();
         if (options_mgr.get_option_flag(SHOW_TRACKER_CLUSTERED_BOX)) {
-          const double x = a_gg_hit.get_x();
-          const double y = a_gg_hit.get_y();
-          const double z = a_gg_hit.get_z();
-          const double dz = a_gg_hit.get_sigma_z();
+          const double x = a_gg_hit->get_x();
+          const double y = a_gg_hit->get_y();
+          const double z = a_gg_hit->get_z();
+          const double dz = a_gg_hit->get_sigma_z();
           const double r = 22.0 / CLHEP::mm;
 
           auto *hit_3d = new TMarker3DBox;
@@ -267,10 +238,9 @@ void tracker_hit_renderer::push_clustered_hits() {
           if (gg_properties.has_flag(browser_tracks::HIGHLIGHT_FLAG)) {
             line_width = 3;
           }
-          // gg_properties.update(browser_tracks::HIGHLIGHT_FLAG, false);
           hit_3d->SetLineWidth(line_width);
         } else if (options_mgr.get_option_flag(SHOW_TRACKER_CLUSTERED_CIRCLE)) {
-          tracker_hit_renderer::_make_calibrated_geiger_hit(a_gg_hit, true);
+          tracker_hit_renderer::_make_calibrated_geiger_hit(*a_gg_hit, true);
         }
       }  // end of gg hits
     }    // end of cluster loop
@@ -282,32 +252,21 @@ void tracker_hit_renderer::push_fitted_tracks() {
   const auto &tracker_trajectory_data =
       event.get<snemo::datamodel::tracker_trajectory_data>(io::TTD_LABEL);
 
-  const snemo::datamodel::TrackerTrajectorySolutionHdlCollection &trajectory_solutions =
-      tracker_trajectory_data.get_solutions();
-  for (const auto &isolution : trajectory_solutions) {
-    // Get current tracker trajectory solution:
-    const snemo::datamodel::tracker_trajectory_solution &a_solution = isolution.get();
-
+  for (const auto &a_solution : tracker_trajectory_data.get_solutions()) {
 // DONT couple data model to view!
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     // Check solution properties:
-    if (a_solution.get_auxiliaries().has_key(browser_tracks::CHECKED_FLAG) &&
-        !a_solution.get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG)) {
+    if (a_solution->get_auxiliaries().has_key(browser_tracks::CHECKED_FLAG) &&
+        !a_solution->get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG)) {
       continue;
     }
 #pragma GCC diagnostic pop
 
     // Get trajectories stored in the current tracker trajectory solution:
-    const snemo::datamodel::TrackerTrajectoryHdlCollection &trajectories =
-        a_solution.get_trajectories();
-
-    for (const auto &itrajectory : trajectories) {
-      // Get current tracker trajectory:
-      const snemo::datamodel::tracker_trajectory &a_trajectory = itrajectory.get();
-
+    for (const auto &a_trajectory : a_solution->get_trajectories()) {
       // Get trajectory properties:
-      const datatools::properties &traj_properties = a_trajectory.get_auxiliaries();
+      const datatools::properties &traj_properties = a_trajectory->get_auxiliaries();
 
       // Check if trajectory has to be shown or not:
       if (traj_properties.has_key(browser_tracks::CHECKED_FLAG)) {
@@ -321,7 +280,7 @@ void tracker_hit_renderer::push_fitted_tracks() {
       }
 
       // Retrieve trajectory visual rendering:
-      const snemo::datamodel::base_trajectory_pattern &a_pattern = a_trajectory.get_pattern();
+      const snemo::datamodel::base_trajectory_pattern &a_pattern = a_trajectory->get_pattern();
       const auto &iw3dr =
           dynamic_cast<const geomtools::i_wires_3d_rendering &>(a_pattern.get_shape());
       TPolyLine3D *track = base_renderer::make_track(iw3dr);
@@ -329,8 +288,8 @@ void tracker_hit_renderer::push_fitted_tracks() {
 
       // Determine trajectory color by getting cluster color:
       int trajectory_color = 0;
-      if (a_trajectory.has_cluster()) {
-        const snemo::datamodel::tracker_cluster &a_cluster = a_trajectory.get_cluster();
+      if (a_trajectory->has_cluster()) {
+        const snemo::datamodel::tracker_cluster &a_cluster = a_trajectory->get_cluster();
         const datatools::properties &prop = a_cluster.get_auxiliaries();
         if (prop.has_key(browser_tracks::COLOR_FLAG)) {
           const std::string hex_str = prop.fetch_string(browser_tracks::COLOR_FLAG);
@@ -351,31 +310,30 @@ void tracker_hit_renderer::push_fitted_tracks() {
       if (traj_properties.has_key("t0") &&
           options_manager::get_instance().get_option_flag(SHOW_RECALIBRATED_TRACKER_HITS)) {
         const double t0 = traj_properties.fetch_real("t0");
-        snemo::processing::geiger_regime a_gg_regime;
-        if (a_trajectory.has_cluster()) {
-          const snemo::datamodel::tracker_cluster &a_cluster = a_trajectory.get_cluster();
-          // Get tracker hits stored in the current tracker cluster:
-          const snemo::datamodel::TrackerHitHdlCollection &hits = a_cluster.hits();
+        if (a_trajectory->has_cluster()) {
+          const snemo::datamodel::tracker_cluster &a_cluster = a_trajectory->get_cluster();
 
-          for (const auto &igg : hits) {
-            snemo::datamodel::calibrated_tracker_hit a_gg_hit_copy = igg.get();
+          snemo::processing::geiger_regime a_gg_regime;
+
+          // Copy and recalibrate tracker hits stored in the current tracker cluster:
+          for (auto a_gg_hit_copy : a_cluster.hits()) {
             // Recalibrate drift radius given fitted t0
             double new_r = datatools::invalid_real();
             double new_sigma_r = datatools::invalid_real();
             double new_anode_time = datatools::invalid_real();
-            if (a_gg_hit_copy.is_delayed()) {
-              new_anode_time = a_gg_hit_copy.get_delayed_time() - t0;
+            if (a_gg_hit_copy->is_delayed()) {
+              new_anode_time = a_gg_hit_copy->get_delayed_time() - t0;
             } else {
-              new_anode_time = a_gg_hit_copy.get_anode_time() - t0;
+              new_anode_time = a_gg_hit_copy->get_anode_time() - t0;
             }
             if (new_anode_time < 0.0 * CLHEP::ns) {
               new_anode_time = 0.0 * CLHEP::ns;
             }
             a_gg_regime.calibrateRadiusFromTime(new_anode_time, new_r, new_sigma_r);
-            a_gg_hit_copy.set_r(new_r);
-            a_gg_hit_copy.set_sigma_r(new_sigma_r);
-            a_gg_hit_copy.set_delayed(false);
-            tracker_hit_renderer::_make_calibrated_geiger_hit(a_gg_hit_copy, true);
+            a_gg_hit_copy->set_r(new_r);
+            a_gg_hit_copy->set_sigma_r(new_sigma_r);
+            a_gg_hit_copy->set_delayed(false);
+            tracker_hit_renderer::_make_calibrated_geiger_hit(*a_gg_hit_copy, true);
           }
         }
       }

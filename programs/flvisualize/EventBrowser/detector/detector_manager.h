@@ -104,8 +104,7 @@ class detector_manager : public utils::singleton<detector_manager> {
   const i_volume* get_volume(const geomtools::geom_id& id_) const;
 
   /// Get a list of matching geom_id
-  void get_matching_ids(const geomtools::geom_id& id_,
-                        std::vector<geomtools::geom_id>& vids_) const;
+  std::vector<geomtools::geom_id> get_matching_ids(const geomtools::geom_id& id_) const;
 
   /// Get volume name associated to geom_id
   std::string get_volume_name(const geomtools::geom_id& id_) const;

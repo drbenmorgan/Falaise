@@ -146,14 +146,16 @@ const i_volume *detector_manager::get_volume(const geomtools::geom_id &id_) cons
   return volume;
 }
 
-void detector_manager::get_matching_ids(const geomtools::geom_id &id_,
-                                        std::vector<geomtools::geom_id> &vids_) const {
+std::vector<geomtools::geom_id> detector_manager::get_matching_ids(const geomtools::geom_id &id_) const {
+  std::vector<geomtools::geom_id> vids_;
+
   for (const auto &_volume : _volumes_) {
     const geomtools::geom_id &gid = _volume.first;
     if (geomtools::geom_id::match(gid, id_)) {
       vids_.push_back(gid);
     }
   }
+  return vids_;
 }
 
 std::string detector_manager::get_volume_name(const geomtools::geom_id &id_) const {

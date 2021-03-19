@@ -49,12 +49,6 @@ namespace view {
 /// Monte-Carlo particle path or reconstructed particle track.
 class visual_track_renderer : public base_renderer {
  public:
-  /// Default constructor
-  visual_track_renderer();
-
-  /// Destructor
-  virtual ~visual_track_renderer();
-
   /// Build Monte-Carlo tracks
   void push_mc_tracks();
 

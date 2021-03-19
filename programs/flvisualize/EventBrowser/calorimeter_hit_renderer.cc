@@ -44,35 +44,17 @@ namespace visualization {
 
 namespace view {
 
-// ctor:
-calorimeter_hit_renderer::calorimeter_hit_renderer() = default;
-
-// dtor:
-calorimeter_hit_renderer::~calorimeter_hit_renderer() = default;
-
 void calorimeter_hit_renderer::push_simulated_hits(const std::string& hit_category_) {
   const io::event_record& event = _server->get_event();
   const auto& sim_data = event.get<mctools::simulated_data>(io::SD_LABEL);
 
   if (!sim_data.has_step_hits(hit_category_)) {
-    DT_LOG_DEBUG(options_manager::get_instance().get_logging_priority(),
-                 "Event has no '" << hit_category_ << "' calorimeter hits");
     return;
   }
 
-  const mctools::simulated_data::hit_handle_collection_type& hit_collection =
-      sim_data.get_step_hits(hit_category_);
-  if (hit_collection.empty()) {
-    DT_LOG_DEBUG(options_manager::get_instance().get_logging_priority(),
-                 "No simulated calorimeter hits");
-    return;
-  }
-
-  for (const auto& it_hit : hit_collection) {
-    const mctools::base_step_hit& a_hit = it_hit.get();
-
-    const geomtools::vector_3d& pstart = a_hit.get_position_start();
-    const geomtools::vector_3d& pstop = a_hit.get_position_stop();
+  for (const auto& a_hit : sim_data.get_step_hits(hit_category_)) {
+    const geomtools::vector_3d& pstart = a_hit->get_position_start();
+    const geomtools::vector_3d& pstop = a_hit->get_position_stop();
 
     const double dx = std::abs(0.5 * (pstart.x() - pstop.x()));
     const double dy = std::abs(0.5 * (pstart.y() - pstop.y()));
@@ -86,16 +68,9 @@ void calorimeter_hit_renderer::push_simulated_hits(const std::string& hit_catego
     step_3d->SetSize(dx, dy, dz);
     step_3d->SetLineColor(kRed);
 
-    // // Store this value into cluster properties:
-    // io::step_hit_type * mutable_hit = const_cast<io::step_hit_type*>(&(a_hit));
-    // datatools::utils::properties & hit_properties = mutable_hit->grab_auxiliaries();
-    // const long pixel = TColor::Number2Pixel(kRed);
-    // const string hex_str = TColor::PixelAsHexString(pixel);
-    // hit_properties.update(browser_tracks::COLOR_FLAG, hex_str);
-
     // Retrieve line width from properties if 'hit' is highlighted:
     size_t line_width = style_manager::get_instance().get_mc_line_width();
-    if (a_hit.get_auxiliaries().has_flag(browser_tracks::HIGHLIGHT_FLAG)) {
+    if (a_hit->get_auxiliaries().has_flag(browser_tracks::HIGHLIGHT_FLAG)) {
       line_width = 3;
       auto* mark1 = new TPolyMarker3D;
       _objects->Add(mark1);
@@ -108,10 +83,9 @@ void calorimeter_hit_renderer::push_simulated_hits(const std::string& hit_catego
       mark2->SetMarkerStyle(kCircle);
       mark2->SetPoint(0, pstop.x(), pstop.y(), pstop.z());
     }
-    // hit_properties.update(browser_tracks::HIGHLIGHT_FLAG, false);
     step_3d->SetLineWidth(line_width);
 
-    this->highlight_geom_id(a_hit.get_geom_id(), kRed);
+    this->highlight_geom_id(a_hit->get_geom_id(), kRed);
   }  // end of step collection
 }
 
@@ -119,26 +93,15 @@ void calorimeter_hit_renderer::push_calibrated_hits() {
   const io::event_record& event = _server->get_event();
   const auto& calib_data = event.get<snemo::datamodel::calibrated_data>(io::CD_LABEL);
 
-  const snemo::datamodel::CalorimeterHitHdlCollection& cc_collection =
-      calib_data.calorimeter_hits();
-
-  if (cc_collection.empty()) {
-    DT_LOG_DEBUG(options_manager::get_instance().get_logging_priority(),
-                 "No calibrated calorimeter hits");
-    return;
-  }
-
-  for (const auto& it_hit : cc_collection) {
-    const snemo::datamodel::calibrated_calorimeter_hit& a_hit = it_hit.get();
-
-    this->highlight_geom_id(a_hit.get_geom_id(),
+  for (const auto& a_hit : calib_data.calorimeter_hits()) {
+    this->highlight_geom_id(a_hit->get_geom_id(),
                             style_manager::get_instance().get_calibrated_data_color());
 
     if (options_manager::get_instance().get_option_flag(SHOW_CALIBRATED_INFO)) {
-      const double energy = a_hit.get_energy();
-      const double sigma_e = a_hit.get_sigma_energy();
-      const double time = a_hit.get_time();
-      const double sigma_t = a_hit.get_sigma_time();
+      const double energy = a_hit->get_energy();
+      const double sigma_e = a_hit->get_sigma_energy();
+      const double time = a_hit->get_time();
+      const double sigma_t = a_hit->get_sigma_time();
 
       // Save z position inside text and then parse it
       std::ostringstream oss;
@@ -148,7 +111,7 @@ void calorimeter_hit_renderer::push_calibrated_hits() {
       oss << "}{t  = ";
       utils::root_utilities::get_prettified_time(oss, time, sigma_t, true);
       oss << "}";
-      this->highlight_geom_id(a_hit.get_geom_id(),
+      this->highlight_geom_id(a_hit->get_geom_id(),
                               style_manager::get_instance().get_calibrated_data_color(), oss.str());
     }
   }

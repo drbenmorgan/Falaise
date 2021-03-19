@@ -65,8 +65,21 @@ namespace view {
 
 class base_renderer {
  public:
-  /// Unique set of geomtools::geom_id
-  typedef std::set<geomtools::geom_id> geom_id_collection;
+  /// Default constructor
+  base_renderer();
+
+  /// Destructor
+  virtual ~base_renderer();
+
+  /// Initialization
+  void initialize(const io::event_server* server_ = 0, TObjArray* objects_ = 0,
+                  TObjArray* text_objects_ = 0);
+
+  /// Clear
+  void clear();
+
+  /// Reset
+  void reset();
 
   /// Return initialization status
   bool is_initialized() const;
@@ -88,22 +101,6 @@ class base_renderer {
 
   /// Set text ROOT::TObject reference
   void set_text_objects(TObjArray* text_objects_);
-
-  /// Default constructor
-  base_renderer();
-
-  /// Destructor
-  virtual ~base_renderer();
-
-  /// Initialization
-  void initialize(const io::event_server* server_ = 0, TObjArray* objects_ = 0,
-                  TObjArray* text_objects_ = 0);
-
-  /// Clear
-  void clear();
-
-  /// Reset
-  void reset();
 
   /// Visually highlight a given geomtools::geom_id object
   void highlight_geom_id(const geomtools::geom_id& gid_, const size_t color_,
@@ -128,6 +125,8 @@ class base_renderer {
   TObjArray* _objects;              //!< ROOT graphical objects container
   TObjArray* _text_objects;         //!< ROOT text objects container
 
+   /// Unique set of geomtools::geom_id
+  typedef std::set<geomtools::geom_id> geom_id_collection;
   geom_id_collection _highlighted_geom_id;  //!< List of geom_id highlighted
 };
 
