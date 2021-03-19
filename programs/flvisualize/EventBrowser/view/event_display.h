@@ -63,25 +63,11 @@ class status_bar;
 /// \brief A general display class to visualize event within ROOT TCanvas
 class event_display {
  public:
-  /// Tab index
-  enum tab_id_index_type {
-    OVERVIEW_TAB = 0,
-    TRACK_BROWSER_TAB = 1,
-    OPTIONS_TAB = 2,
-    SELECTION_TAB = 3
-  };
-
   /// Default constructor
-  event_display();
+  event_display(TGCompositeFrame* main, status_bar* stat, io::event_server* es, bool is_full_2d);
 
   /// Destructor
   ~event_display();
-
-  /// Return initialization flag
-  bool is_initialized() const;
-
-  /// Initialization method
-  void initialize(TGCompositeFrame* main_);
 
   /// Update display
   void update(const bool reset_view_ = true, const bool reset_track_ = true);
@@ -95,6 +81,21 @@ class event_display {
   /// Visualize all event given the signal argument
   void show_all(const button_signals_type signal_);
 
+  /// Handle button signal
+  void handle_button_signals(const button_signals_type signal_, const int event_selected_ = -1);
+
+ private:
+  /// Tab index
+  enum tab_id_index_type {
+    OVERVIEW_TAB = 0,
+    TRACK_BROWSER_TAB = 1,
+    OPTIONS_TAB = 2,
+    SELECTION_TAB = 3
+  };
+
+  /// Initialization method
+  void initialize(TGCompositeFrame* main_);
+
   /// Set full 2D display mode
   void set_full_2d_display(const bool full_ = true);
 
@@ -104,10 +105,6 @@ class event_display {
   /// Set status bar
   void set_status_bar(view::status_bar* status_);
 
-  /// Handle button signal
-  void handle_button_signals(const button_signals_type signal_, const int event_selected_ = -1);
-
- private:
   /// Main initialization method
   void _at_init_(TGCompositeFrame* main_);
 
@@ -118,25 +115,23 @@ class event_display {
   void _update_tab_(const tab_id_index_type index_, const bool reset_view_ = true);
 
  private:
-  bool _initialized_;  //!< Initialization flag
+  io::event_server* _server_ = nullptr;  //!< Event server
+  status_bar* _status_ = nullptr;        //!< Event status
 
-  io::event_server* _server_;  //!< Event server
-  status_bar* _status_;        //!< Event status
+  display_3d* _display_3d_ = nullptr;  //!< 3D panel
+  display_2d* _display_2d_ = nullptr;  //!< 2D panel
+  bool _full_2d_display_ = false;      //!< Flag for 2D full display
+  display_2d* _top_2d_ = nullptr;      //!< 2D top view (full display)
+  display_2d* _front_2d_ = nullptr;    //!< 2D front view (full display)
+  display_2d* _side_2d_ = nullptr;     //!< 2D side view (full display)
 
-  display_3d* _display_3d_;  //!< 3D panel
-  display_2d* _display_2d_;  //!< 2D panel
-  bool _full_2d_display_;    //!< Flag for 2D full display
-  display_2d* _top_2d_;      //!< 2D top view (full display)
-  display_2d* _front_2d_;    //!< 2D front view (full display)
-  display_2d* _side_2d_;     //!< 2D side view (full display)
+  browser_tracks* _browser_tracks_ = nullptr;  //!< Browser panel
+  display_options* _options_ = nullptr;        //!< Option panel
+  event_selection* _selection_ = nullptr;      //!< Event selection
 
-  browser_tracks* _browser_tracks_;  //!< Browser panel
-  display_options* _options_;        //!< Option panel
-  event_selection* _selection_;      //!< Event selection
+  i_draw_manager* _draw_manager_ = nullptr;  //!< Drawer manager
 
-  i_draw_manager* _draw_manager_;  //!< Drawer manager
-
-  TGTab* _tabs_;                                        //!< Tabs
+  TGTab* _tabs_ = nullptr;                              //!< Tabs
   std::map<tab_id_index_type, bool> _tab_is_uptodate_;  //!< Tabs status
 };
 

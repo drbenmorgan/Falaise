@@ -49,24 +49,12 @@ namespace visualization {
 
 namespace view {
 
-bool event_display::is_initialized() const { return _initialized_; }
-
 // ctor:
-event_display::event_display() {
-  _server_ = nullptr;
-  _status_ = nullptr;
-  _display_3d_ = nullptr;
-  _display_2d_ = nullptr;
-  _browser_tracks_ = nullptr;
-  _options_ = nullptr;
-  _selection_ = nullptr;
-  _draw_manager_ = nullptr;
-  _tabs_ = nullptr;
-  _full_2d_display_ = false;
-  _top_2d_ = nullptr;
-  _front_2d_ = nullptr;
-  _side_2d_ = nullptr;
-  _initialized_ = false;
+event_display::event_display(TGCompositeFrame* main, status_bar* stat, io::event_server* es, bool is_full_2d) {
+  this->set_full_2d_display(is_full_2d);
+  this->set_event_server(es);
+  this->set_status_bar(stat);
+  this->initialize(main);
 }
 
 // dtor:
@@ -78,19 +66,15 @@ event_display::~event_display() {
 void event_display::set_full_2d_display(const bool full_) { _full_2d_display_ = full_; }
 
 void event_display::set_event_server(io::event_server* server_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
   _server_ = server_;
 }
 
 void event_display::set_status_bar(view::status_bar* status_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
   _status_ = status_;
 }
 
 void event_display::initialize(TGCompositeFrame* main_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
   this->_at_init_(main_);
-  _initialized_ = true;
 }
 
 void event_display::_at_init_(TGCompositeFrame* main_) {
@@ -195,43 +179,35 @@ void event_display::clear() {
 }
 
 void event_display::reset() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
+  delete _top_2d_;
+  _top_2d_ = nullptr;
 
-  if (_full_2d_display_) {
-    delete _top_2d_;
-    _top_2d_ = nullptr;
+  delete _front_2d_;
+  _front_2d_ = nullptr;
 
-    delete _front_2d_;
-    _front_2d_ = nullptr;
+  delete _side_2d_;
+  _side_2d_ = nullptr;
 
-    delete _side_2d_;
-    _side_2d_ = nullptr;
-  } else {
-    delete _display_3d_;
-    _display_3d_ = nullptr;
+  delete _display_3d_;
+  _display_3d_ = nullptr;
 
-    delete _display_2d_;
-    _display_2d_ = nullptr;
+  delete _display_2d_;
+  _display_2d_ = nullptr;
 
-    delete _browser_tracks_;
-    _browser_tracks_ = nullptr;
+  delete _browser_tracks_;
+  _browser_tracks_ = nullptr;
 
-    delete _options_;
-    _options_ = nullptr;
+  delete _options_;
+  _options_ = nullptr;
 
-    delete _selection_;
-    _selection_ = nullptr;
+  delete _selection_;
+  _selection_ = nullptr;
 
-    delete _tabs_;
-    _tabs_ = nullptr;
-  }
+  delete _tabs_;
+  _tabs_ = nullptr;
 
-  if (_draw_manager_ != nullptr) {
-    delete _draw_manager_;
-    _draw_manager_ = nullptr;
-  }
-
-  _initialized_ = false;
+  delete _draw_manager_;
+  _draw_manager_ = nullptr;
 }
 
 void event_display::update(const bool reset_view_, const bool reset_track_) {

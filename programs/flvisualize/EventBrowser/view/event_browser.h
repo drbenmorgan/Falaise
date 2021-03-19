@@ -72,9 +72,6 @@ class event_browser : public TGMainFrame {
   /// Destructor
   virtual ~event_browser();
 
-
-
-public:
   /// Initialization of the event server
   void initialize_event_server();
 

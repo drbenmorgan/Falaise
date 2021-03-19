@@ -161,10 +161,8 @@ void event_browser::initialize_gui() {
   _status_ = new status_bar{this, _event_server_};
 
   // Create plot objects
-  _display_ = new event_display;
-  _display_->set_event_server(_event_server_);
-  _display_->set_status_bar(_status_);
-  _display_->initialize(event_display_frame);
+  _display_ = new event_display(event_display_frame, _status_, _event_server_, false);
+
   if (options_manager::get_instance().get_option_flag(FULL_2D_VIEW)) {
     this->add_full_2d_view();
   }
@@ -252,10 +250,7 @@ void event_browser::add_full_2d_view() {
     _tab_is_uptodate_[FULL_2D_DISPLAY] = false;
 
     // Create additional 2D plot objects
-    _full_2d_display_ = new event_display;
-    _full_2d_display_->set_event_server(_event_server_);
-    _full_2d_display_->set_full_2d_display(true);
-    _full_2d_display_->initialize(full_2d_frame);
+    _full_2d_display_ = new event_display(full_2d_frame, _status_, _event_server_, true);
   }
   _tabs_->MapSubwindows();
   _tabs_->Layout();
