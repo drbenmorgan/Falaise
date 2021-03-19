@@ -62,8 +62,6 @@ const io::event_server& event_browser::get_event_server() const { return *_event
 
 io::event_server& event_browser::get_event_server() { return *_event_server_; }
 
-bool event_browser::is_initialized() const { return _initialized_; }
-
 void event_browser::welcome() const {
   std::cout << std::endl;
   std::cout << "\tSuperNEMO Event Browser                          " << std::endl
@@ -88,20 +86,13 @@ event_browser::event_browser(const TGWindow* window_, const unsigned int width_,
   _tabs_ = nullptr;
   _event_server_ = nullptr;
   _thread_ctrl_ = nullptr;
-  _initialized_ = false;
+  this->_at_init_();
 }
 
 // dtor:
 event_browser::~event_browser() { this->reset(); }
 
-void event_browser::initialize() {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
-  this->_at_init_();
-  _initialized_ = true;
-}
-
 void event_browser::reset() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
   delete _event_server_;
   _event_server_ = nullptr;
 
@@ -121,7 +112,6 @@ void event_browser::reset() {
   delete _menu_;
   _menu_ = nullptr;
 
-  _initialized_ = false;
 }
 
 void event_browser::_at_init_() {
@@ -209,21 +199,20 @@ void event_browser::initialize_event_server() {
   }
 
   // Initialize event server
-  io::event_server& server = *_event_server_;
-  if (server.is_initialized()) {
-    server.reset();
+  if (_event_server_->is_initialized()) {
+    _event_server_->reset();
   }
-  if (!server.initialize(existing_files)) {
+  if (!_event_server_->initialize(existing_files)) {
     DT_LOG_WARNING(options_mgr.get_logging_priority(), "Cannot open data source!");
     return;
   }
 
   std::ostringstream message;
-  message << "Identified input data as: '" << server.get_file_type_as_string() << "' ";
-  if (server.has_sequential_data()) {
+  message << "Identified input data as: '" << _event_server_->get_file_type_as_string() << "' ";
+  if (_event_server_->has_sequential_data()) {
     message << " (sequential reading mode)";
   } else {
-    message << "(" << server.get_number_of_events() << " entries)";
+    message << "(" << _event_server_->get_number_of_events() << " entries)";
   }
   DT_LOG_NOTICE(options_mgr.get_logging_priority(), message.str());
 
@@ -240,13 +229,13 @@ void event_browser::initialize_event_server() {
   }
 
   this->SetWindowName(info.str().c_str());
-  if (!server.has_sequential_data() && server.get_number_of_events() == 0) {
+  if (!_event_server_->has_sequential_data() && _event_server_->get_number_of_events() == 0) {
     DT_LOG_WARNING(options_mgr.get_logging_priority(), "No events found in the given file!");
     return;
   }
   _status_->update(true);
 
-  this->change_event(server.has_sequential_data() ? NEXT_EVENT : FIRST_EVENT);
+  this->change_event(_event_server_->has_sequential_data() ? NEXT_EVENT : FIRST_EVENT);
 }
 
 void event_browser::track_select() { _display_->update(false, false); }
@@ -524,7 +513,6 @@ void event_browser::start_threading() {
 void event_browser::stop_threading() {
   DT_THROW_IF(!has_thread_ctrl(), std::logic_error, "Event browser has no connected thread !");
   DT_LOG_NOTICE(options_manager::get_instance().get_logging_priority(), "Visualization stops !");
-  //        close_window();
 }
 
 }  // end of namespace view

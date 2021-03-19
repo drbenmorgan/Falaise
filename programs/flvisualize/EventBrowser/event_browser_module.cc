@@ -147,7 +147,6 @@ void event_browser_module::_initialize_event_browser() {
   const int width = static_cast<int>(0.75 * screen_width);
 
   _event_browser_ = new event_browser(gClient->GetRoot(), width, height);
-  _event_browser_->initialize();
 
   // Set event server mode to external
   _event_browser_->get_event_server().set_initialized(true);

@@ -72,15 +72,9 @@ class event_browser : public TGMainFrame {
   /// Destructor
   virtual ~event_browser();
 
-  /// Return initialization status
-  bool is_initialized() const;
 
-  /// Initialize event browser
-  void initialize();
 
-  /// Initialization of all GUI components
-  void initialize_gui();
-
+public:
   /// Initialization of the event server
   void initialize_event_server();
 
@@ -107,9 +101,6 @@ class event_browser : public TGMainFrame {
 
   /// Add a tab to simultanously see the three 2D views
   void add_full_2d_view();
-
-  /// Print welcome message
-  void welcome() const;
 
   /// Get a non-mutable reference to event server
   const io::event_server &get_event_server() const;
@@ -157,6 +148,12 @@ class event_browser : public TGMainFrame {
   /// Main initialization of event browser
   void _at_init_();
 
+  /// Initialization of all GUI components
+  void initialize_gui();
+
+  /// Print welcome message
+  void welcome() const;
+
   /// Forbid use of default constructor
   event_browser();
 
@@ -167,8 +164,6 @@ class event_browser : public TGMainFrame {
   event_browser &operator=(const event_browser &);
 
  private:
-  bool _initialized_;  //!< Initialization flag
-
   event_browser_menu *_menu_;        //!< GUI menu
   event_display *_display_;          //!< Event display frame
   event_display *_full_2d_display_;  //!< 2D event displays

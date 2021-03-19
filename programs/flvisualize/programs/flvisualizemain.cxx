@@ -153,8 +153,8 @@ falaise::exit_code do_flvisualize(int argc_, char *argv_[]) {
     const int width = int(scale_factor * screen_width);
 
     // The event_browser* is autodestructive!!! NEVER delete manually!!
-    auto *my_event_browser = new sv::view::event_browser(gClient->GetRoot(), width, height);
-    my_event_browser->initialize();
+    new sv::view::event_browser(gClient->GetRoot(), width, height);
+
     my_application->Run(true);
 
   } catch (std::exception &e) {
