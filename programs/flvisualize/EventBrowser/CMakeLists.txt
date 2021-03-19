@@ -55,7 +55,6 @@ set(FalaiseEventBrowserPlugin_PUBLIC_HEADERS
   io/i_data_access.h
   utils/root_utilities.h
   utils/singleton.h
-  # inc/EventBrowser/view/bipo_draw_manager.h
   view/base_renderer.h
   view/browser_icons.h
   view/browser_tracks.h
@@ -85,7 +84,6 @@ set(FalaiseEventBrowserPlugin_PUBLIC_HEADERS
   view/default_draw_manager.h
   view/status_bar.h
   view/style_manager.h
-  # inc/EventBrowser/view/tiny_viewer.h
   view/tracker_hit_renderer.h
   view/view_models.h
   view/visual_track_renderer.h
@@ -165,7 +163,6 @@ set(FalaiseEventBrowserPlugin_SOURCES
   event_server.cc
   root_utilities.cc
   base_renderer.cc
-  # bipo_draw_manager.cc
   browser_tracks.cc
   calorimeter_hit_renderer.cc
   display_2d.cc
@@ -191,8 +188,6 @@ set(FalaiseEventBrowserPlugin_SOURCES
   default_draw_manager.cc
   status_bar.cc
   style_manager.cc
-  #default_draw_manager.cc
-  # tiny_viewer.cc
   tracker_hit_renderer.cc
   visual_track_renderer.cc
   version.cc

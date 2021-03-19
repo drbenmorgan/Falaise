@@ -29,7 +29,6 @@
 #include <EventBrowser/view/options_manager.h>
 #include <EventBrowser/view/status_bar.h>
 
-#include <EventBrowser/view/bipo_draw_manager.h>
 #include <EventBrowser/view/default_draw_manager.h>
 #include <EventBrowser/view/snemo_draw_manager.h>
 
@@ -104,12 +103,6 @@ void event_display::_at_init_(TGCompositeFrame* main_) {
     case detector::detector_manager::SNEMO_DEMONSTRATOR:
       _draw_manager_ = new snemo_draw_manager(_server_);
       break;
-
-      // case detector::detector_manager::BIPO1:
-      // case detector::detector_manager::BIPO3:
-      //   _draw_manager_ = new bipo_draw_manager(_server_);
-      //   break;
-
     case detector::detector_manager::UNDEFINED:
     default:
       DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(),
