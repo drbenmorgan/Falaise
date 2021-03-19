@@ -64,7 +64,7 @@ detector_manager::detector_manager() {
   _initialized_ = false;
   _constructed_ = false;
   _setup_label_name_ = "";
-  _setup_label_ = SNEMO;
+  _setup_label_ = setup::SNEMO;
   _has_external_geometry_manager_ = false;
   _geo_manager_config_file_ = "";
   _geo_manager_ = nullptr;
@@ -77,14 +77,10 @@ detector_manager::detector_manager() {
 // dtor:
 detector_manager::~detector_manager() { this->reset(); }
 
-void detector_manager::initialize(const std::string &geo_manager_config_file_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
+void detector_manager::configure(const std::string &geo_manager_config_file_) {
+  this->reset();
   this->_at_init_(geo_manager_config_file_);
   _initialized_ = true;
-}
-
-void detector_manager::construct() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
   this->_at_construct_();
   _constructed_ = true;
 }
@@ -114,11 +110,9 @@ bool detector_manager::is_initialized() const { return _initialized_; }
 
 bool detector_manager::is_constructed() const { return _constructed_; }
 
-detector_manager::setup_label_type detector_manager::get_setup_label() const {
-  return _setup_label_;
-}
+detector_manager::setup detector_manager::get_setup_label() const { return _setup_label_; }
 
-const std::string &detector_manager::get_setup_label_name() const { return _setup_label_name_; }
+const std::string &detector_manager::get_setup_name() const { return _setup_label_name_; }
 
 bool detector_manager::is_special_volume(const std::string &volume_name_) const {
   auto name_iter =
@@ -146,7 +140,8 @@ const i_volume *detector_manager::get_volume(const geomtools::geom_id &id_) cons
   return volume;
 }
 
-std::vector<geomtools::geom_id> detector_manager::get_matching_ids(const geomtools::geom_id &id_) const {
+std::vector<geomtools::geom_id> detector_manager::get_matching_ids(
+    const geomtools::geom_id &id_) const {
   std::vector<geomtools::geom_id> vids_;
 
   for (const auto &_volume : _volumes_) {
@@ -242,16 +237,6 @@ void detector_manager::_at_init_(const std::string &geo_manager_config_file_) {
       if (!geo_manager_config_file.empty()) {
         _geo_manager_config_file_ = geo_manager_config_file;
       } else {
-        // Otherwise, use SuperNEMO/demonstrator config 4.0
-        // const std::string resource_dir  = falaise::get_resource_dir();
-        // const std::string setup_name    = "snemo/demonstrator";
-        // const std::string setup_version = "4.0";
-        // _geo_manager_config_file_ = resource_dir + "/config/"
-        //   + setup_name + "/geometry/" + setup_version + "/manager.conf";
-        // DT_LOG_NOTICE(view::options_manager::get_instance().get_logging_priority(),
-        //               "Use default SuperNEMO/demonstrator config i.e. " << setup_name << " "
-        //               << "version " << setup_version);
-
         _geo_manager_config_file_ = "urn:snemo:demonstrator:geometry:4.0";
         DT_LOG_NOTICE(
             view::options_manager::get_instance().get_logging_priority(),
@@ -305,27 +290,25 @@ void detector_manager::_read_detector_config_() {
   }
 
   if (_setup_label_name_ == "snemo") {
-    _setup_label_ = SNEMO;
+    _setup_label_ = setup::SNEMO;
   } else if (_setup_label_name_ == "test_bench") {
-    _setup_label_ = TEST_BENCH;
+    _setup_label_ = setup::TEST_BENCH;
   } else if (_setup_label_name_ == "bipo1") {
-    _setup_label_ = BIPO1;
+    _setup_label_ = setup::BIPO1;
   } else if (_setup_label_name_ == "bipo3") {
-    _setup_label_ = BIPO3;
+    _setup_label_ = setup::BIPO3;
     _special_volume_name_.emplace_back("light_guide.category");
   } else if (_setup_label_name_ == "snemo::tracker_commissioning") {
-    _setup_label_ = TRACKER_COMMISSIONING;
+    _setup_label_ = setup::TRACKER_COMMISSIONING;
   } else if (_setup_label_name_ == "snemo::demonstrator") {
-    _setup_label_ = SNEMO_DEMONSTRATOR;
+    _setup_label_ = setup::SNEMO_DEMONSTRATOR;
   } else if (_setup_label_name_ == "hpge") {
-    _setup_label_ = HPGE;
+    _setup_label_ = setup::HPGE;
   } else {
     DT_LOG_WARNING(
         view::options_manager::get_instance().get_logging_priority(),
         "Geometry setup with label '" << _setup_label_name_ << "' is not natively supported !");
-    _setup_label_ = UNDEFINED;
-    // DT_THROW_IF(true, std::logic_error, "Setup label '" << _setup_label_name_
-    //              << "' is not (yet) supported !");
+    _setup_label_ = setup::UNDEFINED;
   }
 
   // Load the given style file in order to get the activated detectors
@@ -371,8 +354,7 @@ void detector_manager::_read_detector_config_() {
 
   for (const std::string &volume_category_name : only_categories) {
     const geomtools::mapping &mapping = gmgr.get_mapping();
-    const geomtools::id_mgr::categories_by_name_col_type &categories =
-        gmgr.get_id_mgr().categories_by_name();
+    const auto &categories = gmgr.get_id_mgr().categories_by_name();
 
     auto found = categories.find(volume_category_name);
     if (found == categories.end()) {
@@ -411,9 +393,7 @@ void detector_manager::_read_detector_config_() {
 
 void detector_manager::_set_categories_(std::vector<std::string> &only_categories_) const {
   view::style_manager &style_mgr = view::style_manager::get_instance();
-
-  std::map<std::string, view::style_manager::volume_properties> &volumes =
-      style_mgr.get_volumes_properties();
+  auto &volumes = style_mgr.get_volumes_properties();
 
   // first get them from style file
   if (!volumes.empty()) {
@@ -429,13 +409,13 @@ void detector_manager::_set_categories_(std::vector<std::string> &only_categorie
     // special treatment in case of all volumes disabled
     if (only_categories_.empty()) {
       switch (_setup_label_) {
-        case SNEMO:
-        case SNEMO_DEMONSTRATOR:
-        case TRACKER_COMMISSIONING:
+        case setup::SNEMO:
+        case setup::SNEMO_DEMONSTRATOR:
+        case setup::TRACKER_COMMISSIONING:
           only_categories_.emplace_back("module");
           volumes["module"]._visibility_ = VISIBLE;
           break;
-        case TEST_BENCH:
+        case setup::TEST_BENCH:
           only_categories_.emplace_back("calo_light_line");
           volumes["calo_light_line"]._visibility_ = VISIBLE;
           break;
@@ -447,14 +427,14 @@ void detector_manager::_set_categories_(std::vector<std::string> &only_categorie
     // if no volume are setup in style file
     // then it behaves like the following
     switch (_setup_label_) {
-      case TRACKER_COMMISSIONING:
+      case setup::TRACKER_COMMISSIONING:
         only_categories_.emplace_back("hall");
         only_categories_.emplace_back("module");
         only_categories_.emplace_back("mu_trigger");
         only_categories_.emplace_back("drift_cell_core");
         break;
-      case SNEMO:
-      case SNEMO_DEMONSTRATOR:
+      case setup::SNEMO:
+      case setup::SNEMO_DEMONSTRATOR:
         only_categories_.emplace_back("hall");
         // only_categories_.push_back("external_shield");
         only_categories_.emplace_back("module");
@@ -471,7 +451,7 @@ void detector_manager::_set_categories_(std::vector<std::string> &only_categorie
         only_categories_.emplace_back("gveto_block");
         only_categories_.emplace_back("calorimeter_block");
         break;
-      case TEST_BENCH:
+      case setup::TEST_BENCH:
         only_categories_.emplace_back("calo_light_line");
         only_categories_.emplace_back("scin_block");
         only_categories_.emplace_back("absorber");
@@ -479,8 +459,8 @@ void detector_manager::_set_categories_(std::vector<std::string> &only_categorie
         only_categories_.emplace_back("air_gap");
         only_categories_.emplace_back("test_source");
         break;
-      case BIPO1:
-      case BIPO3:
+      case setup::BIPO1:
+      case setup::BIPO3:
         only_categories_.emplace_back("scin_block");
         only_categories_.emplace_back("source");
         //            only_categories_.push_back("bipo3_module");
@@ -528,10 +508,6 @@ void detector_manager::_set_volume_(const geomtools::geom_info &ginfo_) {
 
   _volumes_[volume_id]->initialize(ginfo_);
   _volumes_[volume_id]->update();
-
-  DT_LOG_DEBUG(
-      view::options_manager::get_instance().get_logging_priority(),
-      "Volume '" << volume_name << " with category '" << volume_category << "' has been added");
 }
 
 void detector_manager::_add_volumes_() {

@@ -134,8 +134,7 @@ falaise::exit_code do_flvisualize(int argc_, char *argv_[]) {
   try {
     // Build detector manager
     sv::detector::detector_manager &detector_mgr = sv::detector::detector_manager::get_instance();
-    detector_mgr.initialize();
-    detector_mgr.construct();
+    detector_mgr.configure();
 
     // Open a root application
     DT_THROW_IF(gROOT->IsBatch(), std::logic_error, "Can not be run in 'batch' mode");

@@ -130,8 +130,7 @@ void event_browser_module::_initialize_event_browser() {
   detector::detector_manager &detector_mgr = detector::detector_manager::get_instance();
   // Use the geometry service as external geometry manager
   detector_mgr.set_external_geometry_manager(*const_cast<geomtools::manager *>(_geometry_manager_));
-  detector_mgr.initialize();
-  detector_mgr.construct();
+  detector_mgr.configure();
 
   // Allocate the ROOT application :
   new TApplication("ROOT application", nullptr, nullptr);

@@ -190,7 +190,7 @@ void snemo_draw_manager::_add_simulated_hits_() {
   const options_manager& options_mgr = options_manager::get_instance();
   if (options_mgr.get_option_flag(SHOW_MC_CALORIMETER_HITS)) {
     const std::string& setup_label_name =
-        detector::detector_manager::get_instance().get_setup_label_name();
+        detector::detector_manager::get_instance().get_setup_name();
     if (setup_label_name == "snemo::tracker_commissioning") {
       _calorimeter_hit_renderer_.push_simulated_hits("trig");
     } else {

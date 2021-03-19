@@ -359,7 +359,7 @@ void event_browser_menu::set_default_option(const io::event_server &server_) {
 
   // Disable entries following detector setup
   const detector::detector_manager &detector_mgr = detector::detector_manager::get_instance();
-  const std::string &setup_label = detector_mgr.get_setup_label_name();
+  const std::string &setup_label = detector_mgr.get_setup_name();
 
   if (setup_label.find("bipo") != std::string::npos ||
       setup_label.find("test_bench") != std::string::npos) {

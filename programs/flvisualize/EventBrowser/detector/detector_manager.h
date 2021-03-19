@@ -67,7 +67,7 @@ class i_volume;
 class detector_manager : public utils::singleton<detector_manager> {
  public:
   /// Experimental setup enum
-  enum setup_label_type {
+  enum class setup {
     UNDEFINED = -1,
     SNEMO = 0,
     BIPO3 = 1,
@@ -82,17 +82,11 @@ class detector_manager : public utils::singleton<detector_manager> {
   void compute_world_coordinates(const geomtools::vector_3d& mother_pos_,
                                  geomtools::vector_3d& world_pos_) const;
 
-  /// Return initialization status
-  bool is_initialized() const;
-
-  /// Return construction status
-  bool is_constructed() const;
-
   /// Return experimental setup enum
-  setup_label_type get_setup_label() const;
+  setup get_setup_label() const;
 
   /// Return experimental setup name
-  const std::string& get_setup_label_name() const;
+  const std::string& get_setup_name() const;
 
   /// Return if 'volume_name_' is a special volume
   bool is_special_volume(const std::string& volume_name_) const;
@@ -106,20 +100,8 @@ class detector_manager : public utils::singleton<detector_manager> {
   /// Get a list of matching geom_id
   std::vector<geomtools::geom_id> get_matching_ids(const geomtools::geom_id& id_) const;
 
-  /// Get volume name associated to geom_id
-  std::string get_volume_name(const geomtools::geom_id& id_) const;
-
-  /// Get volume category associated to geom_id
-  std::string get_volume_category(const geomtools::geom_id& id_) const;
-
   /// Set external geometry manager
   void set_external_geometry_manager(geomtools::manager& geometry_manager_);
-
-  /// Get a mutable reference to geometry manager
-  geomtools::manager& get_geometry_manager();
-
-  /// Get a non-mutable reference to geometry manager
-  const geomtools::manager& get_geometry_manager() const;
 
   /// Get a mutable reference to the 'world' volume
   TGeoVolume* get_world_volume();
@@ -128,10 +110,7 @@ class detector_manager : public utils::singleton<detector_manager> {
   const TGeoVolume* get_world_volume() const;
 
   /// Initialize detector manager
-  void initialize(const std::string& geo_manager_config_file_ = "");
-
-  /// Construct geometrical volumes
-  void construct();
+  void configure(const std::string& geo_manager_config_file_ = "");
 
   /// Update detector manager
   void update();
@@ -157,6 +136,24 @@ class detector_manager : public utils::singleton<detector_manager> {
 
   /// Make the class singleton friend
   friend class utils::singleton<detector_manager>;
+
+  /// Return initialization status
+  bool is_initialized() const;
+
+  /// Return construction status
+  bool is_constructed() const;
+
+  /// Get a mutable reference to geometry manager
+  geomtools::manager& get_geometry_manager();
+
+  /// Get a non-mutable reference to geometry manager
+  const geomtools::manager& get_geometry_manager() const;
+
+  /// Get volume name associated to geom_id
+  std::string get_volume_name(const geomtools::geom_id& id_) const;
+
+  /// Get volume category associated to geom_id
+  std::string get_volume_category(const geomtools::geom_id& id_) const;
 
   /// Initialization of detector manager
   void _at_init_(const std::string& geo_manager_config_file_);
@@ -184,7 +181,7 @@ class detector_manager : public utils::singleton<detector_manager> {
   bool _constructed_;  //!< Construction flag
 
   std::string _setup_label_name_;  //!< Experimental setup label name
-  setup_label_type _setup_label_;  //!< Experimental setup label
+  setup _setup_label_;  //!< Experimental setup label
 
   std::vector<std::string> _special_volume_name_;  //!< List of special volumes
 

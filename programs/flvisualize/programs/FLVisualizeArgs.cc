@@ -68,20 +68,14 @@ void FLVisualizeArgs::print(std::ostream& out_) const {
 }
 
 void do_postprocess_input_metadata(FLVisualizeArgs& flVisParameters) {
-  DT_LOG_TRACE_ENTERING(flVisParameters.logLevel);
-
   falaise::app::metadata_collector mc;
   if (!flVisParameters.inputMetadataFile.empty()) {
     // Fetch the metadata from the companion input metadata file, if any:
-    DT_LOG_NOTICE(flVisParameters.logLevel,
-                  "Fetching input metadata from input metadata companion file...");
     mc.set_input_metadata_file(flVisParameters.inputMetadataFile);
     flVisParameters.inputMetadata = mc.get_metadata_from_metadata_file();
   } else if (!flVisParameters.inputFile.empty()) {
     // Fetch the metadata from the input data file:
-    DT_LOG_NOTICE(flVisParameters.logLevel, "Fetching input metadata from input data file...");
     mc.set_input_data_file(flVisParameters.inputFile);
-    // flVisParameters.inputMetadata.clear_meta_label();
     flVisParameters.inputMetadata = mc.get_metadata_from_data_file();
   } else {
     // No metadata is available. Do nothing.
@@ -97,7 +91,6 @@ void do_postprocess_input_metadata(FLVisualizeArgs& flVisParameters) {
   // Extract input metadata of interest:
   if (!flVisParameters.inputMetadata.empty()) {
     // Try to extract informations from the metadata:
-    DT_LOG_NOTICE(flVisParameters.logLevel, "Found input metadata");
     iMeta.scan(flVisParameters.inputMetadata);
     if (datatools::logger::is_notice(flVisParameters.logLevel)) {
       iMeta.print(std::cerr);
@@ -143,23 +136,18 @@ void do_postprocess_input_metadata(FLVisualizeArgs& flVisParameters) {
 
 // static
 void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
-  DT_LOG_TRACE_ENTERING(flVisParameters.logLevel);
   namespace sv = snemo::visualization;
   datatools::kernel& dtk = datatools::kernel::instance();
   const datatools::urn_query_service& dtkUrnQuery = dtk.get_urn_query();
 
   // Process input metadata:
-  if (flVisParameters.ignoreInputMetadata) {
-    DT_LOG_NOTICE(flVisParameters.logLevel, "Do not process input metadata.");
-  } else {
+  if (!flVisParameters.ignoreInputMetadata) {
     do_postprocess_input_metadata(flVisParameters);
   }
 
   // Input file:
   if (!flVisParameters.inputFile.empty()) {
     sv::view::options_manager& options_mgr = sv::view::options_manager::get_instance();
-    DT_LOG_NOTICE(flVisParameters.logLevel,
-                  "Add input data file '" << flVisParameters.inputFile << "'");
     options_mgr.add_input_file(flVisParameters.inputFile);
   }
 
@@ -192,13 +180,9 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
   if (flVisParameters.experimentalSetupUrn.empty()) {
     // Default setup:
     flVisParameters.experimentalSetupUrn = "urn:snemo:demonstrator:setup:1.0";
-    DT_LOG_NOTICE(flVisParameters.logLevel, "Using default experimental setup URN='"
-                                                << flVisParameters.experimentalSetupUrn << "'...");
   }
 
   if (!flVisParameters.experimentalSetupUrn.empty()) {
-    DT_LOG_NOTICE(flVisParameters.logLevel, "Using experimental setup URN='"
-                                                << flVisParameters.experimentalSetupUrn << "'...");
     // Check URN registration from the system URN query service:
     {
       const std::string& conf_category = falaise::tags::experimental_setup_category();
@@ -228,8 +212,6 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
     }
   }
   if (!flVisParameters.servicesConfigUrn.empty()) {
-    DT_LOG_NOTICE(flVisParameters.logLevel,
-                  "Services configuration URN='" << flVisParameters.servicesConfigUrn << "'...");
     // Check URN registration from the system URN query service:
     {
       const std::string& conf_category = falaise::tags::services_category();
@@ -253,8 +235,6 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
                                            << servicesConfigPath << "' from services config URN='"
                                            << flVisParameters.servicesConfigUrn << "'!");
     }
-    DT_LOG_NOTICE(flVisParameters.logLevel,
-                  "Services configuration path='" << flVisParameters.servicesConfig << "'...");
   }
 
   // Geometry configuration:
@@ -270,8 +250,6 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
                     "Cannot query URN='" << geometryConfigUrn << "'!");
       }
       geometryConfigUrnInfo = dtkUrnQuery.get_urn_info(geometryConfigUrn);
-      DT_LOG_NOTICE(flVisParameters.logLevel,
-                    "Geometry configuration URN='" << geometryConfigUrn << "'...");
     }
   }
 
@@ -286,8 +264,6 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
         !dtkUrnQuery.resolve_urn_to_path(geometryConfigUrnInfo.get_urn(), conf_geometry_category,
                                          conf_geometry_mime, geometryConfigPath),
         std::logic_error, "Cannot resolve URN='" << geometryConfigUrnInfo.get_urn() << "'!");
-    DT_LOG_NOTICE(flVisParameters.logLevel,
-                  "Resolved geometry configuration path='" << geometryConfigPath << "'...");
   }
 
   if (!geometryConfigPath.empty()) {
@@ -303,8 +279,6 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
                      << "the automatically resolved path='" << geometryConfigPath << "'!");
       }
     }
-    DT_LOG_NOTICE(flVisParameters.logLevel,
-                  "Geometry configuration path='" << geometryConfigPath << "'...");
   }
 
   // Variant configuration:
@@ -325,8 +299,6 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
     }
   }
   if (!flVisParameters.variantConfigUrn.empty()) {
-    DT_LOG_NOTICE(flVisParameters.logLevel,
-                  "Variant configuration URN='" << variantConfigUrn << "'...");
     // Check URN registration from the system URN query service:
     {
       const std::string& conf_category = falaise::tags::variant_service_category();
@@ -335,8 +307,6 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
                   "Cannot query URN='" << flVisParameters.variantConfigUrn << "'!");
     }
     variantConfigUrnInfo = dtkUrnQuery.get_urn_info(variantConfigUrn);
-    DT_LOG_NOTICE(flVisParameters.logLevel, "Resolving variant configuration URN='"
-                                                << flVisParameters.variantConfigUrn << "'...");
     // Resolve variant configuration file:
     std::string conf_variants_category = "configuration";
     std::string conf_variants_mime;
@@ -353,9 +323,6 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
                       << "the automatically resolved path='" << variantConfigPath
                       << "' from variant config URN='" << flVisParameters.variantConfigUrn << "'!");
     }
-    DT_LOG_NOTICE(flVisParameters.logLevel, "Variant configuration path='"
-                                                << flVisParameters.variants.config_filename
-                                                << "'...");
   }
 
   // Variant profile:
@@ -367,13 +334,9 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
                     << "conflicts with required variants profile path='"
                     << flVisParameters.variants.profile_load << "'!");
   } else {
-    DT_LOG_NOTICE(flVisParameters.logLevel, "No variant profile is set.");
     if (flVisParameters.variantProfileUrn.empty()) {
-      DT_LOG_NOTICE(flVisParameters.logLevel, "No variant profile URN is set.");
       // No variant profile URN is set:
       if (variantConfigUrnInfo.is_valid()) {
-        DT_LOG_NOTICE(flVisParameters.logLevel,
-                      "Trying to find a default one from the current variant setup...");
         if (datatools::logger::is_notice(flVisParameters.logLevel)) {
           variantConfigUrnInfo.tree_dump(std::clog,
                                          "Variant configuration URN info: ", "[notice]: ");
@@ -384,10 +347,6 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
           // If the simulation setup URN implies a "services" component, fetch it!
           flVisParameters.variantProfileUrn =
               variantConfigUrnInfo.get_component("__default_profile__");
-          DT_LOG_NOTICE(flVisParameters.logLevel, "Using the default variant profile '"
-                                                      << flVisParameters.variantProfileUrn << "'"
-                                                      << " associated to variant configuration '"
-                                                      << variantConfigUrnInfo.get_urn() << "'.");
         }
       }
     }
@@ -419,8 +378,6 @@ void FLVisualizeArgs::do_postprocess(FLVisualizeArgs& flVisParameters) {
   if (flVisParameters.servicesConfig.empty()) {
     DT_LOG_WARNING(flVisParameters.logLevel, "No services configuration is provided.");
   }
-
-  DT_LOG_TRACE_EXITING(flVisParameters.logLevel);
 }
 
 //! Parse command line arguments to configure the simulation parameters

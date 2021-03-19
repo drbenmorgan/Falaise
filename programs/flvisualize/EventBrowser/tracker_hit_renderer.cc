@@ -122,7 +122,7 @@ void tracker_hit_renderer::push_simulated_hits(const std::string &hit_category_)
       int cell_axis = 'z';
 
       const detector::detector_manager &detector_mgr = detector::detector_manager::get_instance();
-      const std::string &setup_label = detector_mgr.get_setup_label_name();
+      const std::string &setup_label = detector_mgr.get_setup_name();
       if (setup_label == "snemo::tracker_commissioning") {
         cell_axis = 'x';
       }
@@ -384,7 +384,7 @@ void tracker_hit_renderer::_make_calibrated_geiger_hit(
   gg_dz->SetLineWidth(line_width);
 
   int cell_axis = 'z';
-  const std::string &setup_label = detector_mgr.get_setup_label_name();
+  const std::string &setup_label = detector_mgr.get_setup_name();
   if (setup_label == "snemo::tracker_commissioning") {
     cell_axis = 'x';
   }

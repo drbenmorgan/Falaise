@@ -274,9 +274,7 @@ void signal_handling::_process_menu_(const button_signals_type signal_) {
         // options_manager & options_mgr = options_manager::get_instance ();
         // options_mgr.set_detector_config_file (file_info.fFilename);
         detector::detector_manager& detector_mgr = detector::detector_manager::get_instance();
-        detector_mgr.reset();
-        detector_mgr.initialize(file_info.fFilename);
-        detector_mgr.construct();
+        detector_mgr.configure(file_info.fFilename);
         _browser_->update_browser();
       }
     } break;

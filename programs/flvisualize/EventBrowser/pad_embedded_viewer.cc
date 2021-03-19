@@ -493,8 +493,8 @@ void pad_embedded_viewer::_set_scale_factors_() {
 
   const detector::detector_manager& detector_mgr = detector::detector_manager::get_instance();
 
-  if (detector_mgr.get_setup_label() == detector::detector_manager::SNEMO ||
-      detector_mgr.get_setup_label() == detector::detector_manager::SNEMO_DEMONSTRATOR) {
+  if (detector_mgr.get_setup_label() == detector::detector_manager::setup::SNEMO ||
+      detector_mgr.get_setup_label() == detector::detector_manager::setup::SNEMO_DEMONSTRATOR) {
     // fudge factors for SuperNEMO detector
     _fudge_factors_[TOP_VIEW] = 1.6;
     _fudge_factors_[FRONT_VIEW] = 1.6;
@@ -569,8 +569,8 @@ void pad_embedded_viewer::_scale_text_() {
     itext->SetTextSize(pixel_size);
 
     const detector::detector_manager& detector_mgr = detector::detector_manager::get_instance();
-    if (detector_mgr.get_setup_label() == detector::detector_manager::SNEMO ||
-        detector_mgr.get_setup_label() == detector::detector_manager::SNEMO_DEMONSTRATOR) {
+    if (detector_mgr.get_setup_label() == detector::detector_manager::setup::SNEMO ||
+        detector_mgr.get_setup_label() == detector::detector_manager::setup::SNEMO_DEMONSTRATOR) {
       // Hard coded but specific code to SuperNEMO
       if (_view_type_ != SIDE_VIEW && _zoom_index_ <= 2) {
         const double xshift = 0.15;
@@ -582,8 +582,8 @@ void pad_embedded_viewer::_scale_text_() {
           itext->SetPadCoordinates(xpad - xshift, ypad);
         }
       }
-    } else if (detector_mgr.get_setup_label() == detector::detector_manager::BIPO1 ||
-               detector_mgr.get_setup_label() == detector::detector_manager::BIPO3) {
+    } else if (detector_mgr.get_setup_label() == detector::detector_manager::setup::BIPO1 ||
+               detector_mgr.get_setup_label() == detector::detector_manager::setup::BIPO3) {
       if (_zoom_index_ <= 2) {
         const double yshift = 0.10;
         if (_view_type_ == TOP_VIEW) {

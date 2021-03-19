@@ -98,16 +98,16 @@ void event_display::_at_init_(TGCompositeFrame* main_) {
   const detector::detector_manager& detector_mgr = detector::detector_manager::get_instance();
 
   switch (detector_mgr.get_setup_label()) {
-    case detector::detector_manager::SNEMO:
-    case detector::detector_manager::TRACKER_COMMISSIONING:
-    case detector::detector_manager::SNEMO_DEMONSTRATOR:
+    case detector::detector_manager::setup::SNEMO:
+    case detector::detector_manager::setup::TRACKER_COMMISSIONING:
+    case detector::detector_manager::setup::SNEMO_DEMONSTRATOR:
       _draw_manager_ = new snemo_draw_manager(_server_);
       break;
-    case detector::detector_manager::UNDEFINED:
+    case detector::detector_manager::setup::UNDEFINED:
     default:
       DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(),
                      "Detector setup '"
-                         << detector_mgr.get_setup_label_name()
+                         << detector_mgr.get_setup_name()
                          << "' not yet supported by any drawing manager ! Use default one");
       _draw_manager_ = new default_draw_manager(_server_);
       break;
