@@ -51,7 +51,6 @@ namespace visualization {
 
 namespace view {
 
-bool style_manager::is_initialized() const { return _initialized_; }
 
 bool style_manager::use_opengl() const {
 #ifdef EVENTBROWSER_USE_OPENGL
@@ -253,8 +252,11 @@ void style_manager::_set_default_() {
   _build_particle_dictionnary_();
 }
 
-void style_manager::initialize(const std::string& style_filename_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
+void style_manager::configure(const std::string& style_filename_) {
+  // save setup_label...
+  auto current_setup = _setup_label_;
+  this->reset();
+  _setup_label_ = current_setup;
   this->_at_init_(style_filename_);
   _initialized_ = true;
 }
@@ -269,8 +271,7 @@ void style_manager::reset() {
 void style_manager::reload() {
   // keep setup label before reseting
   const std::string current_filename = _filename_;
-  this->reset();
-  this->initialize(current_filename);
+  this->configure(current_filename);
 }
 
 void style_manager::_at_init_(const std::string& style_filename_) {

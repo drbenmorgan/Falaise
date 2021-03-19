@@ -313,13 +313,10 @@ void detector_manager::_read_detector_config_() {
 
   // Load the given style file in order to get the activated detectors
   view::style_manager &style_mgr = view::style_manager::get_instance();
-  if (style_mgr.is_initialized()) {
-    style_mgr.reset();
-  }
   style_mgr.set_setup_label(_setup_label_name_);
   const std::string &style_config_file =
       view::options_manager::get_instance().get_style_config_file();
-  style_mgr.initialize(style_config_file);
+  style_mgr.configure(style_config_file);
 
   // Get volume categories
   std::vector<std::string> only_categories;

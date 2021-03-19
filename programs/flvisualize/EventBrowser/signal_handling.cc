@@ -288,8 +288,7 @@ void signal_handling::_process_menu_(const button_signals_type signal_) {
       new TGFileDialog(gClient->GetRoot(), _browser_, kFDOpen, &file_info);
       if (file_info.fFilename != nullptr) {
         style_manager& style_mgr = style_manager::get_instance();
-        style_mgr.reset();
-        style_mgr.initialize(file_info.fFilename);
+        style_mgr.configure(file_info.fFilename);
 
         detector::detector_manager::get_instance().update();
         _browser_->update_browser();

@@ -56,7 +56,7 @@ status_bar::status_bar() {
   _initialized_ = false;
 }
 
-status_bar::status_bar(TGCompositeFrame* main_, io::event_server* server_) {
+status_bar::status_bar(TGCompositeFrame* main_, io::event_server* server_) : status_bar::status_bar() {
   // Implicit assertion that server_ is not nullptr
   _server_ = server_;
   this->initialize(main_);

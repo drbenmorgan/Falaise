@@ -69,9 +69,6 @@ class style_manager : public utils::singleton<style_manager> {
     std::string _latex_name_;
   };
 
-  /// Return initialization status
-  bool is_initialized() const;
-
   /// Use OpenGL rendering
   bool use_opengl() const;
 
@@ -181,7 +178,7 @@ class style_manager : public utils::singleton<style_manager> {
   const std::string& get_save_prefix() const;
 
   /// Initialization method
-  void initialize(const std::string& style_filename_ = "");
+  void configure(const std::string& style_filename_ = "");
 
   /// Reset
   void reset();
