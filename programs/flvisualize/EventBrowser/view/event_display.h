@@ -93,18 +93,6 @@ class event_display {
     SELECTION_TAB = 3
   };
 
-  /// Initialization method
-  void initialize(TGCompositeFrame* main_);
-
-  /// Set full 2D display mode
-  void set_full_2d_display(const bool full_ = true);
-
-  /// Set event server
-  void set_event_server(io::event_server* server_);
-
-  /// Set status bar
-  void set_status_bar(view::status_bar* status_);
-
   /// Main initialization method
   void _at_init_(TGCompositeFrame* main_);
 

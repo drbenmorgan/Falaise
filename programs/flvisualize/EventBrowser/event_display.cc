@@ -51,30 +51,16 @@ namespace view {
 
 // ctor:
 event_display::event_display(TGCompositeFrame* main, status_bar* stat, io::event_server* es, bool is_full_2d) {
-  this->set_full_2d_display(is_full_2d);
-  this->set_event_server(es);
-  this->set_status_bar(stat);
-  this->initialize(main);
+  _full_2d_display_ = is_full_2d;
+  _server_ = es;
+  _status_ = stat;
+  this->_at_init_(main);
 }
 
 // dtor:
 event_display::~event_display() {
   this->clear();
   this->reset();
-}
-
-void event_display::set_full_2d_display(const bool full_) { _full_2d_display_ = full_; }
-
-void event_display::set_event_server(io::event_server* server_) {
-  _server_ = server_;
-}
-
-void event_display::set_status_bar(view::status_bar* status_) {
-  _status_ = status_;
-}
-
-void event_display::initialize(TGCompositeFrame* main_) {
-  this->_at_init_(main_);
 }
 
 void event_display::_at_init_(TGCompositeFrame* main_) {
@@ -323,17 +309,10 @@ void event_display::show_all(const button_signals_type signal_) {
 
   // Four: loop over event
   // // Sanity check otherwise processing of events take too long
-  // const size_t nevent = 200;
   while (_server_->next_event()) {
     _draw_manager_->update();
     _selection_->select_events(NEXT_EVENT);
-
-    // if ((size_t)_server_->get_current_event_number() > nevent) {
-    //   DT_LOG_WARNING(options_mgr.get_logging_priority(),
-    //                  "Stop after " << nevent << " to avoid CPU overload !");
-    //   break;
-    // }
-    // Avoid event browser lagging
+   // Avoid event browser lagging
     gSystem->ProcessEvents();
   }
 
