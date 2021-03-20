@@ -86,9 +86,6 @@ class browser_tracks {
   /// Clear browser panel
   void clear();
 
-  /// Reset browser panel
-  void reset();
-
   /// Callback method when an item is checked
   void item_checked(TObject *object_, bool is_checked_);
 
@@ -98,13 +95,12 @@ class browser_tracks {
   /// Return pointer to 'datatools::properties' object given the item id
   datatools::properties *get_item_properties(const int id_);
 
-private:
+ private:
   /// Return point to 'geomtools::bast_hit' object given item id
   geomtools::base_hit *get_base_hit(const int id_);
 
- private:
-  /// Initialization method
-  void initialize(TGCompositeFrame *main_);
+  /// Main initialization method
+  void _at_init_(TGCompositeFrame *main_);
 
   /// Update event header data bank
   void _update_event_header();
@@ -123,12 +119,6 @@ private:
 
   /// Update particle track data bank
   void _update_particle_track_data();
-
-  /// Main initialization method
-  void _at_init_(TGCompositeFrame *main_);
-
-  /// Panel construction
-  void _at_construct_();
 
   /// Return TGPicture given icon type name
   const TGPicture *_get_colored_icon_(const std::string &icon_type,

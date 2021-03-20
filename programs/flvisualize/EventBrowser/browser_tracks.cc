@@ -143,7 +143,7 @@ browser_tracks::browser_tracks(TGCompositeFrame *main_, io::event_server *server
 
 // dtor:
 browser_tracks::~browser_tracks() {
-  this->reset();
+  this->clear();
 
   for (auto &_icon : _icons_) {
     delete _icons_[_icon.first];
@@ -153,8 +153,6 @@ browser_tracks::~browser_tracks() {
 
   _main_->Cleanup();
 }
-
-void browser_tracks::initialize(TGCompositeFrame *main_) { this->_at_init_(main_); }
 
 void browser_tracks::_at_init_(TGCompositeFrame *main_) {
   // Keep track of main frame in order to regenerate it for
@@ -176,10 +174,6 @@ void browser_tracks::_at_init_(TGCompositeFrame *main_) {
   _browser_ = dynamic_cast<event_browser *>(parent);
   DT_THROW_IF(!_browser_, std::logic_error, "Event_browser can't be cast from frame!");
 
-  this->_at_construct_();
-}
-
-void browser_tracks::_at_construct_() {
   const int width = _main_->GetWidth();
   const int height = _main_->GetHeight();
 
@@ -208,8 +202,6 @@ void browser_tracks::clear() {
   _properties_dictionnary_.clear();
   _base_hit_dictionnary_.clear();
 }
-
-void browser_tracks::reset() { this->clear(); }
 
 void browser_tracks::update() {
   this->clear();
@@ -243,6 +235,7 @@ void browser_tracks::_update_event_header() {
   // 'event_header' availability:
   if (!event.has(io::EH_LABEL)) {
     label << "Event #" << _server_->get_current_event_number();
+    tip_text << "Double click to expand event record";
   } else {
     const auto &eh = event.get<snemo::datamodel::event_header>(io::EH_LABEL);
 
@@ -250,6 +243,8 @@ void browser_tracks::_update_event_header() {
           << "Event #" << eh.get_id().get_event_number();
     if (options_manager::get_instance().get_option_flag(DUMP_INTO_TOOLTIP)) {
       eh.tree_dump(tip_text);
+    } else {
+      tip_text << "Double click to expand event record";
     }
   }
 
@@ -259,11 +254,7 @@ void browser_tracks::_update_event_header() {
   _item_list_.push_back(_top_item_);
   _top_item_->SetCheckBox(false);
   _top_item_->SetUserData((void *)(intptr_t)++_item_id_);
-  if (!tip_text.str().empty()) {
-    _top_item_->SetTipText(tip_text.str().c_str());
-  } else {
-    _top_item_->SetTipText("Double click to expand event record");
-  }
+  _top_item_->SetTipText(tip_text.str().c_str());
   _tracks_list_box_->OpenItem(_top_item_);
 }
 
@@ -503,10 +494,7 @@ void browser_tracks::_update_simulated_data() {
                                   mctools::simulated_data::HIT_CATEGORY_TYPE_PUBLIC);
 
       size_t ihit = 0;
-      for (std::vector<std::string>::const_iterator iname = calo_categories.begin();
-           iname != calo_categories.end(); ++iname) {
-        const std::string &a_calo_name = *iname;
-
+      for (const std::string &a_calo_name : calo_categories) {
         // 2015/07/07 XG: Remove Geiger energy deposit since it is treated
         // in a particular way
         if (a_calo_name == "gg") {
@@ -517,12 +505,11 @@ void browser_tracks::_update_simulated_data() {
           continue;
         }
 
-        mctools::simulated_data::hit_handle_collection_type &hit_collection =
-            sd.grab_step_hits(a_calo_name);
+        auto &hit_collection = sd.grab_step_hits(a_calo_name);
         ihit += hit_collection.size();
 
         for (auto &it_hit : hit_collection) {
-          mctools::base_step_hit &a_step = it_hit.grab();
+          mctools::base_step_hit &a_step = *it_hit;
 
           std::string hex_str = get_color(a_step);
 
@@ -567,11 +554,10 @@ void browser_tracks::_update_simulated_data() {
         item_mc_tracker->SetCheckBox(false);
         item_mc_tracker->SetUserData((void *)(intptr_t)++icheck_id);
 
-        mctools::simulated_data::hit_handle_collection_type &hit_collection =
-            sd.grab_step_hits("gg");
+        auto &hit_collection = sd.grab_step_hits("gg");
 
         for (auto &it_hit : hit_collection) {
-          mctools::base_step_hit &a_step = it_hit.grab();
+          mctools::base_step_hit &a_step = *it_hit;
 
           // If color is available, add a color box close to the item:
           std::string hex_str = get_color(a_step);
@@ -1319,10 +1305,9 @@ datatools::properties *browser_tracks::get_item_properties(const int id_) {
 
   {
     // Then looking in 'base_hit' dictionnary:
-    auto found = _base_hit_dictionnary_.find(id_);
-
-    if (found != _base_hit_dictionnary_.end()) {
-      return &(found->second->grab_auxiliaries());
+    geomtools::base_hit* found = this->get_base_hit(id_);
+    if (found != nullptr) {
+      return &(found->grab_auxiliaries());
     }
   }
   return nullptr;
@@ -1392,7 +1377,7 @@ const TGPicture *browser_tracks::_get_colored_icon_(const std::string &icon_type
   // Build icon name and look inside icon dictionnary:
   const std::string icon_name = icon_type_ + hex_color_ + (reverse_color_ ? "reverse" : "");
 
-  std::map<std::string, const TGPicture *>::const_iterator found = _icons_.find(icon_name);
+  auto found = _icons_.find(icon_name);
 
   if (found != _icons_.end()) {
     return found->second;
