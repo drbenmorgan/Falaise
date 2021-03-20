@@ -68,35 +68,17 @@ class base_widget;
 /// \brief A class hosting interactive event selection cut
 class event_selection {
  public:
-  /// Collection of widgets
-  typedef std::map<int, base_widget*> widget_collection_type;
-
-  /// Check initialization status
-  bool is_initialized() const;
-
-  /// Check if selection is enabled
-  bool is_selection_enable() const;
+  // explicit Default constructor needed for root
+  event_selection() = default;
 
   /// Constructor
-  event_selection();
+  event_selection(TGCompositeFrame* main_, io::event_server* server_, view::status_bar* status_);
 
   /// Destructor
   virtual ~event_selection();
 
-  /// Initialization
-  void initialize(TGCompositeFrame* main_);
-
-  /// Reset
-  void reset();
-
-  /// Assign event server pointer
-  void set_event_server(io::event_server* server_);
-
   /// Return a non-mutable reference to event server
-  io::event_server& get_event_server() const;
-
-  /// Assign status bar pointer
-  void set_status_bar(view::status_bar* status_);
+  const io::event_server& get_event_server() const;
 
   /// Return a non-mutable reference to cut manager
   const cuts::cut_manager& get_cut_manager() const;
@@ -104,21 +86,27 @@ class event_selection {
   /// Return a mutable reference to cut manager
   cuts::cut_manager& get_cut_manager();
 
-  /// Main process method
-  void process();
-
   /// Event selection
   void select_events(const button_signals_type signal_ = UNDEFINED, const int event_selected_ = -1);
 
+  /// Main process method
+  void process();
+
  private:
+  /// Check if selection is enabled
+  bool is_selection_enable() const;
+
+  /// Initialization
+  void initialize(TGCompositeFrame* main_);
+
+  /// Reset
+  void reset();
+
   /// Build GUI widgets
   void _build_();
 
   /// Install cut manager
   void _install_cut_manager_();
-
-  /// Install private cuts
-  void _install_private_cuts_();
 
   /// Build cuts
   void _build_cuts_();
@@ -127,23 +115,26 @@ class event_selection {
   bool _check_cuts_();
 
  private:
-  bool _initialized_;
-  bool _selection_enable_;
+  /// Collection of widgets
+  typedef std::map<int, base_widget*> widget_collection_type;
 
-  int _initial_event_id_;
+  bool _initialized_ = false;
+  bool _selection_enable_ = false;
 
-  TGCompositeFrame* _main_;
-  io::event_server* _server_;
-  event_browser* _browser_;
-  status_bar* _status_;
+  int _initial_event_id_ = 0;
 
-  cuts::cut_manager* _cut_manager_;  //!< Cut manager pointer
+  TGCompositeFrame* _main_ = nullptr;
+  io::event_server* _server_ = nullptr;
+  event_browser* _browser_ = nullptr;
+  status_bar* _status_ = nullptr;
+
+  cuts::cut_manager* _cut_manager_ = nullptr;  //!< Cut manager pointer
   std::string _current_cut_name_;
 
-  TGTextButton* _load_button_;
-  TGTextButton* _save_button_;
-  TGTextButton* _reset_button_;
-  TGTextButton* _update_button_;
+  TGTextButton* _load_button_ = nullptr;
+  TGTextButton* _save_button_ = nullptr;
+  TGTextButton* _reset_button_ = nullptr;
+  TGTextButton* _update_button_ = nullptr;
   widget_collection_type _widgets_;
 
   // No I/O so ClassDefVersionID = 0

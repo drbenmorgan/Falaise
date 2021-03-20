@@ -165,10 +165,7 @@ void event_display::_at_init_(TGCompositeFrame* main_) {
     _options_ = new display_options(options_frame);
 
     // Selection options
-    _selection_ = new event_selection;
-    _selection_->set_event_server(_server_);
-    _selection_->set_status_bar(_status_);
-    _selection_->initialize(selection_frame);
+    _selection_ = new event_selection(selection_frame, _server_, _status_);
   }
 }
 

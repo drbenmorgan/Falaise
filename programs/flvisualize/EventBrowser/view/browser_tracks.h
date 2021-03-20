@@ -118,7 +118,7 @@ class browser_tracks {
   /// Return point to 'geomtools::bast_hit' object given item id
   geomtools::base_hit *get_base_hit(const int id_);
 
- protected:
+ private:
   /// Update event header data bank
   void _update_event_header();
 
@@ -137,7 +137,6 @@ class browser_tracks {
   /// Update particle track data bank
   void _update_particle_track_data();
 
- private:
   /// Main initialization method
   void _at_init_(TGCompositeFrame *main_);
 

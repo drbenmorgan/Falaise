@@ -82,105 +82,56 @@ const std::string &sd_cut_label() {
   return _label;
 }
 
-// Private data member not to expose
+//-----------------------------------------------------------------------------
+// Private implementation class for selection widgets not to expose
 class base_widget {
  public:
-  base_widget(event_selection *selection_, int id_ = 0);
-  virtual ~base_widget();
+  base_widget(event_selection *selection_, int id_ = 0)
+      : _selection(selection_), _id(id_){};
+  virtual ~base_widget() = default;
   virtual void initialize() = 0;
   virtual void set_state() = 0;
   virtual bool get_state() const = 0;
-  virtual void build(TGCompositeFrame *frame_) = 0;
   virtual std::string get_cut_name() = 0;
-  virtual int id();
+  virtual int id() { return _id; }
 
  protected:
+  virtual void build(TGCompositeFrame *frame_) = 0;
+
   event_selection *_selection;
   int _id;
 };
 
+//-----------------------------------------------------------------------------
 /// Structure hosting GUI widgets
 class selection_widget : public base_widget {
  public:
-  selection_widget(event_selection *selection_);
-  void initialize() override;
-  void set_state() override;
-  bool get_state() const override;
-  void build(TGCompositeFrame *frame_) override;
+  selection_widget(event_selection *selection_, TGCompositeFrame *main)
+      : base_widget(selection_, ENABLE_LOGIC_SELECTION) {
+    this->build(main);
+  }
+
+  void initialize() override {
+    _or_button_->SetOn(false);
+    _and_button_->SetOn(true);
+    _xor_button_->SetOn(false);
+  }
+
+  void set_state() override {}
+  bool get_state() const override {
+    // Always return false since there is no activation check box associated
+    return false;
+  }
+
   std::string get_cut_name() override;
 
  private:
+  void build(TGCompositeFrame *frame_) override;
+
   TGRadioButton *_or_button_;
   TGRadioButton *_and_button_;
   TGRadioButton *_xor_button_;
 };
-
-/// Structure hosting complex selection widgets
-class complex_selection_widget : public base_widget {
- public:
-  complex_selection_widget(event_selection *selection_);
-  void initialize() override;
-  void set_state() override;
-  bool get_state() const override;
-  void build(TGCompositeFrame *frame_) override;
-  std::string get_cut_name() override;
-
- private:
-  TGCheckButton *_enable_;
-  TGComboBox *_combo_;
-};
-
-/// Structure hosting event header selection widgets
-class event_header_selection_widget : public base_widget {
- public:
-  event_header_selection_widget(event_selection *selection_);
-  void initialize() override;
-  void set_state() override;
-  bool get_state() const override;
-  void build(TGCompositeFrame *frame_) override;
-  std::string get_cut_name() override;
-
- private:
-  TGCheckButton *_enable_;
-  TGNumberEntry *_run_id_min_;
-  TGNumberEntry *_run_id_max_;
-  TGNumberEntry *_event_id_min_;
-  TGNumberEntry *_event_id_max_;
-};
-
-// struct simulated_data_selection_widget : public base_widget
-// {
-// public:
-//   simulated_data_selection_widget(event_selection * selection_);
-//   virtual void initialize();
-//   virtual void set_state(const bool enable_ = true);
-//   virtual void build(TGCompositeFrame * frame_);
-// private:
-//   TGCheckButton * _enable_;
-//   TGTextEntry * _hit_category_;
-// };
-
-base_widget::base_widget(event_selection *selection_, int id_) : _selection(selection_), _id(id_) {}
-
-base_widget::~base_widget() = default;
-
-int base_widget::id() { return _id; }
-
-selection_widget::selection_widget(event_selection *selection_)
-    : base_widget(selection_, ENABLE_LOGIC_SELECTION) {}
-
-void selection_widget::initialize() {
-  _or_button_->SetOn(false);
-  _and_button_->SetOn(true);
-  _xor_button_->SetOn(false);
-}
-
-void selection_widget::set_state() {}
-
-bool selection_widget::get_state() const {
-  // Always return false since there is no activation check box associated
-  return false;
-}
 
 void selection_widget::build(TGCompositeFrame *frame_) {
   TGHButtonGroup *bgroup = new TGHButtonGroup(frame_, "Event selection logic");
@@ -230,96 +181,120 @@ std::string selection_widget::get_cut_name() {
   return cut_name;
 }
 
-complex_selection_widget::complex_selection_widget(event_selection *selection_)
-    : base_widget(selection_, ENABLE_COMPLEX_SELECTION) {}
+//-----------------------------------------------------------------------------
+/// Structure hosting complex selection widgets
+class complex_selection_widget : public base_widget {
+ public:
+  complex_selection_widget(event_selection *selection_, TGCompositeFrame *main)
+      : base_widget(selection_, ENABLE_COMPLEX_SELECTION) {
+    this->build(main);
+  }
 
-void complex_selection_widget::initialize() {
-  _enable_->SetState(kButtonUp);
-  _combo_->RemoveAll();
-  size_t j = 1;
-  for (const auto &i : _selection->get_cut_manager().get_cuts()) {
-    const std::string &the_cut_name = i.first;
-    if (the_cut_name[0] != '_') {
-      _combo_->AddEntry(the_cut_name.c_str(), j++);
+  void initialize() override {
+    _enable_->SetState(kButtonUp);
+    _combo_->RemoveAll();
+    size_t j = 1;
+    for (const auto &i : _selection->get_cut_manager().get_cuts()) {
+      const std::string &the_cut_name = i.first;
+      if (the_cut_name[0] != '_') {
+        _combo_->AddEntry(the_cut_name.c_str(), j++);
+      }
     }
-  }
-  if (j == 1) {
-    _combo_->AddEntry(" +++ NO CUTS +++ ", 0);
-    _combo_->SetEnabled(false);
-    _enable_->SetEnabled(false);
-    _enable_->SetToolTipText("no complex cuts defined");
-  } else {
-    _combo_->AddEntry(" +++ SELECT CUT NAME +++ ", 0);
-    _combo_->SetEnabled(true);
-  }
-  _combo_->Select(0);
-}
-
-void complex_selection_widget::set_state() {
-  bool enable = _enable_->IsDown();
-  _combo_->SetEnabled(enable);
-}
-
-bool complex_selection_widget::get_state() const {
-  if (_enable_->IsEnabled()) {
-    return _enable_->IsDown();
-  }
-  return false;
-}
-
-void complex_selection_widget::build(TGCompositeFrame *frame_) {
-  auto *gframe = new TGGroupFrame(frame_, "      Complex cuts", kVerticalFrame);
-  gframe->SetTitlePos(TGGroupFrame::kLeft);
-  frame_->AddFrame(gframe, new TGLayoutHints(kLHintsTop | kLHintsLeft, 3, 3, 3, 3));
-  _enable_ = new TGCheckButton(gframe, "", ENABLE_COMPLEX_SELECTION);
-  _enable_->Connect("Clicked()", "snemo::visualization::view::event_selection", _selection,
-                    "process()");
-  gframe->AddFrame(_enable_, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 0, -15, 0));
-
-  auto *cframe = new TGCompositeFrame(gframe, 200, 1, kHorizontalFrame | kFixedWidth);
-  gframe->AddFrame(cframe);
-
-  _combo_ = new TGComboBox(cframe, COMBO_SELECTION);
-  _combo_->Connect("Selected(int)", "snemo::visualization::view::event_selection", _selection,
-                   "process()");
-  _combo_->Resize(200, 20);
-  cframe->AddFrame(
-      _combo_,
-      new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 2, 2, 2, 2));
-  initialize();
-}
-
-std::string complex_selection_widget::get_cut_name() {
-  if (!_enable_->IsDown()) {
-    return {};  // empty string
+    if (j == 1) {
+      _combo_->AddEntry(" +++ NO CUTS +++ ", 0);
+      _combo_->SetEnabled(false);
+      _enable_->SetEnabled(false);
+      _enable_->SetToolTipText("no complex cuts defined");
+    } else {
+      _combo_->AddEntry(" +++ SELECT CUT NAME +++ ", 0);
+      _combo_->SetEnabled(true);
+    }
+    _combo_->Select(0);
   }
 
-  std::string cut_label;
-  if (_combo_->GetSelected() != 0) {
-    auto *tgt = (TGTextLBEntry *)_combo_->GetSelectedEntry();
-    cut_label = tgt->GetText()->GetString();
+  void set_state() override {
+    bool enable = _enable_->IsDown();
+    _combo_->SetEnabled(enable);
   }
 
-  return cut_label;
-}  // namespace view
+  bool get_state() const override { return _enable_->IsEnabled() ? _enable_->IsDown() : false; }
 
-event_header_selection_widget::event_header_selection_widget(event_selection *selection_)
-    : base_widget(selection_, ENABLE_EH_SELECTION) {}
+  std::string get_cut_name() override {
+    if (_enable_->IsDown() && _combo_->GetSelected() != 0) {
+      auto *tgt = (TGTextLBEntry *)_combo_->GetSelectedEntry();
+      return tgt->GetText()->GetString();
+    }
 
-void event_header_selection_widget::initialize() {
-  _enable_->SetState(kButtonUp);
-  _run_id_min_->SetNumber(datatools::event_id::INVALID_RUN_NUMBER);
-  _run_id_max_->SetNumber(datatools::event_id::INVALID_RUN_NUMBER);
-  _event_id_min_->SetNumber(datatools::event_id::INVALID_EVENT_NUMBER);
-  _event_id_max_->SetNumber(datatools::event_id::INVALID_EVENT_NUMBER);
-}
+    return {};
+  }
+
+ private:
+  void build(TGCompositeFrame *frame_) override {
+    auto *gframe = new TGGroupFrame(frame_, "      Complex cuts", kVerticalFrame);
+    gframe->SetTitlePos(TGGroupFrame::kLeft);
+    frame_->AddFrame(gframe, new TGLayoutHints(kLHintsTop | kLHintsLeft, 3, 3, 3, 3));
+    _enable_ = new TGCheckButton(gframe, "", ENABLE_COMPLEX_SELECTION);
+    _enable_->Connect("Clicked()", "snemo::visualization::view::event_selection", _selection,
+                      "process()");
+    gframe->AddFrame(_enable_, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 0, -15, 0));
+
+    auto *cframe = new TGCompositeFrame(gframe, 200, 1, kHorizontalFrame | kFixedWidth);
+    gframe->AddFrame(cframe);
+
+    _combo_ = new TGComboBox(cframe, COMBO_SELECTION);
+    _combo_->Connect("Selected(int)", "snemo::visualization::view::event_selection", _selection,
+                     "process()");
+    _combo_->Resize(200, 20);
+    cframe->AddFrame(
+        _combo_,
+        new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 2, 2, 2, 2));
+    initialize();
+  }
+
+ private:
+  TGCheckButton *_enable_;
+  TGComboBox *_combo_;
+};
+
+
+
+//-----------------------------------------------------------------------------
+/// Structure hosting event header selection widgets
+class event_header_selection_widget : public base_widget {
+ public:
+  event_header_selection_widget(event_selection *selection_, TGCompositeFrame *main)
+      : base_widget(selection_, ENABLE_EH_SELECTION) {
+    this->build(main);
+  }
+
+  void initialize() override {
+    _enable_->SetState(kButtonUp);
+    _run_id_min_->SetNumber(datatools::event_id::INVALID_RUN_NUMBER);
+    _run_id_max_->SetNumber(datatools::event_id::INVALID_RUN_NUMBER);
+    _event_id_min_->SetNumber(datatools::event_id::INVALID_EVENT_NUMBER);
+    _event_id_max_->SetNumber(datatools::event_id::INVALID_EVENT_NUMBER);
+  }
+
+  void set_state() override;
+
+  bool get_state() const override { return _enable_->IsEnabled() ? _enable_->IsDown() : false; }
+
+  std::string get_cut_name() override;
+
+ private:
+  void build(TGCompositeFrame *frame_) override;
+
+  TGCheckButton *_enable_;
+  TGNumberEntry *_run_id_min_;
+  TGNumberEntry *_run_id_max_;
+  TGNumberEntry *_event_id_min_;
+  TGNumberEntry *_event_id_max_;
+};
 
 void event_header_selection_widget::set_state() {
   bool enable = _enable_->IsDown();
   const io::event_server &server = _selection->get_event_server();
   if (!server.get_event().has(io::EH_LABEL)) {
-    DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(),
-                   "No event header data bank");
     _enable_->SetToolTipText("no event header bank");
     _enable_->SetState(kButtonDisabled);
     enable = false;
@@ -332,13 +307,6 @@ void event_header_selection_widget::set_state() {
   _run_id_max_->SetState(enable);
   _event_id_min_->SetState(enable);
   _event_id_max_->SetState(enable);
-}
-
-bool event_header_selection_widget::get_state() const {
-  if (_enable_->IsEnabled()) {
-    return _enable_->IsDown();
-  }
-  return false;
 }
 
 void event_header_selection_widget::build(TGCompositeFrame *frame_) {
@@ -448,94 +416,22 @@ std::string event_header_selection_widget::get_cut_name() {
   return eh_cut_label();
 }
 
-// simulated_data_selection_widget::simulated_data_selection_widget(event_selection * selection_)
-//   : base_widget(selection_)
-// {
-//   return;
-// }
-
-// void simulated_data_selection_widget::initialize()
-// {
-//   if (_hit_category_) _hit_category_->Clear();
-//   this->set_state(false);
-// }
-
-// void simulated_data_selection_widget::set_state(const bool enable_)
-// {
-//   if (_hit_category_) _hit_category_->SetState(enable_);
-//   return;
-// }
-
-// void simulated_data_selection_widget::build(TGCompositeFrame * frame_)
-// {
-//   // Layout for positionning frame
-//   // TGLayoutHints * field_layout = new TGLayoutHints(kLHintsTop | kLHintsRight,
-//   //                                                  2, 2, 20, 2);
-//   // TGLayoutHints * label_layout = new TGLayoutHints(kLHintsTop | kLHintsLeft,
-//   //                                                  2, 2, 2, 2);
-//   TGGroupFrame * gframe = new TGGroupFrame(frame_, "      Simulated data cut", kVerticalFrame);
-//   gframe->SetTitlePos(TGGroupFrame::kLeft);
-//   frame_->AddFrame(gframe, new TGLayoutHints(kLHintsTop | kLHintsLeft, 3, 3, 3, 3));
-//   {
-//     _enable_ = new TGCheckButton(gframe, "", ENABLE_SD_SELECTION);
-//     _enable_->SetToolTipText("enable selection on simulated data bank");
-//     _enable_->Connect("Clicked()", "snemo::visualization::view::event_selection",
-//                       _selection, "process()");
-//     gframe->AddFrame(_enable_, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 0, -15, 0));
-//   }
-
-//   {
-//     TGCompositeFrame * cframe = new TGCompositeFrame(gframe, 200, 1,
-//                                                      kHorizontalFrame | kFixedWidth);
-//     gframe->AddFrame(cframe);
-//     cframe->AddFrame(new TGLabel(cframe, "Hit category name:"),
-//                      new TGLayoutHints(kLHintsTop | kLHintsLeft, 2, 2, 2, 2));
-//     _hit_category_ = new TGTextEntry(cframe, "", -1);
-//     // _hit_category_->Connect("ValueSet(Long_t)",
-//     //                         "snemo::visualization::view::event_selection",
-//     //                         _selection, "process()");
-//     cframe->AddFrame(_hit_category_, new TGLayoutHints(kLHintsTop | kLHintsLeft, 2, 2, 0, 2));
-//   }
-
-//   // Initialize values
-//   initialize();
-//   return;
-// }
-
-//*************************************************************//
-
-bool event_selection::is_initialized() const { return _initialized_; }
-
-bool event_selection::is_selection_enable() const { return _selection_enable_; }
+//-----------------------------------------------------------------------------
 
 // ctor:
-event_selection::event_selection() {
-  _main_ = nullptr;
-  _server_ = nullptr;
-  _browser_ = nullptr;
-  _status_ = nullptr;
-  _cut_manager_ = nullptr;
-  _initialized_ = false;
-  _selection_enable_ = false;
-  _initial_event_id_ = 0;
+event_selection::event_selection(TGCompositeFrame *main_, io::event_server *server_,
+                                 view::status_bar *status_) {
+  _server_ = server_;
+  _status_ = status_;
+  this->initialize(main_);
 }
 
 // dtor:
 event_selection::~event_selection() { this->reset(); }
 
-void event_selection::set_event_server(io::event_server *server_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
-  _server_ = server_;
-}
-
-io::event_server &event_selection::get_event_server() const {
+const io::event_server &event_selection::get_event_server() const {
   DT_THROW_IF(_server_ == nullptr, std::logic_error, "Event server is not set !");
   return *_server_;
-}
-
-void event_selection::set_status_bar(view::status_bar *status_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
-  _status_ = status_;
 }
 
 const cuts::cut_manager &event_selection::get_cut_manager() const {
@@ -548,9 +444,9 @@ cuts::cut_manager &event_selection::get_cut_manager() {
   return *_cut_manager_;
 }
 
-void event_selection::initialize(TGCompositeFrame *main_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
+bool event_selection::is_selection_enable() const { return _selection_enable_; }
 
+void event_selection::initialize(TGCompositeFrame *main_) {
   // Keep track of main frame in order to regenerate it for
   // different detector setup
   _main_ = main_;
@@ -566,6 +462,8 @@ void event_selection::initialize(TGCompositeFrame *main_) {
   _browser_ = dynamic_cast<event_browser *>(parent);
   DT_THROW_IF(!_browser_, std::logic_error, "Event_browser can't be cast from frame!");
 
+  // NB: Not clear that construction of _cut_manager_ can be moved to _install_cut_manager_
+  // as it may be needed in _build_ or its subsystems!
   _cut_manager_ = new cuts::cut_manager;
   this->_build_();
   this->_install_cut_manager_();
@@ -575,7 +473,6 @@ void event_selection::initialize(TGCompositeFrame *main_) {
 
 void event_selection::reset() {
   delete _cut_manager_;
-
   _cut_manager_ = nullptr;
 }
 
@@ -609,6 +506,7 @@ void event_selection::process() {
 
     options_manager::get_instance().set_cut_config_file(file_name);
     this->reset();
+    _cut_manager_ = new cuts::cut_manager;
     this->_install_cut_manager_();
   } else if (id == RESET_SELECTION) {
     for (auto &_widget : _widgets_) {
@@ -626,7 +524,6 @@ void event_selection::process() {
   } else if (id == UPDATE_SELECTION) {
     this->_build_cuts_();
     if (is_selection_enable()) {
-      DT_LOG_DEBUG(options_manager::get_instance().get_logging_priority(), "Selection is enable !");
       _server_->clear_selection();
       _server_->fill_selection();
       _initial_event_id_ = _server_->get_current_event_number();
@@ -652,15 +549,13 @@ void event_selection::process() {
 }
 
 void event_selection::select_events(const button_signals_type signal_, const int event_selected_) {
-  io::event_server &the_server = *_server_;
-
-  if (the_server.has_external_data()) {
+  if (_server_->has_external_data()) {
     return;
   }
 
   button_signals_type the_signal = signal_;
 
-  int current_event_id = the_server.get_current_event_number();
+  int current_event_id = _server_->get_current_event_number();
   if (event_selected_ != -1) {
     current_event_id = event_selected_;
   }
@@ -686,7 +581,7 @@ void event_selection::select_events(const button_signals_type signal_, const int
       current_event_id = _server_->get_first_selected_event();
     }
 
-    if (!the_server.read_event(current_event_id)) {
+    if (!_server_->read_event(current_event_id)) {
       DT_LOG_ERROR(options_manager::get_instance().get_logging_priority(),
                    "Something gets wrong when reading event #" << current_event_id << " !");
       break;
@@ -714,7 +609,6 @@ void event_selection::select_events(const button_signals_type signal_, const int
         int retval;
         std::ostringstream info;
         info << "No record full fills the selection cuts !";
-        DT_LOG_INFORMATION(options_manager::get_instance().get_logging_priority(), info.str());
         new TGMsgBox(gClient->GetRoot(), _browser_, "Event selection", info.str().c_str(),
                      icon_type, button_type, &retval);
 
@@ -769,16 +663,14 @@ void event_selection::_build_() {
   _update_button_->SetState(kButtonDisabled);
   hframe->AddFrame(_update_button_, new TGLayoutHints(kLHintsNoHints, 2, 2, 2, 2));
 
-  // Build selection widget
-  _widgets_[ENABLE_LOGIC_SELECTION] = new selection_widget(this);
-  auto *ehsw = new event_header_selection_widget(this);
+  // Build selection widgets we want
+  _widgets_[ENABLE_LOGIC_SELECTION] = new selection_widget(this, _main_);
+
+  auto *ehsw = new event_header_selection_widget(this, _main_);
   _widgets_[ehsw->id()] = ehsw;
-  auto *csw = new complex_selection_widget(this);
+
+  auto *csw = new complex_selection_widget(this, _main_);
   _widgets_[csw->id()] = csw;
-  // _widgets_.push_back(new simulated_data_selection_widget(this));
-  for (auto &i : _widgets_) {
-    i.second->build(_main_);
-  }
 }
 
 bool event_selection::_check_cuts_() {
@@ -787,19 +679,14 @@ bool event_selection::_check_cuts_() {
     DT_THROW_IF(!_cut_manager_->has(_current_cut_name_), std::logic_error,
                 "None of the cut (AND, XOR, OR) have been registered !");
     cuts::i_cut &the_cut = _cut_manager_->grab(_current_cut_name_);
-    const io::event_record &a_record = _server_->get_event();
-    the_cut.set_user_data(a_record);
+    the_cut.set_user_data(_server_->get_event());
     cut_status = the_cut.process();
     the_cut.reset_user_data();
   } catch (std::exception &x) {
     DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(), x.what());
   }
 
-  if (cut_status != cuts::SELECTION_ACCEPTED) {
-    return false;
-  }
-
-  return true;
+  return cut_status == cuts::SELECTION_ACCEPTED;
 }
 
 void event_selection::_build_cuts_() {
@@ -815,8 +702,6 @@ void event_selection::_build_cuts_() {
   }
 
   if (cut_lists.empty()) {
-    DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(),
-                   "No cuts have been enabled !");
     _selection_enable_ = false;
     return;
   }
@@ -831,41 +716,12 @@ void event_selection::_build_cuts_() {
 }
 
 void event_selection::_install_cut_manager_() {
+  // Load builtin cuts, then user config + initialization
   const options_manager &opt_mgr = options_manager::get_instance();
-  _cut_manager_->set_logging_priority(opt_mgr.get_logging_priority());
 
-  // Load event browser cuts before cut manager is initialized
-  this->_install_private_cuts_();
-
-  const std::string &config_filename = opt_mgr.get_cut_config_file();
-
-  if (!config_filename.empty()) {
-    std::string filename = config_filename;
-    datatools::fetch_path_with_env(filename);
-    datatools::properties cut_manager_config;
-    datatools::properties::read_config(filename, cut_manager_config);
-    _cut_manager_->initialize(cut_manager_config);
-  } else {
-    datatools::properties dummy;
-    _cut_manager_->initialize(dummy);
-  }
-  if (opt_mgr.get_logging_priority() >= datatools::logger::PRIO_DEBUG) {
-    _cut_manager_->tree_dump(std::clog);
-  }
-
-  for (auto &_widget : _widgets_) {
-    _widget.second->initialize();
-  }
-}
-
-void event_selection::_install_private_cuts_() {
-  const std::string priority_str =
-      datatools::logger::get_priority_label(options_manager::get_instance().get_logging_priority());
-
-  // Cut logic
+  // Logic cuts
   {
     datatools::properties cuts_prop;
-    cuts_prop.store_string("logging.priority", priority_str);
 
     // Install a 'multi_and_cut' and a 'multi_or_cut'
     _cut_manager_->load_cut(multi_and_cut_label(), "cuts::multi_and_cut", cuts_prop);
@@ -876,7 +732,6 @@ void event_selection::_install_private_cuts_() {
   // Event header cut
   {
     datatools::properties cuts_prop;
-    cuts_prop.store_string("logging.priority", priority_str);
     cuts_prop.store_string("EH_label", io::EH_LABEL);
     _cut_manager_->load_cut(eh_cut_label(), "snemo::cut::event_header_cut", cuts_prop);
   }
@@ -884,9 +739,24 @@ void event_selection::_install_private_cuts_() {
   // Simulated data cut
   {
     datatools::properties cuts_prop;
-    cuts_prop.store_string("logging.priority", priority_str);
     cuts_prop.store_string("SD_label", io::SD_LABEL);
     _cut_manager_->load_cut(sd_cut_label(), "snemo::cut::simulated_data_cut", cuts_prop);
+  }
+
+  // User specified cuts
+  datatools::properties cut_manager_config;
+
+  const std::string &config_filename = opt_mgr.get_cut_config_file();
+  if (!config_filename.empty()) {
+    std::string filename = config_filename;
+    datatools::fetch_path_with_env(filename);
+    datatools::properties::read_config(filename, cut_manager_config);
+  }
+
+  _cut_manager_->initialize(cut_manager_config);
+
+  for (auto &_widget : _widgets_) {
+    _widget.second->initialize();
   }
 }
 
