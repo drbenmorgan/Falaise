@@ -527,7 +527,7 @@ void detector_manager::_add_volumes_() {
 
     // ROOT volumes
     auto &a_root_volume = dynamic_cast<i_root_volume &>(a_volume);
-    auto *gvolume = static_cast<TGeoVolume *>(a_root_volume.grab_volume());
+    auto *gvolume = static_cast<TGeoVolume *>(a_root_volume.get_volume());
 
     // sanity check
     DT_THROW_IF(

@@ -174,8 +174,6 @@ set(FalaiseEventBrowserPlugin_SOURCES
   event_browser_module.cc
   event_display.cc
   event_selection.cc
-  i_draw_manager.cc
-  i_embedded_viewer.cc
   # opengl_embedded_viewer.cc
   # opengl_event_handler.cc
   # opengl_pad.cc

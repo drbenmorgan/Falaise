@@ -49,12 +49,9 @@ class i_embedded_viewer {
  public:
   enum view_dim_type { VIEW_2D = 0, VIEW_3D = 1 };
 
- protected:
-  view_dim_type _view_dim_type;
-
  public:
-  i_embedded_viewer(const view_dim_type view_dim_ = VIEW_3D);
-  virtual ~i_embedded_viewer();
+  i_embedded_viewer(const view_dim_type view_dim_ = VIEW_3D) : _view_dim_type(view_dim_) {}
+  virtual ~i_embedded_viewer() = default;
 
   virtual void clear() = 0;
   virtual void reset() = 0;
@@ -67,6 +64,9 @@ class i_embedded_viewer {
 
   virtual TCanvas *get_canvas() = 0;
   virtual TGFrame *get_frame() = 0;
+
+ protected:
+  view_dim_type _view_dim_type;
 
  private:
   i_embedded_viewer(const i_embedded_viewer &);             // not implemented

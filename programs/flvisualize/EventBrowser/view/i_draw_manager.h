@@ -42,8 +42,8 @@ namespace view {
 
 class i_draw_manager {
  public:
-  i_draw_manager();
-  virtual ~i_draw_manager();
+  i_draw_manager() = default;
+  virtual ~i_draw_manager() = default;
 
   virtual TObjArray* get_objects() = 0;
   virtual TObjArray* get_text_objects() = 0;

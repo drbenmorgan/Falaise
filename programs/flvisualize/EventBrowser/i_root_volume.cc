@@ -49,7 +49,7 @@ i_root_volume::~i_root_volume() { this->reset(); }
 
 bool i_root_volume::is_initialized() const { return _initialized; }
 
-void* i_root_volume::grab_volume() {
+void* i_root_volume::get_volume() {
   DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
   return _geo_volume;
 }

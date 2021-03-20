@@ -59,7 +59,7 @@ class i_root_volume : public i_volume {
   bool is_initialized() const;
 
   /// Get a mutable pointer to volume (TGeoVolume cast)
-  virtual void* grab_volume();
+  virtual void* get_volume();
 
   /// Get a non-mutable pointer to volume (TGeoVolume cast)
   virtual const void* get_volume() const;

@@ -54,7 +54,7 @@ class i_volume : public volume_model {
   virtual ~i_volume() = default;
 
   /// Get a mutable pointer to volume
-  virtual void* grab_volume() = 0;
+  virtual void* get_volume() = 0;
 
   /// Get a non-mutable pointer to volume
   virtual const void* get_volume() const = 0;
