@@ -98,7 +98,7 @@ class TGPopupMenuPlus : public TGPopupMenu {
 class event_browser_menu {
  public:
   /// Menu status
-  enum status_type {
+  enum class status {
     DISABLED = 0,
     ENABLED = 1,
     CHECKED = 2,
@@ -123,7 +123,7 @@ class event_browser_menu {
   bool has_option(const button_signals_type signal_) const;
 
   /// Change menu button status
-  void change_option(const button_signals_type signal_, const int status_);
+  void change_option(const button_signals_type signal_, const status status_);
 
   /// Check menu button
   void check_option(const button_signals_type signal_);
@@ -141,7 +141,7 @@ class event_browser_menu {
   void hide_option(const button_signals_type signal_);
 
   /// Recursively check menu button
-  bool rcheck_option(const button_signals_type signal_, const int status_);
+  bool rcheck_option(const button_signals_type signal_, const status status_);
 
  private:
   std::map<button_signals_type, TGPopupMenuPlus *> _popup_dict_;  //!< Menu dictionnary

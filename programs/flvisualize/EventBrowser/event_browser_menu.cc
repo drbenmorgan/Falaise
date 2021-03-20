@@ -170,9 +170,7 @@ Int_t TGPopupMenuPlus::EndMenu(void *&userData) {
 
   // then unmap itself
   UnmapWindow();
-
   gClient->UnregisterPopup(this);
-  //        if (fMenuBar) fMenuBar->BindKeys(kFALSE);
 
   if (fPoppedUp) {
     fPoppedUp = kFALSE;
@@ -364,8 +362,6 @@ void event_browser_menu::set_default_option(const io::event_server &server_) {
   if (setup_label.find("bipo") != std::string::npos ||
       setup_label.find("test_bench") != std::string::npos) {
     disable_option(SHOW_MC_TRACKER_HITS);
-    // disable_option(SHOW_GG_CIRCLE);
-    // disable_option(SHOW_GG_TIME_GRADIENT);
     hide_option(SHOW_TRACKER_CLUSTERED_HITS);
     hide_option(SHOW_TRACKER_TRAJECTORIES);
   }
@@ -408,55 +404,47 @@ void event_browser_menu::set_default_option(const io::event_server &server_) {
 
 bool event_browser_menu::has_option(const button_signals_type signal_) const {
   auto found = _popup_dict_.find(signal_);
-
-  if (found == _popup_dict_.end()) {
-    DT_LOG_WARNING(datatools::logger::PRIO_WARNING,
-                   "No signal with " << signal_ << " id has been found !");
-    return false;
-  }
-  return true;
+  return found != _popup_dict_.end();
 }
 
 void event_browser_menu::check_option(const button_signals_type signal_) {
-  change_option(signal_, CHECKED);
+  change_option(signal_, status::CHECKED);
 }
 
 void event_browser_menu::uncheck_option(const button_signals_type signal_) {
-  change_option(signal_, UNCHECKED);
+  change_option(signal_, status::UNCHECKED);
 }
 
 void event_browser_menu::enable_option(const button_signals_type signal_) {
-  change_option(signal_, ENABLED);
+  change_option(signal_, status::ENABLED);
 }
 
 void event_browser_menu::disable_option(const button_signals_type signal_) {
-  change_option(signal_, DISABLED);
+  change_option(signal_, status::DISABLED);
 }
 
 void event_browser_menu::hide_option(const button_signals_type signal_) {
-  change_option(signal_, HIDDEN);
+  change_option(signal_, status::HIDDEN);
 }
 
-bool event_browser_menu::rcheck_option(const button_signals_type signal_, const int status_) {
+bool event_browser_menu::rcheck_option(const button_signals_type signal_, const status status_) {
   std::list<std::pair<button_signals_type, button_signals_type> > signal_intervals;
   signal_intervals.emplace_back(DUMP_INTO_TOOLTIP, DUMP_INTO_WINDOW);
   signal_intervals.emplace_back(SHOW_TRACKER_CLUSTERED_BOX, SHOW_TRACKER_CLUSTERED_CIRCLE);
 
-  for (std::list<std::pair<button_signals_type, button_signals_type> >::const_iterator i =
-           signal_intervals.begin();
-       i != signal_intervals.end(); ++i) {
-    if (signal_ >= i->first && signal_ <= i->second) {
+  for (const auto& i : signal_intervals) {
+    if (signal_ >= i.first && signal_ <= i.second) {
       TGPopupMenuPlus *ptr = _popup_dict_[signal_];
-      ptr->RCheckEntry(signal_, i->first, i->second);
+      ptr->RCheckEntry(signal_, i.first, i.second);
 
       options_manager &options_mgr = options_manager::get_instance();
-      for (int j = i->first; j <= i->second; j++) {
+      for (int j = i.first; j <= i.second; j++) {
         const auto bst = (button_signals_type)j;
 
         if (bst == signal_) {
-          options_mgr.set_option_flag(bst, status_ == CHECKED);
+          options_mgr.set_option_flag(bst, status_ == status::CHECKED);
         } else {
-          options_mgr.set_option_flag(bst, status_ != CHECKED);
+          options_mgr.set_option_flag(bst, status_ != status::CHECKED);
         }
       }
       return true;
@@ -465,12 +453,12 @@ bool event_browser_menu::rcheck_option(const button_signals_type signal_, const 
   return false;
 }
 
-void event_browser_menu::change_option(const button_signals_type signal_, const int status_) {
+void event_browser_menu::change_option(const button_signals_type signal_, const status status_) {
   if (!has_option(signal_)) {
     return;
   }
 
-  if (status_ == DISABLED) {
+  if (status_ == status::DISABLED) {
     options_manager::get_instance().set_option_flag(signal_, false);
   }
 
@@ -480,7 +468,7 @@ void event_browser_menu::change_option(const button_signals_type signal_, const 
   button_exception.insert(SHOW_TRACKER_CLUSTERED_HITS);
 
   // Take care of radio check:
-  if (status_ == CHECKED && rcheck_option(signal_, status_)) {
+  if (status_ == status::CHECKED && rcheck_option(signal_, status_)) {
     return;
   }
 
@@ -500,53 +488,40 @@ void event_browser_menu::change_option(const button_signals_type signal_, const 
     // related cascaded menu
     if (ntr->GetPopup() != nullptr) {
       // Do not (un)check recursively
-      if (status_ == UNCHECKED || status_ == DISABLED) {
+      if (status_ == status::UNCHECKED || status_ == status::DISABLED) {
         ntr->SetType(kMenuEntry);
       }
-      if (status_ == CHECKED || status_ == ENABLED) {
+      if (status_ == status::CHECKED || status_ == status::ENABLED) {
         ntr->SetType(kMenuPopup);
       }
 
       // Do not go into other menus since the job is done by the two previous comand
-      // TGPopupMenuPlus * pptr = dynamic_cast<TGPopupMenuPlus*>(ntr->GetPopup());
-
-      // TGMenuEntryPlus *nntr;
-      // TIter next(pptr->GetListOfEntries());
-
-      // while ((nntr = (TGMenuEntryPlus *) next()))
-      //   {
-      //     const button_signals_type id = (button_signals_type)nntr->GetEntryId();
-      //     if (button_exception.find(signal_) == button_exception.end())
-      //       {
-      //         options_manager & options_mgr = options_manager::get_instance();
-      //         if (!options_mgr.get_option_flag(signal_) && status_ == CHECKED)
-      //           change_option(id, status_);
-      //       }
-      //   }
     }
 
     int status = ntr->GetStatus();
     switch (status_) {
-      case DISABLED:
+      case status::DISABLED:
         status &= ~kMenuEnableMask;
         status &= ~kMenuCheckedMask;
         break;
-      case ENABLED:
+      case status::ENABLED:
         status |= kMenuEnableMask;
         if ((status & kMenuHideMask) != 0) {
           status &= ~kMenuHideMask;
         }
         break;
-      case UNCHECKED:
+      case status::UNCHECKED:
         status &= ~kMenuCheckedMask;
         break;
-      case CHECKED:
+      case status::CHECKED:
         status |= kMenuCheckedMask;
         status |= kMenuEnableMask;
         break;
-      case HIDDEN:
+      case status::HIDDEN:
         status |= kMenuHideMask;
         status &= ~kMenuEnableMask;
+        break;
+      case status::UNHIDDEN:
         break;
     }
     ntr->SetStatus(status);
