@@ -136,7 +136,7 @@ void default_draw_manager::_add_simulated_vertex_() {
     vertex_3d->SetMarkerColor(kViolet);
     vertex_3d->SetMarkerStyle(kPlus);
   }
-  if (sim_data.get_primary_event().get_auxiliaries().has_flag(browser_tracks::HIGHLIGHT_FLAG)) {
+  if (is_highlighted(sim_data.get_primary_event())) {
     TPolyMarker3D* vertex_3d = base_renderer::make_polymarker(sim_vertex);
     _objects_->Add(vertex_3d);
     vertex_3d->SetMarkerColor(kViolet);

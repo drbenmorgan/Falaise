@@ -176,7 +176,7 @@ void snemo_draw_manager::_add_simulated_vertex_() {
   const genbb::primary_event::particles_col_type& particles = pevent.get_particles();
 
   for (const auto& a_primary : particles) {
-    if (a_primary.get_auxiliaries().has_flag(browser_tracks::HIGHLIGHT_FLAG)) {
+    if (is_highlighted(a_primary)) {
       TPolyMarker3D* vertex_3d = base_renderer::make_polymarker(sim_vertex);
       _objects_->Add(vertex_3d);
       vertex_3d->SetMarkerColor(kViolet);

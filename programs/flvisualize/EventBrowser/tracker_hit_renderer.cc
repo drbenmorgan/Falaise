@@ -49,6 +49,8 @@
 
 #include <EventBrowser/io/event_server.h>
 
+#include <EventBrowser/utils/root_utilities.h>
+
 namespace snemo {
 
 namespace visualization {
@@ -102,17 +104,14 @@ void tracker_hit_renderer::push_simulated_hits(const std::string &hit_category_)
 
     // Store this value into cluster properties:
     auto *mutable_hit = const_cast<mctools::base_step_hit *>(&(*a_step));
-    datatools::properties &hit_properties = mutable_hit->grab_auxiliaries();
-    const long pixel = TColor::Number2Pixel(color);
-    const std::string hex_str = TColor::PixelAsHexString(pixel);
-    hit_properties.update(browser_tracks::COLOR_FLAG, hex_str);
+
+    set_color(*mutable_hit, utils::root_utilities::get_hex_color(color));
 
     // Retrieve line width from properties if 'hit' is highlighted:
     size_t line_width = style_manager::get_instance().get_mc_line_width();
-    if (hit_properties.has_flag(browser_tracks::HIGHLIGHT_FLAG)) {
+    if (is_highlighted(*mutable_hit)) {
       line_width = 3;
     }
-    // hit_properties.update(browser_tracks::HIGHLIGHT_FLAG, false);
     gg_path->SetLineWidth(line_width);
 
     // draw circle tangential to the track:
@@ -183,8 +182,7 @@ void tracker_hit_renderer::push_clustered_hits() {
 
   for (const auto &a_solution : tracker_clustered_data.solutions()) {
     // Check solution properties:
-    if (a_solution->get_auxiliaries().has_key(browser_tracks::CHECKED_FLAG) &&
-        !a_solution->get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG)) {
+    if (!is_checked(*a_solution)) {
       continue;
     }
 
@@ -192,8 +190,7 @@ void tracker_hit_renderer::push_clustered_hits() {
     size_t clusterIndex = 0;
     for (const auto &a_cluster : a_solution->get_clusters()) {
       // Check cluster properties:
-      if (a_cluster->get_auxiliaries().has_key(browser_tracks::CHECKED_FLAG) &&
-          !a_cluster->get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG)) {
+      if (!is_checked(*a_cluster)) {
         continue;
       }
 
@@ -203,22 +200,16 @@ void tracker_hit_renderer::push_clustered_hits() {
 
       // Store this value into cluster properties:
       auto *mutable_cluster = const_cast<snemo::datamodel::tracker_cluster *>(&(*a_cluster));
-      datatools::properties &cluster_properties = mutable_cluster->grab_auxiliaries();
-      const long pixel = TColor::Number2Pixel(cluster_color);
-      const std::string hex_str = TColor::PixelAsHexString(pixel);
-      cluster_properties.update(browser_tracks::COLOR_FLAG, hex_str);
+      set_color(*mutable_cluster, utils::root_utilities::get_hex_color(cluster_color));
 
       // Get tracker hits stored in the current tracker cluster:
       // Make a gradient color starting from color_solution:
       for (const auto &a_gg_hit : a_cluster->hits()) {
         // Retrieve a mutable reference to calibrated_tracker_hit:
         auto *mutable_hit = const_cast<snemo::datamodel::calibrated_tracker_hit *>(&(*a_gg_hit));
-        datatools::properties &gg_properties = mutable_hit->grab_auxiliaries();
 
         // Store current color to be used by calibrated_tracker_hit renderer:
-        const long ppixel = TColor::Number2Pixel(cluster_color);
-        const std::string hhex_str = TColor::PixelAsHexString(ppixel);
-        gg_properties.update(browser_tracks::COLOR_FLAG, hhex_str);
+        set_color(*mutable_hit, utils::root_utilities::get_hex_color(cluster_color));
 
         const options_manager &options_mgr = options_manager::get_instance();
         if (options_mgr.get_option_flag(SHOW_TRACKER_CLUSTERED_BOX)) {
@@ -235,7 +226,7 @@ void tracker_hit_renderer::push_clustered_hits() {
           hit_3d->SetLineColor(cluster_color);
           // Retrieve line width from properties if 'hit' is highlighted:
           size_t line_width = 1;
-          if (gg_properties.has_flag(browser_tracks::HIGHLIGHT_FLAG)) {
+          if (is_highlighted(*mutable_hit)) {
             line_width = 3;
           }
           hit_3d->SetLineWidth(line_width);
@@ -257,8 +248,7 @@ void tracker_hit_renderer::push_fitted_tracks() {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     // Check solution properties:
-    if (a_solution->get_auxiliaries().has_key(browser_tracks::CHECKED_FLAG) &&
-        !a_solution->get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG)) {
+    if (!a_solution->get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG)) {
       continue;
     }
 #pragma GCC diagnostic pop
@@ -268,11 +258,8 @@ void tracker_hit_renderer::push_fitted_tracks() {
       // Get trajectory properties:
       const datatools::properties &traj_properties = a_trajectory->get_auxiliaries();
 
-      // Check if trajectory has to be shown or not:
-      if (traj_properties.has_key(browser_tracks::CHECKED_FLAG)) {
-        if (!traj_properties.has_flag(browser_tracks::CHECKED_FLAG)) {
-          continue;
-        }
+      if (!is_checked(*a_trajectory)) {
+        continue;
       } else {
         if (!traj_properties.has_flag("default")) {
           continue;
@@ -290,17 +277,14 @@ void tracker_hit_renderer::push_fitted_tracks() {
       int trajectory_color = 0;
       if (a_trajectory->has_cluster()) {
         const snemo::datamodel::tracker_cluster &a_cluster = a_trajectory->get_cluster();
-        const datatools::properties &prop = a_cluster.get_auxiliaries();
-        if (prop.has_key(browser_tracks::COLOR_FLAG)) {
-          const std::string hex_str = prop.fetch_string(browser_tracks::COLOR_FLAG);
-          trajectory_color = TColor::GetColor(hex_str.c_str());
-        }
+        const std::string hex_str = get_color(a_cluster);
+        trajectory_color = TColor::GetColor(hex_str.c_str());
       }
       track->SetLineColor(trajectory_color);
 
       // Retrieve line width from properties if 'track' is highlighted:
       size_t line_width = 1;
-      if (traj_properties.has_flag(browser_tracks::HIGHLIGHT_FLAG)) {
+      if (is_highlighted(*a_trajectory)) {
         line_width = 3;
       }
       track->SetLineWidth(line_width);
@@ -359,19 +343,16 @@ void tracker_hit_renderer::_make_calibrated_geiger_hit(
   const double z = cell_world_pos.z();
   const double sigma_z = hit_.get_sigma_z();
 
-  // Get hit auxiliaries
-  const datatools::properties &aux = hit_.get_auxiliaries();
-
   // Retrieve line width from properties if 'hit' is highlighted:
   size_t line_width = style_manager::get_instance().get_mc_line_width();
-  if (aux.has_flag(browser_tracks::HIGHLIGHT_FLAG)) {
+  if (is_highlighted(hit_)) {
     line_width = 3;
   }
 
   int color = style_manager::get_instance().get_calibrated_data_color();
-  if (show_cluster && aux.has_key(browser_tracks::COLOR_FLAG)) {
-    std::string hex_str;
-    aux.fetch(browser_tracks::COLOR_FLAG, hex_str);
+  const std::string hex_str = get_color(hit_);
+
+  if (show_cluster && !hex_str.empty()) {
     const options_manager &options_mgr = options_manager::get_instance();
     if (options_mgr.get_option_flag(SHOW_TRACKER_CLUSTERED_HITS) &&
         options_mgr.get_option_flag(SHOW_TRACKER_CLUSTERED_CIRCLE)) {

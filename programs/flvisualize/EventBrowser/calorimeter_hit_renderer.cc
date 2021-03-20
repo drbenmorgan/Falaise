@@ -70,7 +70,7 @@ void calorimeter_hit_renderer::push_simulated_hits(const std::string& hit_catego
 
     // Retrieve line width from properties if 'hit' is highlighted:
     size_t line_width = style_manager::get_instance().get_mc_line_width();
-    if (a_hit->get_auxiliaries().has_flag(browser_tracks::HIGHLIGHT_FLAG)) {
+    if (is_highlighted(*a_hit)) {
       line_width = 3;
       auto* mark1 = new TPolyMarker3D;
       _objects->Add(mark1);

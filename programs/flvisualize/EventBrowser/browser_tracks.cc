@@ -133,11 +133,8 @@ const std::string browser_tracks::CHECKED_FLAG = "snvisu.check_flag";
 const std::string browser_tracks::COLOR_FLAG = "snvisu.color_flag";
 const std::string browser_tracks::HIGHLIGHT_FLAG = "snvisu.highlight_flag";
 
-bool browser_tracks::is_initialized() const { return _initialized_; }
-
 // ctor:
 browser_tracks::browser_tracks(TGCompositeFrame *main_, io::event_server *server_) {
-  _initialized_ = false;
   _server_ = server_;
   _browser_ = nullptr;
   _main_ = nullptr;
@@ -157,10 +154,7 @@ browser_tracks::~browser_tracks() {
   _main_->Cleanup();
 }
 
-void browser_tracks::initialize(TGCompositeFrame *main_) {
-  this->_at_init_(main_);
-  _initialized_ = true;
-}
+void browser_tracks::initialize(TGCompositeFrame *main_) { this->_at_init_(main_); }
 
 void browser_tracks::_at_init_(TGCompositeFrame *main_) {
   // Keep track of main frame in order to regenerate it for
@@ -255,10 +249,7 @@ void browser_tracks::_update_event_header() {
     label << "Run #" << eh.get_id().get_run_number() << " - "
           << "Event #" << eh.get_id().get_event_number();
     if (options_manager::get_instance().get_option_flag(DUMP_INTO_TOOLTIP)) {
-      // Here we use the event_server dump method since it
-      // gives much more info on the event record
       eh.tree_dump(tip_text);
-      //_server_->dump_event(tip_text);
     }
   }
 
@@ -277,19 +268,16 @@ void browser_tracks::_update_event_header() {
 }
 
 void browser_tracks::_update_simulated_data() {
-  const options_manager &options_mgr = options_manager::get_instance();
-
   // Grab event and other resources. Here nothing is constant
   // since properties will be modified here and used later
   // through 'checking' and 'double_clicking' actions:
-  io::event_record &event = _server_->get_event();
+  const options_manager &options_mgr = options_manager::get_instance();
 
   // 'simulated_data' availability:
+  io::event_record &event = _server_->get_event();
   if (!event.has(io::SD_LABEL)) {
     return;
   }
-
-  auto &sd = event.grab<mctools::simulated_data>(io::SD_LABEL);
 
   if (!options_mgr.get_option_flag(SHOW_MC_VERTEX) && !options_mgr.get_option_flag(SHOW_MC_HITS)) {
     return;
@@ -304,6 +292,9 @@ void browser_tracks::_update_simulated_data() {
   item_simulated_data->SetCheckBox(false);
   item_simulated_data->SetUserData((void *)(intptr_t)++_item_id_);
 
+  // Now the actual data
+  auto &sd = event.grab<mctools::simulated_data>(io::SD_LABEL);
+  // label function?
   if (options_mgr.get_option_flag(DUMP_INTO_TOOLTIP)) {
     std::ostringstream tip_text;
     sd.tree_dump(tip_text);
@@ -330,6 +321,7 @@ void browser_tracks::_update_simulated_data() {
     genbb::primary_event::particles_col_type &particles = pevent.grab_particles();
 
     for (auto &particle : particles) {
+      // again, label from a type...
       std::ostringstream label;
       label.precision(3);
       label.setf(std::ios::fixed, std::ios::floatfield);
@@ -351,8 +343,11 @@ void browser_tracks::_update_simulated_data() {
           _get_colored_icon_("vertex", hex_str));
       item_particle->SetCheckBox(particle.has_generation_id());
       item_particle->SetUserData((void *)(intptr_t) - (++icheck_id));
-      // _properties_dictionnary_[-icheck_id] = &(pevent.grab_auxiliaries());
+
+      // Use of properties...
       _properties_dictionnary_[-icheck_id] = &(particle.grab_auxiliaries());
+
+      // the tooltip part of the label...
       std::ostringstream tip_text;
       if (options_mgr.get_option_flag(DUMP_INTO_TOOLTIP)) {
         particle.tree_dump(tip_text);
@@ -370,8 +365,10 @@ void browser_tracks::_update_simulated_data() {
     std::vector<std::string> visual_categories;
     sd.get_step_hits_categories(visual_categories,
                                 mctools::simulated_data::HIT_CATEGORY_TYPE_PREFIX, "__visu.tracks");
+
     using entry_type = std::pair<size_t, TGListTreeItem *>;
     std::map<int, entry_type> item_tracks;
+
     if (!visual_categories.empty()) {
       TGListTreeItem *item_mc_tracks =
           _tracks_list_box_->AddItem(item_simulated_data, "Simulated tracks",
@@ -384,15 +381,15 @@ void browser_tracks::_update_simulated_data() {
                                      _get_colored_icon_("ofolder"), _get_colored_icon_("folder"));
       item_mc_highlight_step_hits->SetCheckBox(false);
       item_mc_highlight_step_hits->SetUserData((void *)(intptr_t)++icheck_id);
+
       for (const auto &category : visual_categories) {
         if (sd.has_step_hits(category)) {
           mctools::simulated_data::hit_handle_collection_type &hit_collection =
               sd.grab_step_hits(category);
-          for (auto &it_hit : hit_collection) {
-            mctools::base_step_hit &a_step = it_hit.grab();
-            datatools::properties &a_auxiliaries = a_step.grab_auxiliaries();
+          for (auto &a_step : hit_collection) {
+            datatools::properties &a_auxiliaries = a_step->grab_auxiliaries();
 
-            std::string name = a_step.get_particle_name();
+            std::string name = a_step->get_particle_name();
             if (name == "e-") {
               name = "electron";
             }
@@ -402,16 +399,17 @@ void browser_tracks::_update_simulated_data() {
             const size_t color = style_manager::get_instance().get_particle_color(name);
             const std::string hex_str = utils::root_utilities::get_hex_color(color);
             TGListTreeItem *item = nullptr;
+
             if (a_auxiliaries.has_flag(mctools::hit_utils::HIT_VISU_HIGHLIGHTED_KEY)) {
               item = item_mc_highlight_step_hits;
             } else {
-              const int a_track_id = a_step.get_track_id();
+              const int a_track_id = a_step->get_track_id();
               if (item_tracks.count(a_track_id) == 0u) {
                 std::ostringstream track_label;
                 track_label.precision(3);
                 track_label.setf(std::ios::fixed, std::ios::floatfield);
-                track_label << a_step.get_particle_name() << " track";
-                if (a_step.is_primary_particle()) {
+                track_label << a_step->get_particle_name() << " track";
+                if (a_step->is_primary_particle()) {
                   track_label << " (primary)";
                 }
                 item = _tracks_list_box_->AddItem(item_mc_tracks, track_label.str().c_str(),
@@ -420,7 +418,7 @@ void browser_tracks::_update_simulated_data() {
                 entry_type a_pair = std::make_pair(1, item);
                 item_tracks.insert(std::make_pair(a_track_id, a_pair));
                 item->SetUserData((void *)(intptr_t) - (++icheck_id));
-                _base_hit_dictionnary_[-icheck_id] = &(a_step);
+                _base_hit_dictionnary_[-icheck_id] = &(*a_step);
                 _properties_dictionnary_[-icheck_id] = &(a_auxiliaries);
               } else {
                 entry_type &a_entry = item_tracks[a_track_id];
@@ -434,21 +432,21 @@ void browser_tracks::_update_simulated_data() {
             std::ostringstream label_hit;
             label_hit.precision(3);
             label_hit.setf(std::ios::fixed, std::ios::floatfield);
-            label_hit << "Step #" << a_step.get_hit_id() << " - "
-                      << "particle " << a_step.get_particle_name();
-            if (a_step.get_energy_deposit() > 0.0) {
+            label_hit << "Step #" << a_step->get_hit_id() << " - "
+                      << "particle " << a_step->get_particle_name();
+            if (a_step->get_energy_deposit() > 0.0) {
               label_hit << " / energy deposit = ";
-              utils::root_utilities::get_prettified_energy(label_hit, a_step.get_energy_deposit());
+              utils::root_utilities::get_prettified_energy(label_hit, a_step->get_energy_deposit());
             }
             TGListTreeItem *item_hit = _tracks_list_box_->AddItem(item, label_hit.str().c_str());
             item_hit->SetUserData((void *)(intptr_t) - (++icheck_id));
-            _base_hit_dictionnary_[-icheck_id] = &(a_step);
+            _base_hit_dictionnary_[-icheck_id] = &(*a_step);
             item_hit->SetPictures(_get_colored_icon_("step", hex_str, true),
                                   _get_colored_icon_("step", hex_str));
 
             std::ostringstream tip_text;
             if (options_mgr.get_option_flag(DUMP_INTO_TOOLTIP)) {
-              a_step.tree_dump(tip_text);
+              a_step->tree_dump(tip_text);
             } else {
               tip_text << "Double click to highlight step hit "
                        << "and to dump info on terminal";
@@ -526,11 +524,8 @@ void browser_tracks::_update_simulated_data() {
         for (auto &it_hit : hit_collection) {
           mctools::base_step_hit &a_step = it_hit.grab();
 
-          std::string hex_str;
-          if (a_step.get_auxiliaries().has_key(COLOR_FLAG)) {
-            a_step.get_auxiliaries().fetch(COLOR_FLAG, hex_str);
-            // TColor::GetColor (hex_str.c_str());
-          }
+          std::string hex_str = get_color(a_step);
+
           // Add subsubitem:
           std::ostringstream label_hit;
           label_hit.precision(3);
@@ -579,11 +574,8 @@ void browser_tracks::_update_simulated_data() {
           mctools::base_step_hit &a_step = it_hit.grab();
 
           // If color is available, add a color box close to the item:
-          std::string hex_str;
-          if (a_step.get_auxiliaries().has_key(COLOR_FLAG)) {
-            a_step.get_auxiliaries().fetch(COLOR_FLAG, hex_str);
-            // TColor::GetColor(hex_str.c_str());
-          }
+          std::string hex_str = get_color(a_step);
+
           // Add subsubitem:
           std::ostringstream label_hit;
           label_hit << "Geiger hit #" << std::setw(2) << std::setfill('0') << a_step.get_hit_id()
@@ -667,11 +659,7 @@ void browser_tracks::_update_calibrated_data() {
     for (auto &it_hit : cc_collection) {
       snemo::datamodel::calibrated_calorimeter_hit &a_hit = it_hit.grab();
 
-      std::string hex_str;
-      if (a_hit.get_auxiliaries().has_key(COLOR_FLAG)) {
-        a_hit.get_auxiliaries().fetch(COLOR_FLAG, hex_str);
-        // TColor::GetColor(hex_str.c_str());
-      }
+      std::string hex_str = get_color(a_hit);
 
       // Add subsubitem:
       std::ostringstream label_hit;
@@ -767,8 +755,6 @@ void browser_tracks::_update_tracker_clustering_data() {
     return;
   }
 
-  auto &tcd = event.grab<snemo::datamodel::tracker_clustering_data>(io::TCD_LABEL);
-
   const options_manager &options_mgr = options_manager::get_instance();
   if (!options_mgr.get_option_flag(SHOW_TRACKER_CLUSTERED_HITS)) {
     return;
@@ -786,8 +772,10 @@ void browser_tracks::_update_tracker_clustering_data() {
   item_tracker_cluster->SetUserData((void *)(intptr_t)++icheck_id);
 
   _tracks_list_box_->SetCheckMode(TGListTree::kRecursive);
-  //        _tracks_list_box_->SetCheckBox(item_tracker_cluster);
   _tracks_list_box_->OpenItem(item_tracker_cluster);
+
+  // Now the data itself
+  auto &tcd = event.grab<snemo::datamodel::tracker_clustering_data>(io::TCD_LABEL);
 
   {
     std::ostringstream tip_text;
@@ -829,9 +817,7 @@ void browser_tracks::_update_tracker_clustering_data() {
     // Get solution auxiliaries:
     datatools::properties &a_auxiliaries = a_solution.get_auxiliaries();
 
-    if (a_auxiliaries.has_key(browser_tracks::CHECKED_FLAG)) {
-      item_solution->CheckItem(a_auxiliaries.has_flag(browser_tracks::CHECKED_FLAG));
-    }
+    item_solution->CheckItem(is_checked(a_solution));
 
     // Update properties dictionnary:
     _properties_dictionnary_[icheck_id] = &(a_auxiliaries);
@@ -862,24 +848,16 @@ void browser_tracks::_update_tracker_clustering_data() {
         a_cluster.tree_dump(tip_text);
         item_cluster->SetTipText(tip_text.str().c_str());
       }
-      // Get cluster auxiliaries:
-      datatools::properties &aa_auxiliaries = a_cluster.grab_auxiliaries();
 
-      if (aa_auxiliaries.has_key(browser_tracks::CHECKED_FLAG)) {
-        item_cluster->CheckItem(aa_auxiliaries.has_flag(browser_tracks::CHECKED_FLAG));
-      }
+      item_cluster->CheckItem(is_checked(a_cluster));
 
       // Update base hit dictionnary:
       _base_hit_dictionnary_[icheck_id] = &(a_cluster);
 
       // If color is available, add a color box close to the
       // item (obsolete since xpm icon can be colorized):
-      std::string hex_str;
-      if (aa_auxiliaries.has_key(browser_tracks::COLOR_FLAG)) {
-        aa_auxiliaries.fetch(browser_tracks::COLOR_FLAG, hex_str);
-        // const size_t color = TColor::GetColor(hex_str.c_str());
-        // item_cluster->SetColor(color);
-      }
+      std::string hex_str = get_color(a_cluster);
+
       item_cluster->SetPictures(_get_colored_icon_("cluster", hex_str),
                                 _get_colored_icon_("cluster", hex_str));
 
@@ -923,8 +901,6 @@ void browser_tracks::_update_tracker_trajectory_data() {
     return;
   }
 
-  auto &ttd = event.grab<snemo::datamodel::tracker_trajectory_data>(io::TTD_LABEL);
-
   const options_manager &options_mgr = options_manager::get_instance();
   if (!options_mgr.get_option_flag(SHOW_TRACKER_TRAJECTORIES)) {
     return;
@@ -940,9 +916,10 @@ void browser_tracks::_update_tracker_trajectory_data() {
                                  _get_colored_icon_("folder"));
   item_tracker_trajectory->SetCheckBox(false);
   item_tracker_trajectory->SetUserData((void *)(intptr_t)++icheck_id);
-
-  //        _tracks_list_box_->SetCheckBox(item_tracker_cluster);
   _tracks_list_box_->OpenItem(item_tracker_trajectory);
+
+  // Now the actual data
+  auto &ttd = event.grab<snemo::datamodel::tracker_trajectory_data>(io::TTD_LABEL);
 
   std::ostringstream tip_text;
   if (options_mgr.get_option_flag(DUMP_INTO_TOOLTIP)) {
@@ -993,11 +970,9 @@ void browser_tracks::_update_tracker_trajectory_data() {
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     // Get solution auxiliaries:
     datatools::properties &a_auxiliaries = a_solution.get_auxiliaries();
+    bool ttsIsChecked = a_auxiliaries.has_flag(browser_tracks::CHECKED_FLAG);
+    item_solution->CheckItem(ttsIsChecked);
 #pragma GCC diagnostic pop
-
-    if (a_auxiliaries.has_key(browser_tracks::CHECKED_FLAG)) {
-      item_solution->CheckItem(a_auxiliaries.has_flag(browser_tracks::CHECKED_FLAG));
-    }
 
     // Update properties dictionnary:
     _properties_dictionnary_[icheck_id] = &(a_auxiliaries);
@@ -1017,16 +992,11 @@ void browser_tracks::_update_tracker_trajectory_data() {
       // Determine trajectory color by getting cluster color:
       std::string hex_str;
       if (a_trajectory.has_cluster()) {
-        const snemo::datamodel::tracker_cluster &a_cluster = a_trajectory.get_cluster();
-        const datatools::properties &prop = a_cluster.get_auxiliaries();
-        if (prop.has_key(browser_tracks::COLOR_FLAG)) {
-          prop.fetch(browser_tracks::COLOR_FLAG, hex_str);
-        }
+        hex_str = get_color(a_trajectory.get_cluster());
       }
 
       // Add subitem:
       std::ostringstream label_trajectory;
-      //                label_trajectory.setf(ios::fixed, ios::floatfield);
       datatools::properties &properties = a_trajectory.grab_auxiliaries();
       if (properties.has_key("chi2") && properties.has_key("ndof")) {
         const double chi2 = properties.fetch_real("chi2");
@@ -1059,11 +1029,9 @@ void browser_tracks::_update_tracker_trajectory_data() {
                                         _get_colored_icon_("folder"),
                                         /*check=*/true);
           _tracks_list_box_->AddItem(item_solution, item_helix_solution);
-          // _tracks_list_box_->OpenItem(item_helix_solution);
           item_helix_solution->SetUserData((void *)(intptr_t)++icheck_id);
-          if (a_auxiliaries.has_key(browser_tracks::CHECKED_FLAG)) {
-            item_helix_solution->CheckItem(a_auxiliaries.has_flag(browser_tracks::CHECKED_FLAG));
-          }
+
+          item_helix_solution->CheckItem(ttsIsChecked);
           _properties_dictionnary_[icheck_id] = &(a_auxiliaries);
         }
 
@@ -1081,9 +1049,9 @@ void browser_tracks::_update_tracker_trajectory_data() {
           _tracks_list_box_->AddItem(item_solution, item_line_solution);
           // _tracks_list_box_->OpenItem(item_line_solution);
           item_line_solution->SetUserData((void *)(intptr_t)++icheck_id);
-          if (a_auxiliaries.has_key(browser_tracks::CHECKED_FLAG)) {
-            item_line_solution->CheckItem(a_auxiliaries.has_flag(browser_tracks::CHECKED_FLAG));
-          }
+
+          // is_checked, where is a_auxiliaries from?
+          item_line_solution->CheckItem(ttsIsChecked);
           _properties_dictionnary_[icheck_id] = &(a_auxiliaries);
         }
 
@@ -1098,10 +1066,10 @@ void browser_tracks::_update_tracker_trajectory_data() {
 
       item_trajectory->SetCheckBox(true);
       if (is_default) {
-        a_trajectory.grab_auxiliaries().update(CHECKED_FLAG, true);
+        set_checked(a_trajectory, true);
         _tracks_list_box_->CheckItem(item_trajectory, true);
       } else {
-        a_trajectory.grab_auxiliaries().update(CHECKED_FLAG, false);
+        set_checked(a_trajectory, false);
         _tracks_list_box_->CheckItem(item_trajectory, false);
       }
       item_trajectory->SetUserData((void *)(intptr_t) - (++icheck_id));
@@ -1223,11 +1191,9 @@ void browser_tracks::_update_particle_track_data() {
       item_color = style_manager::get_instance().get_particle_color("alpha");
     }
     // Get particle auxiliaries:
-    datatools::properties &a_auxiliaries = a_particle.grab_auxiliaries();
-    // item_color = utils::root_utilities::get_fade_color_from(item_color, 0.5);
-    std::string hex_str = utils::root_utilities::get_hex_color(item_color);
-    if (a_auxiliaries.has_key(browser_tracks::COLOR_FLAG)) {
-      a_auxiliaries.fetch(browser_tracks::COLOR_FLAG, hex_str);
+    std::string hex_str = get_color(a_particle);
+    if (hex_str.empty()) {
+      hex_str = utils::root_utilities::get_hex_color(item_color);
     }
 
     TGListTreeItem *item_particle =
@@ -1243,9 +1209,9 @@ void browser_tracks::_update_particle_track_data() {
       a_particle.tree_dump(tip_text);
       item_particle->SetTipText(tip_text.str().c_str());
     }
-    if (a_auxiliaries.has_key(browser_tracks::CHECKED_FLAG)) {
-      item_particle->CheckItem(a_auxiliaries.has_flag(browser_tracks::CHECKED_FLAG));
-    }
+
+    datatools::properties &a_auxiliaries = a_particle.grab_auxiliaries();
+    item_particle->CheckItem(is_checked(a_particle));
 
     // Update base hit dictionnary:
     _base_hit_dictionnary_[-icheck_id] = &(a_particle);
@@ -1342,13 +1308,12 @@ void browser_tracks::_update_particle_track_data() {
 
 datatools::properties *browser_tracks::get_item_properties(const int id_) {
   // Search in which dictionnary the item comes from:
-  datatools::properties *properties = nullptr;
   {
     // First looking in 'properties' dictionnary:
     auto found = _properties_dictionnary_.find(id_);
 
     if (found != _properties_dictionnary_.end()) {
-      properties = found->second;
+      return found->second;
     }
   }
 
@@ -1357,10 +1322,10 @@ datatools::properties *browser_tracks::get_item_properties(const int id_) {
     auto found = _base_hit_dictionnary_.find(id_);
 
     if (found != _base_hit_dictionnary_.end()) {
-      properties = &(found->second->grab_auxiliaries());
+      return &(found->second->grab_auxiliaries());
     }
   }
-  return properties;
+  return nullptr;
 }
 
 geomtools::base_hit *browser_tracks::get_base_hit(const int id_) {

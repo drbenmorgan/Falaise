@@ -70,10 +70,8 @@ void visual_track_renderer::push_mc_tracks() {
     if (!a_primary.has_generation_id()) {
       continue;
     }
-    const datatools::properties &particle_aux = a_primary.get_auxiliaries();
     const int track_id = a_primary.get_generation_id() + 1;
-    if (particle_aux.has_key(browser_tracks::CHECKED_FLAG) &&
-        !particle_aux.has_flag(browser_tracks::CHECKED_FLAG)) {
+    if (is_checked(a_primary)) {
       enable_tracks.insert(track_id);
     }
   }
@@ -114,17 +112,16 @@ void visual_track_renderer::push_mc_tracks() {
       size_t line_width = style_mgr.get_mc_line_width();
       size_t line_style = style_mgr.get_mc_line_style();
 
-      const datatools::properties &hit_aux = a_hit->get_auxiliaries();
       const int track_id = a_hit->get_track_id();
-      if (hit_aux.has_key(browser_tracks::CHECKED_FLAG) &&
-          !hit_aux.has_flag(browser_tracks::CHECKED_FLAG)) {
+
+      if(is_checked(*a_hit)) {
         enable_tracks.insert(track_id);
       }
       if (enable_tracks.count(track_id) != 0u) {
         continue;
       }
 
-      if (hit_aux.has_flag(browser_tracks::HIGHLIGHT_FLAG)) {  //  &&
+      if (is_highlighted(*a_hit)) {
         line_width += 3;
         TPolyMarker3D *mark1 = base_renderer::make_polymarker(a_hit->get_position_start());
         _objects->Add(mark1);
@@ -210,8 +207,7 @@ void visual_track_renderer::push_reconstructed_tracks() {
   }  // end of calorimeter list
 
   for (const auto &a_particle : pt_data.particles()) {
-    if (a_particle->get_auxiliaries().has_key(browser_tracks::CHECKED_FLAG) &&
-        !a_particle->get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG)) {
+    if (!is_checked(*a_particle)) {
       continue;
     }
 
@@ -238,7 +234,7 @@ void visual_track_renderer::push_reconstructed_tracks() {
         mark->SetMarkerColor(color);
         mark->SetMarkerStyle(kPlus);
       }
-      if (a_vertex->get_auxiliaries().has_flag(browser_tracks::HIGHLIGHT_FLAG)) {
+      if (is_highlighted(*a_vertex)) {
         TPolyMarker3D *mark = base_renderer::make_polymarker(a_position);
         _objects->Add(mark);
         mark->SetMarkerColor(color);

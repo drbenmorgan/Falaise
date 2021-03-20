@@ -74,28 +74,11 @@ class browser_tracks {
   /// Name of the property flag to highlight 'hit' (make it private)
   static const std::string HIGHLIGHT_FLAG;
 
-  /// Enum for icon entry
-  enum icon_type {
-    TRACK_CLOSED = 0,
-    TRACK_OPEN = 1,
-    CLUSTER_CLOSED = 2,
-    CLUSTER_OPEN = 3,
-    GEIGER_CLOSED = 4,
-    GEIGER_OPEN = 5,
-    BLANK = 6
-  };
-
-  /// Return initialization flag
-  bool is_initialized() const;
-
   /// Default constructor
   browser_tracks(TGCompositeFrame *main_, io::event_server *server_);
 
   /// Destructor
   virtual ~browser_tracks();
-
-  /// Initialization method
-  void initialize(TGCompositeFrame *main_);
 
   /// Update browser panel
   void update();
@@ -115,10 +98,14 @@ class browser_tracks {
   /// Return pointer to 'datatools::properties' object given the item id
   datatools::properties *get_item_properties(const int id_);
 
+private:
   /// Return point to 'geomtools::bast_hit' object given item id
   geomtools::base_hit *get_base_hit(const int id_);
 
  private:
+  /// Initialization method
+  void initialize(TGCompositeFrame *main_);
+
   /// Update event header data bank
   void _update_event_header();
 
@@ -149,7 +136,16 @@ class browser_tracks {
                                       const bool reverse_color_ = false);
 
  private:
-  bool _initialized_;  //!< Initialization flag
+  /// Enum for icon entry
+  enum icon_type {
+    TRACK_CLOSED = 0,
+    TRACK_OPEN = 1,
+    CLUSTER_CLOSED = 2,
+    CLUSTER_OPEN = 3,
+    GEIGER_CLOSED = 4,
+    GEIGER_OPEN = 5,
+    BLANK = 6
+  };
 
   io::event_server *_server_;  //!< Pointer to event server
 
@@ -179,6 +175,49 @@ class browser_tracks {
   // No I/O so ClassDefVersionID = 0
   ClassDef(browser_tracks, 0);
 };
+
+
+// Test of convenience functions to mask getting/setting of properties/labels
+// - Return "label" and "tooltip" text
+// tuple<std::string, std::string> make_labels(const data_model_t&)
+
+// color...
+// Should compile for any type that supports "get_auxiliaries" (so base_hit basically)
+template <typename T>
+std::string get_color(const T& d) {
+  std::string tmp;
+  if (d.get_auxiliaries().has_key(browser_tracks::COLOR_FLAG)) {
+    d.get_auxiliaries().fetch(browser_tracks::COLOR_FLAG, tmp);
+  }
+  return tmp;
+}
+
+template <typename T>
+void set_color(T& d, std::string color) {
+  d.grab_auxiliaries().update(browser_tracks::COLOR_FLAG, color);
+}
+
+// "checked" flag
+template <typename T>
+bool is_checked(const T& d) {
+  // Suspect we can replace this with just "d.get_auxiliaries().has_flag(..)"
+  // No idea why it was programmed like the below, but that's what's in the code
+  if (d.get_auxiliaries().has_key(browser_tracks::CHECKED_FLAG)) {
+    return d.get_auxiliaries().has_flag(browser_tracks::CHECKED_FLAG);
+  }
+  return false;
+}
+
+template <typename T>
+void set_checked(T& d, bool b) {
+  d.grab_auxiliaries().update(browser_tracks::CHECKED_FLAG, b);
+}
+
+// "highlighted" flag
+template <typename T>
+bool is_highlighted(const T& d) {
+  return d.get_auxiliaries().has_flag(browser_tracks::HIGHLIGHT_FLAG);
+}
 
 }  // end of namespace view
 
