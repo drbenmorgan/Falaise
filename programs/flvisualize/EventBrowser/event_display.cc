@@ -265,9 +265,10 @@ void event_display::show_all(const button_signals_type signal_) {
   this->clear();
 
   // Second: reset event server
-  if (_server_->is_opened()) {
-    _server_->rewind();
-  }
+  // Should always be able to rewind even if not opened/connected (is_opened/is_connected split not totally clear)
+  //if (_server_->is_opened()) {
+  _server_->rewind();
+  //}
 
   // Third: unset all over options after copying their values
   std::map<button_signals_type, bool>& option_dict = options_mgr.grab_options_dictionnary();

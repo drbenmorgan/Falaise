@@ -149,7 +149,7 @@ void event_browser_module::_initialize_event_browser() {
   _event_browser_ = new event_browser(gClient->GetRoot(), width, height);
 
   // Set event server mode to external
-  _event_browser_->get_event_server().set_initialized(true);
+  _event_browser_->get_event_server().set_connected(true);
   _event_browser_->get_event_server().set_external(true);
 
   // Install an event controler in the browser:

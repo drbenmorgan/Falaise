@@ -37,20 +37,11 @@ namespace snemo {
 namespace visualization {
 
 namespace io {
-// ctor:
-event_server::event_server() {
-  _status_ = UNDEFINED;
-  _file_type_ = file_type::NONE;
-  _data_access_ = nullptr;
-  _current_event_number_ = -1;
-  _event_ = nullptr;
-}
-
 // dtor:
-event_server::~event_server() { reset(); }
+event_server::~event_server() { close(); }
 
-bool event_server::initialize(const std::vector<std::string>& filenames_) {
-  DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
+bool event_server::connect(const std::vector<std::string>& filenames_) {
+  DT_THROW_IF(is_connected(), std::logic_error, "Already connected !");
 
   if (!_at_open_(filenames_)) {
     return false;
@@ -60,11 +51,50 @@ bool event_server::initialize(const std::vector<std::string>& filenames_) {
 
   _event_ = new event_record;
 
-  set_initialized(true);
+  set_connected(true);
   return true;
 }
 
-bool event_server::reset() {
+bool event_server::_at_open_(const std::vector<std::string>& filenames_) {
+  // first try : BRIO
+  {
+    auto* try_access = new brio_access;
+    if (try_access->is_valid(filenames_)) {
+      set_file_type(file_type::BRIO);
+      set_sequential(false);
+      _data_access_ = try_access;
+      return try_access->open(filenames_);
+    }
+    // cleanup
+    delete try_access;
+  }
+
+  // second try : Boost/Serialization
+  {
+    auto* try_access = new boost_access;
+    if (try_access->is_valid(filenames_)) {
+      set_file_type(file_type::BOOST_SERIAL);
+      set_sequential(!view::options_manager::get_instance().is_preload_required());
+      try_access->set_sequential(has_sequential_data());
+      _data_access_ = try_access;
+      return try_access->open(filenames_);
+    }
+    // cleanup
+    delete try_access;
+  }
+
+  DT_LOG_ERROR(view::options_manager::get_instance().get_logging_priority(),
+               "Data format of input file not supported !!");
+  return false;
+}
+
+bool event_server::is_connected() const { return (_status_ & INITIALIZED) != 0u; }
+
+void event_server::set_connected(const bool initialized_) {
+  initialized_ ? _status_ |= INITIALIZED : _status_ &= INITIALIZED;
+}
+
+bool event_server::close() {
   delete _event_;
   _event_ = nullptr;
 
@@ -76,15 +106,24 @@ bool event_server::reset() {
   _current_event_number_ = -1;
   _event_selection_.clear();
 
-  set_initialized(false);
+  set_connected(false);
   return true;
 }
 
+// Not totally clear on split between "connected" and "opened"
+// Should it be an error if connection cannot establish open data stream (i.e in "connect")?
+bool event_server::is_opened() const {
+  return (_data_access_ != nullptr ? _data_access_->is_opened() : false);
+}
 
-bool event_server::is_initialized() const { return (_status_ & INITIALIZED) != 0u; }
+bool event_server::rewind() {
+  _current_event_number_ = -1;
+  return (_data_access_ != nullptr ? _data_access_->rewind() : false);
+}
 
-void event_server::set_initialized(const bool initialized_) {
-  initialized_ ? _status_ |= INITIALIZED : _status_ &= INITIALIZED;
+
+bool event_server::has_random_data() const {
+  return !has_sequential_data() && !has_external_data();
 }
 
 bool event_server::has_sequential_data() const { return (_status_ & SEQUENTIAL) != 0u; }
@@ -99,26 +138,36 @@ void event_server::set_external(const bool external_) {
   external_ ? _status_ |= EXTERNAL : _status_ &= EXTERNAL;
 }
 
-bool event_server::has_random_data() const {
-  return !has_sequential_data() && !has_external_data();
-}
-
 void event_server::set_file_type(const file_type file_type_) { _file_type_ = file_type_; }
 
 event_server::file_type event_server::get_file_type() const { return _file_type_; }
+
+std::string event_server::get_current_filename() const {
+  return (_data_access_ != nullptr ? _data_access_->get_current_filename() : "");
+}
+
+std::string event_server::get_file_type_as_string() const {
+  return (_data_access_ != nullptr ? _data_access_->get_file_type_as_string() : "");
+}
+
+size_t event_server::get_number_of_events() const {
+  return (_data_access_ != nullptr ? _data_access_->get_number_of_entries() : 0);
+}
+
+int event_server::get_current_event_number() const { return _current_event_number_; }
 
 void event_server::set_current_event_number(const int current_event_) {
   _current_event_number_ = current_event_;
 }
 
-int event_server::get_current_event_number() const { return _current_event_number_; }
-
-void event_server::set_external_event(event_record& external_event_) { _event_ = &external_event_; }
-
-const event_record& event_server::get_event() const { return *_event_; }
-
-event_record& event_server::get_event() { return *_event_; }
-
+bool event_server::read_event(const unsigned int event_number_) {
+  DT_THROW_IF(!is_connected(), std::logic_error, "Not connected !");
+  if (_data_access_->retrieve_event(get_event(), event_number_)) {
+    _current_event_number_ = event_number_;
+    return true;
+  }
+  return false;
+}
 
 bool event_server::next_event() {
   if (!read_event(++_current_event_number_)) {
@@ -128,14 +177,12 @@ bool event_server::next_event() {
   return true;
 }
 
-bool event_server::read_event(const unsigned int event_number_) {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
-  if (_data_access_->retrieve_event(get_event(), event_number_)) {
-    _current_event_number_ = event_number_;
-    return true;
-  }
-  return false;
-}
+void event_server::set_external_event(event_record& external_event_) { _event_ = &external_event_; }
+
+const event_record& event_server::get_event() const { return *_event_; }
+
+event_record& event_server::get_event() { return *_event_; }
+
 
 bool event_server::store_event(const std::string& filename_) const {
   // 2016-08-24 XG : Use (in|out)put module to make sure the metadata
@@ -222,38 +269,7 @@ void event_server::dump_event(std::ostream& out_, const std::string& title_,
   }
 }
 
-bool event_server::is_opened() const {
-  return (_data_access_ != nullptr ? _data_access_->is_opened() : false);
-}
-
-std::string event_server::get_file_type_as_string() const {
-  return (_data_access_ != nullptr ? _data_access_->get_file_type_as_string() : "");
-}
-
-bool event_server::rewind() {
-  _current_event_number_ = -1;
-  return (_data_access_ != nullptr ? _data_access_->rewind() : false);
-}
-
-bool event_server::close() { return (_data_access_ != nullptr ? _data_access_->close() : false); }
-
-size_t event_server::get_number_of_events() const {
-  return (_data_access_ != nullptr ? _data_access_->get_number_of_entries() : 0);
-}
-
-std::string event_server::get_current_filename() const {
-  return (_data_access_ != nullptr ? _data_access_->get_current_filename() : "");
-}
-
-event_server::event_selection_list_type& event_server::get_event_selection() {
-  return _event_selection_;
-}
-
-const event_server::event_selection_list_type& event_server::get_event_selection() const {
-  return _event_selection_;
-}
-
-bool event_server::has_selected_event() const { return !_event_selection_.empty(); }
+bool event_server::has_event_selection() const { return !_event_selection_.empty(); }
 
 void event_server::clear_selection() { _event_selection_.clear(); }
 
@@ -270,16 +286,14 @@ void event_server::fill_selection() {
 }
 
 int event_server::get_first_selected_event() const {
-  if (!has_selected_event()) {
+  if (!has_event_selection()) {
     return 0;
   }
-  auto it(_event_selection_.begin());
-  // std::advance(it, 0);
-  return *it;
+  return *(_event_selection_.begin());
 }
 
 int event_server::get_last_selected_event() const {
-  if (!has_selected_event()) {
+  if (!has_event_selection()) {
     if (has_sequential_data()) {
       return this->get_current_event_number() + 1;
     }
@@ -288,39 +302,6 @@ int event_server::get_last_selected_event() const {
   auto it(_event_selection_.end());
   std::advance(it, -1);
   return *it;
-}
-
-bool event_server::_at_open_(const std::vector<std::string>& filenames_) {
-  // first try : BRIO
-  {
-    auto* try_access = new brio_access;
-    if (try_access->is_valid(filenames_)) {
-      set_file_type(file_type::BRIO);
-      set_sequential(false);
-      _data_access_ = try_access;
-      return try_access->open(filenames_);
-    }
-    // cleanup
-    delete try_access;
-  }
-
-  // second try : Boost/Serialization
-  {
-    auto* try_access = new boost_access;
-    if (try_access->is_valid(filenames_)) {
-      set_file_type(file_type::BOOST_SERIAL);
-      set_sequential(!view::options_manager::get_instance().is_preload_required());
-      try_access->set_sequential(has_sequential_data());
-      _data_access_ = try_access;
-      return try_access->open(filenames_);
-    }
-    // cleanup
-    delete try_access;
-  }
-
-  DT_LOG_ERROR(view::options_manager::get_instance().get_logging_priority(),
-               "Data format of input file not supported !!");
-  return false;
 }
 
 }  // end of namespace io

@@ -603,7 +603,7 @@ void event_selection::select_events(const button_signals_type signal_, const int
       }
 
       // No more events to look for
-      if (!_server_->has_selected_event()) {
+      if (!_server_->has_event_selection()) {
         EMsgBoxIcon icon_type = kMBIconExclamation;
         EMsgBoxButton button_type = kMBClose;
         int retval;

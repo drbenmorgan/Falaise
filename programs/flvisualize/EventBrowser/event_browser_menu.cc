@@ -368,7 +368,7 @@ void event_browser_menu::set_default_option(const io::event_server &server_) {
 
   disable_option(DUMP_INTO_WINDOW);
 
-  if (!server_.is_initialized()) {
+  if (!server_.is_connected()) {
     disable_option(SHOW_MC_VERTEX);
     disable_option(SHOW_MC_HITS);
     disable_option(SHOW_MC_TRACKS);

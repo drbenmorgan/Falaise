@@ -206,7 +206,7 @@ void browser_tracks::clear() {
 void browser_tracks::update() {
   this->clear();
 
-  if (!_server_->is_initialized()) {
+  if (!_server_->is_connected()) {
     DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(),
                    "Event server has not been initialized !");
     return;

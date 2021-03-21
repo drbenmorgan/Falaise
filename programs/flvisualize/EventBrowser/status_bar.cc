@@ -151,8 +151,9 @@ void status_bar::update(const bool reset_, const bool disable_) {
 
   if (reset_) {
     this->reset();
-    const auto& event_selection_list = _server_->get_event_selection();
-    if (!event_selection_list.empty()) {
+    if(_server_->has_event_selection()) {
+    //const auto& event_selection_list = _server_->get_event_selection();
+    //if (!event_selection_list.empty()) {
 			_total_event_->SetNumber(_server_->get_number_of_events()-1);
     }
   }
@@ -208,7 +209,7 @@ void status_bar::reset_buttons() {
   _button_next_->SetEnabled(false);
   _button_last_->SetEnabled(false);
 
-  if (!_server_->is_initialized()) {
+  if (!_server_->is_connected()) {
     return;
   }
 

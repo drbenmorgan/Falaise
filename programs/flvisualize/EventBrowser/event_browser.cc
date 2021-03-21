@@ -197,11 +197,11 @@ void event_browser::initialize_event_server() {
   }
 
   // Initialize event server
-  if (_event_server_->is_initialized()) {
-    _event_server_->reset();
+  if (_event_server_->is_connected()) {
+    _event_server_->close();
   }
-  if (!_event_server_->initialize(existing_files)) {
-    DT_LOG_WARNING(options_mgr.get_logging_priority(), "Cannot open data source!");
+  if (!_event_server_->connect(existing_files)) {
+    DT_LOG_WARNING(options_mgr.get_logging_priority(), "Cannot connect to data source(s)!");
     return;
   }
 

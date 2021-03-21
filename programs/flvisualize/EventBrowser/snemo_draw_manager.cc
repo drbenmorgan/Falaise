@@ -59,7 +59,7 @@ TObjArray* snemo_draw_manager::get_objects() { return _objects_; }
 TObjArray* snemo_draw_manager::get_text_objects() { return _text_objects_; }
 
 void snemo_draw_manager::update() {
-  if (!_server_->is_initialized()) {
+  if (!_server_->is_connected()) {
     DT_LOG_DEBUG(options_manager::get_instance().get_logging_priority(),
                  "Event server is not initialized !");
     return;
