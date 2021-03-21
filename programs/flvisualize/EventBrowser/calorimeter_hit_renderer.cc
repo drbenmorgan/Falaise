@@ -45,7 +45,7 @@ namespace visualization {
 namespace view {
 
 void calorimeter_hit_renderer::push_simulated_hits(const std::string& hit_category_) {
-  const io::event_record& event = _server->get_event();
+  const io::event_record& event = this->get_event();
   const auto& sim_data = event.get<mctools::simulated_data>(io::SD_LABEL);
 
   if (!sim_data.has_step_hits(hit_category_)) {
@@ -63,7 +63,7 @@ void calorimeter_hit_renderer::push_simulated_hits(const std::string& hit_catego
     const geomtools::vector_3d pos = 0.5 * (pstart + pstop);
 
     auto* step_3d = new TMarker3DBox;
-    _objects->Add(step_3d);
+    this->push_graphical_object(step_3d);
     step_3d->SetPosition(pos.x(), pos.y(), pos.z());
     step_3d->SetSize(dx, dy, dz);
     step_3d->SetLineColor(kRed);
@@ -73,12 +73,12 @@ void calorimeter_hit_renderer::push_simulated_hits(const std::string& hit_catego
     if (is_highlighted(*a_hit)) {
       line_width = 3;
       auto* mark1 = new TPolyMarker3D;
-      _objects->Add(mark1);
+      this->push_graphical_object(mark1);
       mark1->SetMarkerColor(kRed);
       mark1->SetMarkerStyle(kCircle);
       mark1->SetPoint(0, pstart.x(), pstart.y(), pstart.z());
       auto* mark2 = new TPolyMarker3D;
-      _objects->Add(mark2);
+      this->push_graphical_object(mark2);
       mark2->SetMarkerColor(kRed);
       mark2->SetMarkerStyle(kCircle);
       mark2->SetPoint(0, pstop.x(), pstop.y(), pstop.z());
@@ -90,7 +90,7 @@ void calorimeter_hit_renderer::push_simulated_hits(const std::string& hit_catego
 }
 
 void calorimeter_hit_renderer::push_calibrated_hits() {
-  const io::event_record& event = _server->get_event();
+  const io::event_record& event = this->get_event();
   const auto& calib_data = event.get<snemo::datamodel::calibrated_data>(io::CD_LABEL);
 
   for (const auto& a_hit : calib_data.calorimeter_hits()) {

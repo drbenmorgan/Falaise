@@ -58,7 +58,7 @@ namespace visualization {
 namespace view {
 
 void tracker_hit_renderer::push_simulated_hits(const std::string &hit_category_) {
-  const io::event_record &event = _server->get_event();
+  const io::event_record &event = this->get_event();
   const auto &sim_data = event.get<mctools::simulated_data>(io::SD_LABEL);
 
   if (!sim_data.has_step_hits(hit_category_)) {
@@ -92,7 +92,7 @@ void tracker_hit_renderer::push_simulated_hits(const std::string &hit_category_)
 
     // draw the Geiger avalanche path:
     auto *gg_path = new TPolyLine3D;
-    _objects->Add(gg_path);
+    this->push_graphical_object(gg_path);
     gg_path->SetPoint(0, startPos.x(), startPos.y(), startPos.z());
     gg_path->SetPoint(1, stopPos.x(), stopPos.y(), stopPos.z());
 
@@ -153,7 +153,7 @@ void tracker_hit_renderer::push_simulated_hits(const std::string &hit_category_)
       }
 
       TPolyLine3D *gg_drift = base_renderer::make_polyline(points);
-      _objects->Add(gg_drift);
+      this->push_graphical_object(gg_drift);
       gg_drift->SetLineColor(color);
       gg_drift->SetLineWidth(line_width);
     }  // end of "show geiger drift circle" condition
@@ -161,7 +161,7 @@ void tracker_hit_renderer::push_simulated_hits(const std::string &hit_category_)
 }
 
 void tracker_hit_renderer::push_calibrated_hits() {
-  const io::event_record &event = _server->get_event();
+  const io::event_record &event = this->get_event();
   const auto &calib_data = event.get<snemo::datamodel::calibrated_data>(io::CD_LABEL);
 
   const snemo::datamodel::TrackerHitHdlCollection &ct_collection = calib_data.tracker_hits();
@@ -176,7 +176,7 @@ void tracker_hit_renderer::push_calibrated_hits() {
 }
 
 void tracker_hit_renderer::push_clustered_hits() {
-  const io::event_record &event = _server->get_event();
+  const io::event_record &event = this->get_event();
   const auto &tracker_clustered_data =
       event.get<snemo::datamodel::tracker_clustering_data>(io::TCD_LABEL);
 
@@ -220,7 +220,7 @@ void tracker_hit_renderer::push_clustered_hits() {
           const double r = 22.0 / CLHEP::mm;
 
           auto *hit_3d = new TMarker3DBox;
-          _objects->Add(hit_3d);
+          this->push_graphical_object(hit_3d);
           hit_3d->SetPosition(x, y, z);
           hit_3d->SetSize(r, r, dz);
           hit_3d->SetLineColor(cluster_color);
@@ -239,7 +239,7 @@ void tracker_hit_renderer::push_clustered_hits() {
 }
 
 void tracker_hit_renderer::push_fitted_tracks() {
-  const io::event_record &event = _server->get_event();
+  const io::event_record &event = this->get_event();
   const auto &tracker_trajectory_data =
       event.get<snemo::datamodel::tracker_trajectory_data>(io::TTD_LABEL);
 
@@ -271,7 +271,7 @@ void tracker_hit_renderer::push_fitted_tracks() {
       const auto &iw3dr =
           dynamic_cast<const geomtools::i_wires_3d_rendering &>(a_pattern.get_shape());
       TPolyLine3D *track = base_renderer::make_track(iw3dr);
-      _objects->Add(track);
+      this->push_graphical_object(track);
 
       // Determine trajectory color by getting cluster color:
       int trajectory_color = 0;
@@ -360,7 +360,7 @@ void tracker_hit_renderer::_make_calibrated_geiger_hit(
     }
   }
   auto *gg_dz = new TPolyLine3D;
-  _objects->Add(gg_dz);
+  this->push_graphical_object(gg_dz);
   gg_dz->SetLineColor(color);
   gg_dz->SetLineWidth(line_width);
 
@@ -389,7 +389,7 @@ void tracker_hit_renderer::_make_calibrated_geiger_hit(
     points.push_back(geomtools::vector_3d(x + r, y + r, z));
 
     TPolyLine3D *gg_drift_square = base_renderer::make_polyline(points);
-    _objects->Add(gg_drift_square);
+    this->push_graphical_object(gg_drift_square);
     gg_drift_square->SetLineColor(color);
     gg_drift_square->SetLineWidth(line_width);
 
@@ -431,12 +431,12 @@ void tracker_hit_renderer::_make_calibrated_geiger_hit(
       }
     }
     TPolyLine3D *gg_drift_min = base_renderer::make_polyline(rmins);
-    _objects->Add(gg_drift_min);
+    this->push_graphical_object(gg_drift_min);
     gg_drift_min->SetLineColor(color);
     gg_drift_min->SetLineWidth(line_width);
 
     TPolyLine3D *gg_drift_max = base_renderer::make_polyline(rmaxs);
-    _objects->Add(gg_drift_max);
+    this->push_graphical_object(gg_drift_max);
     gg_drift_max->SetLineColor(color);
     gg_drift_max->SetLineWidth(line_width);
   }

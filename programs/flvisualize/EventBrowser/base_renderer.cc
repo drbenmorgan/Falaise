@@ -60,8 +60,11 @@ void base_renderer::initialize(const io::event_server* server_, TObjArray* objec
                                TObjArray* text_objects_) {
   DT_THROW_IF(is_initialized(), std::logic_error, "Already initialized !");
   this->set_server(server_);
-  this->set_graphical_objects(objects_);
-  this->set_text_objects(text_objects_);
+  // Really candidates to be not_null<T>
+  DT_THROW_IF(objects_ == nullptr, std::logic_error, "objects is null!");
+  _objects = objects_;
+  DT_THROW_IF(text_objects_ == nullptr, std::logic_error, "text_objects is null!");
+  _text_objects = text_objects_;
   _initialized = true;
 }
 
@@ -81,18 +84,22 @@ void base_renderer::reset() {
 
 bool base_renderer::is_initialized() const { return _initialized; }
 
-bool base_renderer::has_server() const { return _server != nullptr; }
+void base_renderer::set_server(const io::event_server* server_) {
+  DT_THROW_IF(server_ == nullptr, std::logic_error, "event server is null!");
+  _server = server_;
+}
 
-void base_renderer::set_server(const io::event_server* server_) { _server = server_; }
+const io::event_record& base_renderer::get_event() const {
+  return _server->get_event();
+}
 
-bool base_renderer::has_graphical_objects() const { return _objects != nullptr; }
+void base_renderer::push_graphical_object(TObject* obj) {
+  _objects->Add(obj);
+}
 
-void base_renderer::set_graphical_objects(TObjArray* objects_) { _objects = objects_; }
-
-bool base_renderer::has_text_objects() const { return _text_objects != nullptr; }
-
-void base_renderer::set_text_objects(TObjArray* text_objects_) { _text_objects = text_objects_; }
-
+void base_renderer::push_text_object(TObject* obj) {
+  _text_objects->Add(obj);
+}
 
 void base_renderer::highlight_geom_id(const geomtools::geom_id& gid_, const size_t color_,
                                       const std::string& text_) {
@@ -121,7 +128,7 @@ void base_renderer::highlight_geom_id(const geomtools::geom_id& gid_, const size
     auto* volume_hit =
         dynamic_cast<detector::i_root_volume*>(detector_mgr.get_volume(gid_list.front()));
     auto* new_text_obj = new utils::root_utilities::TLatex3D;
-    _text_objects->Add(new_text_obj);
+    this->push_text_object(new_text_obj);
     const geomtools::vector_3d& position = volume_hit->get_placement().get_translation();
     new_text_obj->SetX(position.x());
     new_text_obj->SetY(position.y());

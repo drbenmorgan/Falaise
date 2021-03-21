@@ -48,7 +48,7 @@ namespace visualization {
 namespace view {
 
 void visual_track_renderer::push_mc_tracks() {
-  const io::event_record &event = _server->get_event();
+  const io::event_record &event = this->get_event();
   const auto &sim_data = event.get<mctools::simulated_data>(io::SD_LABEL);
 
   // Get hit categories related to visual track
@@ -80,9 +80,8 @@ void visual_track_renderer::push_mc_tracks() {
     for (const auto &a_hit : sim_data.get_step_hits(visual_categorie)) {
       std::string particle_name = a_hit->get_particle_name();
 
-      const std::string delta_ray_from_alpha_flag = mctools::track_utils::DELTA_RAY_FROM_ALPHA_FLAG;
       const bool is_delta_ray_from_alpha =
-          a_hit->get_auxiliaries().has_flag(delta_ray_from_alpha_flag);
+          a_hit->get_auxiliaries().has_flag(mctools::track_utils::DELTA_RAY_FROM_ALPHA_FLAG);
 
       if (is_delta_ray_from_alpha) {
         particle_name = "delta_ray_from_alpha";
@@ -114,7 +113,7 @@ void visual_track_renderer::push_mc_tracks() {
 
       const int track_id = a_hit->get_track_id();
 
-      if(is_checked(*a_hit)) {
+      if (is_checked(*a_hit)) {
         enable_tracks.insert(track_id);
       }
       if (enable_tracks.count(track_id) != 0u) {
@@ -123,20 +122,25 @@ void visual_track_renderer::push_mc_tracks() {
 
       if (is_highlighted(*a_hit)) {
         line_width += 3;
+
         TPolyMarker3D *mark1 = base_renderer::make_polymarker(a_hit->get_position_start());
-        _objects->Add(mark1);
+        this->push_graphical_object(mark1);
+
         mark1->SetMarkerColor(kRed);
         mark1->SetMarkerStyle(kPlus);
+
         TPolyMarker3D *mark2 = base_renderer::make_polymarker(a_hit->get_position_stop());
-        _objects->Add(mark2);
+        this->push_graphical_object(mark2);
+
         mark2->SetMarkerColor(kRed);
         mark2->SetMarkerStyle(kCircle);
       }
       geomtools::polyline_type points;
       points.push_back(a_hit->get_position_start());
       points.push_back(a_hit->get_position_stop());
+
       TPolyLine3D *mc_path = base_renderer::make_polyline(points);
-      _objects->Add(mc_path);
+      this->push_graphical_object(mc_path);
       mc_path->SetLineColor(line_color);
       mc_path->SetLineWidth(line_width);
       mc_path->SetLineStyle(line_style);
@@ -159,7 +163,8 @@ void visual_track_renderer::push_mc_legend() {
     }
 
     auto *legend = new TLatex;
-    _objects->Add(legend);
+    this->push_graphical_object(legend);
+
     legend->SetNDC();
     legend->SetTextAlign(31);
     legend->SetTextSize(0.04);
@@ -172,7 +177,8 @@ void visual_track_renderer::push_mc_legend() {
 
   // Add a latest legend text for particles not in the previous list
   auto *legend = new TLatex;
-  _objects->Add(legend);
+  this->push_graphical_object(legend);
+
   legend->SetNDC();
   legend->SetTextAlign(31);
   legend->SetTextSize(0.04);
@@ -182,7 +188,7 @@ void visual_track_renderer::push_mc_legend() {
 }
 
 void visual_track_renderer::push_reconstructed_tracks() {
-  const io::event_record &event = _server->get_event();
+  const io::event_record &event = this->get_event();
   const auto &pt_data = event.get<snemo::datamodel::particle_track_data>(io::PTD_LABEL);
 
   // Show non-associated calorimeters
@@ -230,13 +236,13 @@ void visual_track_renderer::push_reconstructed_tracks() {
       const geomtools::vector_3d &a_position = a_vertex->get_position();
       {
         TPolyMarker3D *mark = base_renderer::make_polymarker(a_position);
-        _objects->Add(mark);
+        this->push_graphical_object(mark);
         mark->SetMarkerColor(color);
         mark->SetMarkerStyle(kPlus);
       }
       if (is_highlighted(*a_vertex)) {
         TPolyMarker3D *mark = base_renderer::make_polymarker(a_position);
-        _objects->Add(mark);
+        this->push_graphical_object(mark);
         mark->SetMarkerColor(color);
         mark->SetMarkerStyle(kCircle);
       }
@@ -249,7 +255,7 @@ void visual_track_renderer::push_reconstructed_tracks() {
         vtces.push_back(ivtx->get_position());
       }
       TPolyLine3D *track = base_renderer::make_polyline(vtces);
-      _objects->Add(track);
+      this->push_graphical_object(track);
       track->SetLineColor(color);
       if (a_particle->get_auxiliaries().has_flag("__gamma_from_annihilation")) {
         track->SetLineStyle(kDashDotted);
@@ -285,7 +291,7 @@ void visual_track_renderer::push_reconstructed_tracks() {
       const auto &iw3dr =
           dynamic_cast<const geomtools::i_wires_3d_rendering &>(a_pattern.get_shape());
       TPolyLine3D *track = base_renderer::make_track(iw3dr);
-      _objects->Add(track);
+      this->push_graphical_object(track);
       track->SetLineColor(color);
     }
   }
