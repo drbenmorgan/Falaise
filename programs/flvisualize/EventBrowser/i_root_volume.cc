@@ -37,48 +37,41 @@ namespace visualization {
 namespace detector {
 
 // ctor:
-i_root_volume::i_root_volume(const std::string& name_, const std::string& category_) {
+i_root_volume::i_root_volume(const std::string& name_, const std::string& category_,
+                             const geomtools::geom_info& ginfo_) {
   _name = name_;
   _category = category_;
-  _geo_volume = nullptr;
-  _initialized = false;
+  _placement = ginfo_.get_world_placement();
+  this->_build(ginfo_);
+}
+
+// This, like the "initialize" function before, is an artifact of "virtual construction"
+void i_root_volume::_build(const geomtools::geom_info& ginfo_) {
+  _construct(ginfo_.get_logical().get_shape());
+  // Contract is that concrete _construct functions *must* result in _geo_volume being not-null
+  DT_THROW_IF(_geo_volume == nullptr, std::logic_error, "failed to construct TGeoVolume pointer");
 }
 
 // dtor:
-i_root_volume::~i_root_volume() { this->reset(); }
-
-bool i_root_volume::is_initialized() const { return _initialized; }
-
-void* i_root_volume::get_volume() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
-  return _geo_volume;
+i_root_volume::~i_root_volume() {
+  delete _geo_volume;
+  _geo_volume = nullptr;
 }
 
-const void* i_root_volume::get_volume() const {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Not initialized !");
-  return _geo_volume;
-}
+void* i_root_volume::get_volume() { return _geo_volume; }
 
-void i_root_volume::initialize(const geomtools::geom_info& ginfo_) {
-  _placement = ginfo_.get_world_placement();
-  _construct(ginfo_.get_logical().get_shape());
-  _initialized = true;
-}
+const void* i_root_volume::get_volume() const { return _geo_volume; }
 
 void i_root_volume::update() {
   const view::style_manager& style_mgr = view::style_manager::get_instance();
 
   _color = style_mgr.get_volume_color(_category);
   _transparency = style_mgr.get_volume_transparency(_category);
-  _visibility = style_mgr.get_volume_visibility(_category) == VISIBLE;
-
-  if (is_initialized()) {
-    this->clear();
-  }
+  _visibility = style_mgr.get_volume_visibility(_category) == visibility::VISIBLE;
+  this->clear();
 }
 
 void i_root_volume::clear() {
-  DT_THROW_IF(!is_initialized(), std::logic_error, "Volume '" << _name << "' is not initialized!");
   _geo_volume->SetLineColor(_color);
   _geo_volume->SetFillColor(_color);
   _geo_volume->SetLineWidth(1);
@@ -86,15 +79,7 @@ void i_root_volume::clear() {
   _geo_volume->SetVisibility(_visibility);
 }
 
-void i_root_volume::reset() {
-  delete _geo_volume;
-  _geo_volume = nullptr;
-  _initialized = false;
-}
-
 void i_root_volume::highlight(const size_t color_) {
-  DT_THROW_IF(!is_initialized(), std::logic_error,
-              "Volume '" << get_name() << "' is not initialized!");
   _highlight_color = color_;
   _highlight();
 }

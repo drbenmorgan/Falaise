@@ -312,13 +312,13 @@ void display_options::_set_button_values_() {
 
     TGCheckButton* visibility_check = _volumes_widget.second._tg_visibility_;
     switch (style_mgr.get_volume_visibility(volume_name)) {
-      case detector::VISIBLE:
+      case detector::visibility::VISIBLE:
         visibility_check->SetState(kButtonDown);
         break;
-      case detector::INVISIBLE:
+      case detector::visibility::INVISIBLE:
         visibility_check->SetState(kButtonUp);
         break;
-      case detector::DISABLE:
+      case detector::visibility::DISABLE:
         visibility_check->SetDisabledAndSelected(false);
         visibility_check->SetToolTipText("Volume disabled in style file");
         break;
@@ -392,8 +392,8 @@ void display_options::process_volume_settings() {
 
   // Set visibility
   _volumes_widgets_[volume_name]._tg_visibility_->IsDown()
-      ? volumes[volume_name]._visibility_ = detector::VISIBLE
-      : volumes[volume_name]._visibility_ = detector::INVISIBLE;
+      ? volumes[volume_name]._visibility_ = detector::visibility::VISIBLE
+      : volumes[volume_name]._visibility_ = detector::visibility::INVISIBLE;
 
   // Set color: convert Pixel_t value to integer
   unsigned int color = TColor::GetColor(_volumes_widgets_[volume_name]._tg_color_->GetColor());

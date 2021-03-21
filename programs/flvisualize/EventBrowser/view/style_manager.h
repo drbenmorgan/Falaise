@@ -39,6 +39,7 @@
 #include <EventBrowser/utils/singleton.h>
 #include <datatools/i_tree_dump.h>
 
+// For visibility type...
 #include <EventBrowser/detector/volume_model.h>
 
 namespace datatools {
@@ -57,7 +58,7 @@ class style_manager : public utils::singleton<style_manager> {
  public:
   /// Structure that defines detector volume properties
   struct volume_properties {
-    detector::visibility_type _visibility_;
+    detector::visibility _visibility_;
     size_t _color_;
     size_t _transparency_;
   };
@@ -136,7 +137,7 @@ class style_manager : public utils::singleton<style_manager> {
   size_t get_volume_transparency(const std::string& volume_name_) const;
 
   /// Get volume visibility for a given volume name
-  detector::visibility_type get_volume_visibility(const std::string& volume_name_) const;
+  detector::visibility get_volume_visibility(const std::string& volume_name_) const;
 
   /// Typedef referecing particle properties
   typedef std::map<std::string, particle_properties> particle_properties_dict_type;
@@ -242,7 +243,7 @@ class style_manager : public utils::singleton<style_manager> {
   // volume stuff
   size_t _default_volume_color_;
   size_t _default_volume_transparency_;
-  detector::visibility_type _default_volume_visibility_;
+  detector::visibility _default_volume_visibility_;
   volume_properties_dict_type _volumes_properties_;
 
   // MC stuff

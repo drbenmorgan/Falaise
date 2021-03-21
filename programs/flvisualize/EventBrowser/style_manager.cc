@@ -135,9 +135,9 @@ size_t style_manager::get_volume_transparency(const std::string& volume_name_) c
   return volume_transparency;
 }
 
-detector::visibility_type style_manager::get_volume_visibility(
+detector::visibility style_manager::get_volume_visibility(
     const std::string& volume_name_) const {
-  detector::visibility_type volume_visibility = detector::VISIBLE;
+  detector::visibility volume_visibility = detector::visibility::VISIBLE;
   if (has_volume_properties(volume_name_)) {
     volume_visibility = _volumes_properties_.at(volume_name_)._visibility_;
   }
@@ -236,7 +236,7 @@ void style_manager::_set_default_() {
 
   _default_volume_color_ = kRed;
   _default_volume_transparency_ = 0;
-  _default_volume_visibility_ = detector::VISIBLE;
+  _default_volume_visibility_ = detector::visibility::VISIBLE;
 
   _mc_line_style_ = kSolid;
   _mc_line_style_ = 1;
@@ -378,13 +378,13 @@ void style_manager::_set_geometry_settings_(const datatools::properties& config_
       if (config_.has_key(volume_visibility)) {
         const std::string& visibility_mode = config_.fetch_string(volume_visibility);
 
-        detector::visibility_type visibility = detector::VISIBLE;
+        detector::visibility visibility = detector::visibility::VISIBLE;
         if (visibility_mode == "visible") {
-          visibility = detector::VISIBLE;
+          visibility = detector::visibility::VISIBLE;
         } else if (visibility_mode == "invisible") {
-          visibility = detector::INVISIBLE;
+          visibility = detector::visibility::INVISIBLE;
         } else if (visibility_mode == "disable") {
-          visibility = detector::DISABLE;
+          visibility = detector::visibility::DISABLE;
         } else {
           DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(),
                          "Ignoring unknown visibility option '" << visibility_mode << "'");
@@ -393,7 +393,7 @@ void style_manager::_set_geometry_settings_(const datatools::properties& config_
         _volumes_properties_[volume_name]._visibility_ = visibility;
       } else {
         // by default, make it visible
-        _volumes_properties_[volume_name]._visibility_ = detector::VISIBLE;
+        _volumes_properties_[volume_name]._visibility_ = detector::visibility::VISIBLE;
       }
 
       // second: get color
@@ -554,13 +554,13 @@ void style_manager::dump_into_file(const std::string& filename_) {
     }
     fout << " : string = ";
     switch (it_volume->second._visibility_) {
-      case detector::VISIBLE:
+      case detector::visibility::VISIBLE:
         fout << "\"visible\"";
         break;
-      case detector::INVISIBLE:
+      case detector::visibility::INVISIBLE:
         fout << "\"invisible\"";
         break;
-      case detector::DISABLE:
+      case detector::visibility::DISABLE:
         fout << "\"disable\"";
         break;
       default:

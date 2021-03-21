@@ -344,7 +344,7 @@ void detector_manager::_read_detector_config_() {
       only_categories.push_back(a_category);
       view::style_manager::volume_properties dummy;
       volumes[a_category] = dummy;
-      volumes[a_category]._visibility_ = VISIBLE;
+      volumes[a_category]._visibility_ = visibility::VISIBLE;
       volumes[a_category]._color_ = utils::root_utilities::get_random_color();
     }
   }
@@ -395,7 +395,7 @@ void detector_manager::_set_categories_(std::vector<std::string> &only_categorie
   // first get them from style file
   if (!volumes.empty()) {
     for (const auto &it_volume : volumes) {
-      if ((it_volume.second)._visibility_ == DISABLE) {
+      if ((it_volume.second)._visibility_ == visibility::DISABLE) {
         continue;
       }
       DT_LOG_DEBUG(view::options_manager::get_instance().get_logging_priority(),
@@ -410,11 +410,11 @@ void detector_manager::_set_categories_(std::vector<std::string> &only_categorie
         case setup::SNEMO_DEMONSTRATOR:
         case setup::TRACKER_COMMISSIONING:
           only_categories_.emplace_back("module");
-          volumes["module"]._visibility_ = VISIBLE;
+          volumes["module"]._visibility_ = visibility::VISIBLE;
           break;
         case setup::TEST_BENCH:
           only_categories_.emplace_back("calo_light_line");
-          volumes["calo_light_line"]._visibility_ = VISIBLE;
+          volumes["calo_light_line"]._visibility_ = visibility::VISIBLE;
           break;
         default:
           break;
@@ -468,42 +468,40 @@ void detector_manager::_set_categories_(std::vector<std::string> &only_categorie
 
     // adding the default detectors to detector_to_show list
     for (const auto &it_category : only_categories_) {
-      volumes[it_category]._visibility_ = VISIBLE;
+      volumes[it_category]._visibility_ = visibility::VISIBLE;
     }
   }
 }
 
 void detector_manager::_set_volume_(const geomtools::geom_info &ginfo_) {
   const geomtools::geom_id &volume_id = ginfo_.get_id();
+  const geomtools::logical_volume &a_log = ginfo_.get_logical();
+  const geomtools::i_shape_3d &a_shape = a_log.get_shape();
 
+  const std::string &shape_name = a_shape.get_shape_name();
   const std::string volume_name = this->get_volume_name(volume_id);
   const std::string volume_category = this->get_volume_category(volume_id);
 
-  const geomtools::logical_volume &a_log = ginfo_.get_logical();
-  const geomtools::i_shape_3d &a_shape = a_log.get_shape();
-  const std::string &shape_name = a_shape.get_shape_name();
-
   if (is_special_volume(volume_category)) {
-    _volumes_[volume_id] = new special_volume(volume_name, volume_category);
+    _volumes_[volume_id] = new special_volume(volume_name, volume_category, ginfo_);
   } else if (a_shape.is_composite()) {
-    _volumes_[volume_id] = new composite_volume(volume_name, volume_category);
+    _volumes_[volume_id] = new composite_volume(volume_name, volume_category, ginfo_);
   } else if (shape_name == "box") {
-    _volumes_[volume_id] = new box_volume(volume_name, volume_category);
+    _volumes_[volume_id] = new box_volume(volume_name, volume_category, ginfo_);
   } else if (shape_name == "cylinder") {
-    _volumes_[volume_id] = new cylinder_volume(volume_name, volume_category);
+    _volumes_[volume_id] = new cylinder_volume(volume_name, volume_category, ginfo_);
   } else if (shape_name == "tube") {
-    _volumes_[volume_id] = new tube_volume(volume_name, volume_category);
+    _volumes_[volume_id] = new tube_volume(volume_name, volume_category, ginfo_);
   } else if (shape_name == "sphere") {
-    _volumes_[volume_id] = new sphere_volume(volume_name, volume_category);
+    _volumes_[volume_id] = new sphere_volume(volume_name, volume_category, ginfo_);
   } else if (shape_name == "polycone") {
-    _volumes_[volume_id] = new polycone_volume(volume_name, volume_category);
+    _volumes_[volume_id] = new polycone_volume(volume_name, volume_category, ginfo_);
   } else {
     DT_LOG_ERROR(view::options_manager::get_instance().get_logging_priority(),
                  shape_name << "' not yet implemented for '" << volume_category << "' volume");
     return;
   }
 
-  _volumes_[volume_id]->initialize(ginfo_);
   _volumes_[volume_id]->update();
 }
 

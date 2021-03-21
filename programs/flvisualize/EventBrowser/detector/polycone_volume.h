@@ -44,17 +44,17 @@ namespace detector {
 class polycone_volume : public i_root_volume {
  public:
   /// Default constructor
-  polycone_volume(const std::string& name_ = "", const std::string& category_ = "");
+  polycone_volume(const std::string& name_, const std::string& category_, const geomtools::geom_info& ginfo_);
 
   /// Destructor
-  virtual ~polycone_volume();
+  virtual ~polycone_volume() = default;
 
  protected:
   /// Construct the polycone volume
   virtual void _construct(const geomtools::i_shape_3d& shape_3d_);
 
  private:
-  size_t _nbr_z_section_;  //<! Number of z-section to describe the polycone
+  size_t _nbr_z_section_ = 0;  //<! Number of z-section to describe the polycone
 };
 
 }  // end of namespace detector

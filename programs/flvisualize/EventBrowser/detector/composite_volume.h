@@ -45,7 +45,7 @@ namespace detector {
 class composite_volume : public i_root_volume {
  public:
   /// Default constructor
-  composite_volume(const std::string& name_ = "", const std::string& category_ = "");
+  composite_volume(const std::string& name_, const std::string& category_, const geomtools::geom_info& ginfo_);
 
   /// Destructor
   virtual ~composite_volume();

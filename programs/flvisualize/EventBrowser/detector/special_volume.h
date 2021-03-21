@@ -52,7 +52,7 @@ namespace detector {
 class special_volume : public i_root_volume {
  public:
   /// Default constructor
-  special_volume(const std::string& name_ = "", const std::string& category_ = "");
+  special_volume(const std::string& name_, const std::string& category_, const geomtools::geom_info& ginfo_);
 
   /// Destructor
   virtual ~special_volume();
@@ -76,7 +76,7 @@ class special_volume : public i_root_volume {
   virtual void _construct(const geomtools::i_shape_3d& shape_3d_);
 
  private:
-  TObjArray* _objects_;  //<! ROOT object array
+  TObjArray* _objects_ = nullptr;  //<! ROOT object array
 };
 
 }  // end of namespace detector

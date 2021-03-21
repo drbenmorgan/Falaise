@@ -44,19 +44,20 @@ namespace detector {
 class cylinder_volume : public i_root_volume {
  public:
   /// Default constructor
-  cylinder_volume(const std::string& name_ = "", const std::string& category_ = "");
+  cylinder_volume(const std::string& name_, const std::string& category_,
+                  const geomtools::geom_info& ginfo_);
 
   /// Destructor
-  virtual ~cylinder_volume();
+  virtual ~cylinder_volume() = default;
 
  protected:
   /// Construct the cylinder volume
   virtual void _construct(const geomtools::i_shape_3d& shape_3d_);
 
  private:
-  double _inner_radius_;  //<! Cylinder inner radius
-  double _outer_radius_;  //<! Cylinder outer radius
-  double _height_;        //<! Cylinder height
+  double _inner_radius_ = 0.0;  //<! Cylinder inner radius
+  double _outer_radius_ = 0.0;  //<! Cylinder outer radius
+  double _height_ = 0.0;        //<! Cylinder height
 };
 
 }  // end of namespace detector

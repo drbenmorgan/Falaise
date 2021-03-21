@@ -50,13 +50,11 @@ namespace detector {
 class i_root_volume : public i_volume {
  public:
   /// Default constructor
-  i_root_volume(const std::string& name_ = "", const std::string& category_ = "");
+  i_root_volume(const std::string& name_, const std::string& category_,
+                const geomtools::geom_info& ginfo_);
 
   /// Destructor
   virtual ~i_root_volume();
-
-  /// Return initialization flag
-  bool is_initialized() const;
 
   /// Get a mutable pointer to volume (TGeoVolume cast)
   virtual void* get_volume();
@@ -64,17 +62,11 @@ class i_root_volume : public i_volume {
   /// Get a non-mutable pointer to volume (TGeoVolume cast)
   virtual const void* get_volume() const;
 
-  /// Virtual method to initialize the volume
-  virtual void initialize(const geomtools::geom_info& ginfo_);
-
   /// Update method to refresh volume properties
   virtual void update();
 
   /// Clear volume properties
   virtual void clear();
-
-  /// Reset volume properties
-  virtual void reset();
 
   /// Highlight volume
   virtual void highlight(const size_t color_ = 0);
@@ -86,9 +78,11 @@ class i_root_volume : public i_volume {
   /// Implement dedicated construct method
   virtual void _construct(const geomtools::i_shape_3d& shape_3d_) = 0;
 
- protected:
-  bool _initialized;        //<! Initialization flag
-  TGeoVolume* _geo_volume;  //<! ROOT geometry volume
+  bool _initialized = false;          //<! Initialization flag
+  TGeoVolume* _geo_volume = nullptr;  //<! ROOT geometry volume
+
+ private:
+  void _build(const geomtools::geom_info& ginfo_);
 };
 
 }  // end of namespace detector

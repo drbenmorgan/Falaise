@@ -44,19 +44,20 @@ namespace detector {
 class tube_volume : public i_root_volume {
  public:
   /// Default constructor
-  tube_volume(const std::string& name_ = "", const std::string& category_ = "");
+  tube_volume(const std::string& name_, const std::string& category_,
+              const geomtools::geom_info& ginfo_);
 
   /// Destructor
-  virtual ~tube_volume();
+  virtual ~tube_volume() = default;
 
  protected:
   /// Construct the tube volume
   virtual void _construct(const geomtools::i_shape_3d& shape_3d_);
 
  private:
-  double _inner_radius_;  //<! Inner radius
-  double _outer_radius_;  //<! Outer radius
-  double _height_;        //<! Tube height
+  double _inner_radius_ = 0.0;  //<! Inner radius
+  double _outer_radius_ = 0.0;  //<! Outer radius
+  double _height_ = 0.0;        //<! Tube height
 };
 
 }  // end of namespace detector

@@ -33,18 +33,11 @@ namespace visualization {
 namespace detector {
 
 // ctor:
-tube_volume::tube_volume(const std::string &name_, const std::string &category_)
-    : i_root_volume(name_, category_) {
+tube_volume::tube_volume(const std::string &name_, const std::string &category_, const geomtools::geom_info& ginfo_)
+    : i_root_volume(name_, category_, ginfo_) {
   _type = "tube";
   _composite = false;
-
-  _inner_radius_ = 0.0;
-  _outer_radius_ = 0.0;
-  _height_ = 0.0;
 }
-
-// dtor:
-tube_volume::~tube_volume() = default;
 
 void tube_volume::_construct(const geomtools::i_shape_3d &shape_3d_) {
   const auto &mtube = dynamic_cast<const geomtools::tube &>(shape_3d_);

@@ -33,18 +33,12 @@ namespace visualization {
 namespace detector {
 
 // ctor:
-cylinder_volume::cylinder_volume(const std::string &name_, const std::string &category_)
-    : i_root_volume(name_, category_) {
+cylinder_volume::cylinder_volume(const std::string &name_, const std::string &category_,
+                                 const geomtools::geom_info &ginfo_)
+    : i_root_volume(name_, category_, ginfo_) {
   _type = "cylinder";
   _composite = false;
-
-  _inner_radius_ = 0.0;
-  _outer_radius_ = 0.0;
-  _height_ = 0.0;
 }
-
-// dtor:
-cylinder_volume::~cylinder_volume() = default;
 
 void cylinder_volume::_construct(const geomtools::i_shape_3d &shape_3d_) {
   const auto &mcylinder = dynamic_cast<const geomtools::cylinder &>(shape_3d_);

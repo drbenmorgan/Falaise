@@ -45,7 +45,7 @@ namespace visualization {
 namespace detector {
 
 /// Enumeration related to visibility status of volume part
-enum visibility_type { VISIBLE = 0, INVISIBLE = 1, DISABLE = 2 };
+enum class visibility { VISIBLE = 0, INVISIBLE = 1, DISABLE = 2 };
 
 // \brief A volume model structure holding volume properties
 class volume_model {

@@ -44,19 +44,19 @@ namespace detector {
 class box_volume : public i_root_volume {
  public:
   /// Default constructor
-  box_volume(const std::string& name_ = "", const std::string& category_ = "");
+  box_volume(const std::string& name_, const std::string& category_, const geomtools::geom_info& ginfo);
 
   /// Destructor
-  virtual ~box_volume();
+  virtual ~box_volume() = default;
 
  protected:
   /// Construct the box volume
   virtual void _construct(const geomtools::i_shape_3d& shape_3d_);
 
  private:
-  double _length_;  //<! Box length
-  double _width_;   //<! Box width
-  double _height_;  //<! Box height
+  double _length_ = 0.0;  //<! Box length
+  double _width_ = 0.0;   //<! Box width
+  double _height_ = 0.0;  //<! Box height
 };
 
 }  // end of namespace detector

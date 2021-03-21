@@ -59,17 +59,11 @@ class i_volume : public volume_model {
   /// Get a non-mutable pointer to volume
   virtual const void* get_volume() const = 0;
 
-  /// Virtual method to initialize the volume properties
-  virtual void initialize(const geomtools::geom_info& ginfo_) = 0;
-
   /// Virtual method to refresh volume properties
   virtual void update() = 0;
 
   /// Virtual method to clear the volume properties
   virtual void clear() = 0;
-
-  /// Virtual method to reset the volume properties
-  virtual void reset() = 0;
 
   /// Virtual method to highlight the volume
   virtual void highlight(const size_t color_) = 0;

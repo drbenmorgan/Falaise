@@ -36,14 +36,17 @@ namespace detector {
 bool special_volume::has_objects() const { return _objects_ != nullptr; }
 
 // ctor:
-special_volume::special_volume(const std::string &name_, const std::string &category_)
-    : i_root_volume(name_, category_), _objects_(nullptr) {
+special_volume::special_volume(const std::string &name_, const std::string &category_, const geomtools::geom_info& ginfo_)
+    : i_root_volume(name_, category_, ginfo_) {
   _type = "special";
   _composite = false;
 }
 
 // dtor:
-special_volume::~special_volume() { this->reset(); }
+special_volume::~special_volume() {
+  _objects_->Delete();
+  _objects_ = nullptr;
+}
 
 void special_volume::_construct(const geomtools::i_shape_3d &shape_3d_) {
   _objects_ = utils::root_utilities::wires_to_root_draw(get_placement().get_translation(),
@@ -67,12 +70,6 @@ void special_volume::clear() {
   }
 }
 
-void special_volume::reset() {
-  _objects_->Delete();
-
-  _objects_ = nullptr;
-  _initialized = false;
-}
 
 void special_volume::_highlight() {
   _color = _highlight_color;

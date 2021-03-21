@@ -33,8 +33,8 @@ namespace visualization {
 namespace detector {
 
 // ctor:
-composite_volume::composite_volume(const std::string& name_, const std::string& category_)
-    : i_root_volume(name_, category_) {
+composite_volume::composite_volume(const std::string& name_, const std::string& category_, const geomtools::geom_info& ginfo_)
+    : i_root_volume(name_, category_, ginfo_) {
   _type = "composite";
   _composite = true;
 }

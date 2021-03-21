@@ -44,22 +44,22 @@ namespace detector {
 class sphere_volume : public i_root_volume {
  public:
   /// Default constructor
-  sphere_volume(const std::string& name_ = "", const std::string& category_ = "");
+  sphere_volume(const std::string& name_, const std::string& category_, const geomtools::geom_info& ginfo_);
 
   /// Destructor
-  virtual ~sphere_volume();
+  virtual ~sphere_volume() = default;
 
  protected:
   /// Construct the sphere volume
   virtual void _construct(const geomtools::i_shape_3d& shape_3d_);
 
  private:
-  double _inner_radius_;  //<! Sphere inner radius
-  double _outer_radius_;  //<! Sphere outer radius
-  double _theta_min_;     //<! Minimal theta angle
-  double _theta_max_;     //<! Maximal theta angle
-  double _phi_min_;       //<! Minimal phi angle
-  double _phi_max_;       //<! Maximal phi angle
+  double _inner_radius_ = 0.0;  //<! Sphere inner radius
+  double _outer_radius_ = 0.0;  //<! Sphere outer radius
+  double _theta_min_ = 0.0;     //<! Minimal theta angle
+  double _theta_max_ = 0.0;     //<! Maximal theta angle
+  double _phi_min_ = 0.0;       //<! Minimal phi angle
+  double _phi_max_ = 0.0;       //<! Maximal phi angle
 };
 
 }  // end of namespace detector
