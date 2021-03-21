@@ -48,7 +48,7 @@ namespace visualization {
 
 namespace view {
 
-void display_2d::set_view_type(const view_type vtype_) { _2d_viewer_->set_view_type(vtype_); }
+void display_2d::set_view_type(const view_t vtype_) { _2d_viewer_->set_view_type(vtype_); }
 
 // ctor:
 display_2d::display_2d(TGCompositeFrame* main_, io::event_server* server_, const bool switch_mode)
@@ -61,12 +61,12 @@ display_2d::display_2d(TGCompositeFrame* main_, io::event_server* server_, const
   // of OpenGL but then decide not to use it.
   if (style_manager::get_instance().use_opengl()) {
     _2d_viewer_ =
-        new opengl_embedded_viewer("2DPlot", main_, width, height, i_embedded_viewer::VIEW_2D);
+        new opengl_embedded_viewer("2DPlot", main_, width, height, i_embedded_viewer::view_dim_t::_2D);
   } else
 #endif
 
     _2d_viewer_ =
-        new pad_embedded_viewer("2DPlot", main_, width, height, i_embedded_viewer::VIEW_2D);
+        new pad_embedded_viewer("2DPlot", main_, width, height, i_embedded_viewer::view_dim_t::_2D);
 
   main_->AddFrame(_2d_viewer_->get_frame(), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
@@ -82,10 +82,10 @@ display_2d::display_2d(TGCompositeFrame* main_, io::event_server* server_, const
     const std::string view_str[n_view] = {" top view ", " side view ", " front view "};
 
     for (unsigned int i_view = 0; i_view < n_view; ++i_view) {
-      const auto view_id = static_cast<view_type>(i_view);
 
-      auto* view = new TGRadioButton(views, view_str[i_view].c_str(), view_id);
+      auto* view = new TGRadioButton(views, view_str[i_view].c_str(), i_view);
 
+      const auto view_id = static_cast<view_t>(i_view);
       if (view_id == _2d_viewer_->get_view_type()) {
         view->SetState(kButtonDown);
       } else {
@@ -118,7 +118,7 @@ void display_2d::update_scene() { _2d_viewer_->update_scene(_2d_drawer_); }
 
 void display_2d::process_option_buttons() {
   auto* button = (TGButton*)gTQSender;
-  const auto view_id = static_cast<view_type>(button->WidgetId());
+  const auto view_id = static_cast<view_t>(button->WidgetId());
 
   set_view_type(view_id);
 }
@@ -132,13 +132,13 @@ void display_2d::handle_button_signals(const button_signals_type signal_) {
       filename << style_manager::get_instance().get_save_prefix()
                << _server_->get_current_event_number();
       switch (_2d_viewer_->get_view_type()) {
-        case TOP_VIEW:
+        case view_t::TOP:
           filename << "_top";
           break;
-        case SIDE_VIEW:
+        case view_t::SIDE:
           filename << "_side";
           break;
-        case FRONT_VIEW:
+        case view_t::FRONT:
           filename << "_front";
           break;
         default:

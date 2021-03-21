@@ -96,19 +96,19 @@ void event_display::_at_init_(TGCompositeFrame* main_) {
     _top_2d_ = new display_2d(top_right_part, _server_, false);
     _top_2d_->set_drawer(_draw_manager_);
     _top_2d_->update_detector();
-    _top_2d_->set_view_type(TOP_VIEW);
+    _top_2d_->set_view_type(view_t::TOP);
 
     TGSplitFrame* top_left_part = top_part->GetSecond();
     _front_2d_ = new display_2d(top_left_part, _server_, false);
     _front_2d_->set_drawer(_draw_manager_);
     _front_2d_->update_detector();
-    _front_2d_->set_view_type(FRONT_VIEW);
+    _front_2d_->set_view_type(view_t::FRONT);
 
     TGSplitFrame* bottom_part = main_frame->GetSecond();
     _side_2d_ = new display_2d(bottom_part, _server_, false);
     _side_2d_->set_drawer(_draw_manager_);
     _side_2d_->update_detector();
-    _side_2d_->set_view_type(SIDE_VIEW);
+    _side_2d_->set_view_type(view_t::SIDE);
   } else {
     main_frame->SplitVertical();
     main_->AddFrame(main_frame, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
@@ -125,10 +125,10 @@ void event_display::_at_init_(TGCompositeFrame* main_) {
     TGCompositeFrame* tracks_frame = _tabs_->AddTab("Tracks");
     TGCompositeFrame* options_frame = _tabs_->AddTab("Options");
     TGCompositeFrame* selection_frame = _tabs_->AddTab("Selection");
-    _tab_is_uptodate_[OVERVIEW_TAB] = false;
-    _tab_is_uptodate_[TRACK_BROWSER_TAB] = false;
-    _tab_is_uptodate_[OPTIONS_TAB] = true;
-    _tab_is_uptodate_[SELECTION_TAB] = true;
+    _tab_is_uptodate_[tab_index_t::OVERVIEW] = false;
+    _tab_is_uptodate_[tab_index_t::TRACK_BROWSER] = false;
+    _tab_is_uptodate_[tab_index_t::OPTIONS] = true;
+    _tab_is_uptodate_[tab_index_t::SELECTION] = true;
 
     // 2D/3D display view
     if (options_manager::get_instance().is_2d_display_on_left()) {
@@ -204,11 +204,11 @@ void event_display::update(const bool reset_view_, const bool reset_track_) {
   _draw_manager_->update();
 
   if (!_full_2d_display_) {
-    _tab_is_uptodate_[OVERVIEW_TAB] = false;
-    _tab_is_uptodate_[OPTIONS_TAB] = false;
-    _tab_is_uptodate_[TRACK_BROWSER_TAB] = !reset_track_;
+    _tab_is_uptodate_[tab_index_t::OVERVIEW] = false;
+    _tab_is_uptodate_[tab_index_t::OPTIONS] = false;
+    _tab_is_uptodate_[tab_index_t::TRACK_BROWSER] = !reset_track_;
 
-    const auto current_tab_id = (tab_id_index_type)_tabs_->GetCurrent();
+    const auto current_tab_id = (tab_index_t)_tabs_->GetCurrent();
     this->_update_tab_(current_tab_id, reset_view_);
 
     if (reset_track_) {
@@ -218,14 +218,14 @@ void event_display::update(const bool reset_view_, const bool reset_track_) {
   this->_update_view_(reset_view_);
 }
 
-void event_display::_update_tab_(const tab_id_index_type index_, const bool /*reset_view_*/) {
+void event_display::_update_tab_(const tab_index_t index_, const bool /*reset_view_*/) {
   if (!_tab_is_uptodate_[index_]) {
     switch (index_) {
-      case OPTIONS_TAB:
+      case tab_index_t::OPTIONS:
         _options_->update();
         break;
-      case OVERVIEW_TAB:
-      case TRACK_BROWSER_TAB:
+      case tab_index_t::OVERVIEW:
+      case tab_index_t::TRACK_BROWSER:
         //_browser_tracks_->update();
         break;
       default:

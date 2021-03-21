@@ -59,14 +59,14 @@ class pad_embedded_viewer : public i_embedded_viewer, public TRootEmbeddedCanvas
  public:
   pad_embedded_viewer(const std::string& name_, const TGFrame* frame_,
                       const unsigned int width_ = 0, const unsigned int height_ = 0,
-                      const view_dim_type view_dim_ = VIEW_3D);
+                      const view_dim_t view_dim_ = view_dim_t::_3D);
   virtual ~pad_embedded_viewer();
 
   virtual void clear();
   virtual void reset();
 
-  virtual void set_view_type(const view_type view_type_);
-  virtual view_type get_view_type() const;
+  virtual void set_view_type(const view_t view_type_);
+  virtual view_t get_view_type() const;
 
   virtual void update_detector();
   virtual void update_scene(i_draw_manager* drawer_);
@@ -134,15 +134,15 @@ class pad_embedded_viewer : public i_embedded_viewer, public TRootEmbeddedCanvas
   TObjArray* _objects_;
   TObjArray* _text_objects_;
 
-  view_type _view_type_;
+  view_t _view_type_;
 
   double _zoom_factor_;
   int _zoom_index_;
 
   // For 2D purpose
   bool _scaling_;
-  std::map<view_type, double> _scale_factors_;
-  std::map<view_type, double> _fudge_factors_;
+  std::map<view_t, double> _scale_factors_;
+  std::map<view_t, double> _fudge_factors_;
 
   // ROI boundaries
   bool _search_for_boundaries_done_;

@@ -66,11 +66,11 @@ display_3d::display_3d(TGCompositeFrame *main_, io::event_server *server_)
   // of OpenGL but then decide not to use it.
   if (style_manager::get_instance().use_opengl()) {
     _3d_viewer_ =
-        new opengl_embedded_viewer("3DPlot", main_, width, height, i_embedded_viewer::VIEW_3D);
+        new opengl_embedded_viewer("3DPlot", main_, width, height, i_embedded_viewer::view_dim_t::3D);
   } else
 #endif
     _3d_viewer_ =
-        new pad_embedded_viewer("3DPlot", main_, width, height, i_embedded_viewer::VIEW_3D);
+        new pad_embedded_viewer("3DPlot", main_, width, height, i_embedded_viewer::view_dim_t::_3D);
 
   main_->AddFrame(_3d_viewer_->get_frame(), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 }

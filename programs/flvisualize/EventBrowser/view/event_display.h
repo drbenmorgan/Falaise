@@ -86,11 +86,11 @@ class event_display {
 
  private:
   /// Tab index
-  enum tab_id_index_type {
-    OVERVIEW_TAB = 0,
-    TRACK_BROWSER_TAB = 1,
-    OPTIONS_TAB = 2,
-    SELECTION_TAB = 3
+  enum class tab_index_t {
+    OVERVIEW = 0,
+    TRACK_BROWSER = 1,
+    OPTIONS = 2,
+    SELECTION = 3
   };
 
   /// Main initialization method
@@ -100,7 +100,7 @@ class event_display {
   void _update_view_(const bool reset_view_ = true);
 
   /// Update tab status
-  void _update_tab_(const tab_id_index_type index_, const bool reset_view_ = true);
+  void _update_tab_(const tab_index_t index_, const bool reset_view_ = true);
 
  private:
   io::event_server* _server_ = nullptr;  //!< Event server
@@ -120,7 +120,7 @@ class event_display {
   i_draw_manager* _draw_manager_ = nullptr;  //!< Drawer manager
 
   TGTab* _tabs_ = nullptr;                              //!< Tabs
-  std::map<tab_id_index_type, bool> _tab_is_uptodate_;  //!< Tabs status
+  std::map<tab_index_t, bool> _tab_is_uptodate_;  //!< Tabs status
 };
 
 }  // end of namespace view

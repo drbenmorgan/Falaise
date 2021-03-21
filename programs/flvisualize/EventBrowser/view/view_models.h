@@ -39,11 +39,11 @@ namespace visualization {
 
 namespace view {
 
-enum view_type {
+enum class view_t {
   // 2D enum
-  TOP_VIEW = 0,
-  FRONT_VIEW = 1,
-  SIDE_VIEW = 2
+  TOP = 0,
+  FRONT = 1,
+  SIDE = 2
 };
 
 }  // end of namespace view

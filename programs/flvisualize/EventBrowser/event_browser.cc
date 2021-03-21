@@ -147,13 +147,13 @@ void event_browser::initialize_gui() {
   // TGCompositeFrame * raw_data_frame      = _tabs_->AddTab("Raw Data");
 
   // Raw data off by default
-  _tabs_->SetEnabled(ONLINE_DISPLAY, false);
+  _tabs_->SetEnabled(static_cast<Int_t>(tab_display_t::ONLINE), false);
 
   // Set startup tab
   _tabs_->SetTab(style_manager::get_instance().get_startup_tab());
 
-  _tab_is_uptodate_[EVENT_DISPLAY] = false;
-  _tab_is_uptodate_[ONLINE_DISPLAY] = false;
+  _tab_is_uptodate_[tab_display_t::EVENT] = false;
+  _tab_is_uptodate_[tab_display_t::ONLINE] = false;
 
   this->AddFrame(_tabs_, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 3, 3, 3, 3));
 
@@ -241,39 +241,39 @@ void event_browser::track_select() { _display_->update(false, false); }
 void event_browser::add_full_2d_view() {
   if (_full_2d_display_ != nullptr) {
     // Remove full 2D view
-    _tabs_->RemoveTab(FULL_2D_DISPLAY);
+    _tabs_->RemoveTab(static_cast<Int_t>(tab_display_t::FULL_2D));
     delete _full_2d_display_;
     _full_2d_display_ = nullptr;
   } else {
     // Create a new frame
     TGCompositeFrame* full_2d_frame = _tabs_->AddTab("Full 2D View");
-    _tab_is_uptodate_[FULL_2D_DISPLAY] = false;
+    _tab_is_uptodate_[tab_display_t::FULL_2D] = false;
 
     // Create additional 2D plot objects
     _full_2d_display_ = new event_display(full_2d_frame, _status_, _event_server_, true);
   }
   _tabs_->MapSubwindows();
   _tabs_->Layout();
-  _tabs_->SetTab(FULL_2D_DISPLAY);
+  _tabs_->SetTab(static_cast<Int_t>(tab_display_t::FULL_2D));
 }
 
 void event_browser::update_browser(const bool reset_view_) {
-  _tab_is_uptodate_[EVENT_DISPLAY] = false;
-  _tab_is_uptodate_[FULL_2D_DISPLAY] = false;
-  this->update_tab((tab_id_index_type)_tabs_->GetCurrent(), reset_view_);
+  _tab_is_uptodate_[tab_display_t::EVENT] = false;
+  _tab_is_uptodate_[tab_display_t::FULL_2D] = false;
+  this->update_tab((tab_display_t)_tabs_->GetCurrent(), reset_view_);
 }
 
-void event_browser::update_tab(const tab_id_index_type index_, const bool reset_view_) {
+void event_browser::update_tab(const tab_display_t index_, const bool reset_view_) {
   if (_tab_is_uptodate_[index_]) {
     return;
   }
 
   _menu_->set_default_option(*_event_server_);
   switch (index_) {
-    case EVENT_DISPLAY:
+    case tab_display_t::EVENT:
       _display_->update(reset_view_);
       break;
-    case FULL_2D_DISPLAY:
+    case tab_display_t::FULL_2D:
       _full_2d_display_->update(reset_view_);
       break;
     default:

@@ -47,17 +47,17 @@ class i_draw_manager;
 
 class i_embedded_viewer {
  public:
-  enum view_dim_type { VIEW_2D = 0, VIEW_3D = 1 };
+  enum class view_dim_t{ _2D = 0, _3D = 1 };
 
  public:
-  i_embedded_viewer(const view_dim_type view_dim_ = VIEW_3D) : _view_dim_type(view_dim_) {}
+  i_embedded_viewer(const view_dim_t view_dim_ = view_dim_t::_3D) : _view_dim_type(view_dim_) {}
   virtual ~i_embedded_viewer() = default;
 
   virtual void clear() = 0;
   virtual void reset() = 0;
 
-  virtual void set_view_type(const view_type view_type_) = 0;
-  virtual view_type get_view_type() const = 0;
+  virtual void set_view_type(const view_t view_type_) = 0;
+  virtual view_t get_view_type() const = 0;
 
   virtual void update_detector() = 0;
   virtual void update_scene(i_draw_manager *drawer_) = 0;
@@ -66,7 +66,7 @@ class i_embedded_viewer {
   virtual TGFrame *get_frame() = 0;
 
  protected:
-  view_dim_type _view_dim_type;
+  view_dim_t _view_dim_type;
 
  private:
   i_embedded_viewer(const i_embedded_viewer &);             // not implemented

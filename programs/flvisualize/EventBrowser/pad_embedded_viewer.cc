@@ -53,13 +53,13 @@ namespace view {
 // ctor:
 pad_embedded_viewer::pad_embedded_viewer(const std::string& name_, const TGFrame* frame_,
                                          const unsigned int width_, const unsigned int height_,
-                                         const view_dim_type view_dim_)
+                                         const view_dim_t view_dim_)
     : i_embedded_viewer(view_dim_), TRootEmbeddedCanvas(name_.c_str(), frame_, width_, height_) {
   _objects_ = nullptr;
   _text_objects_ = nullptr;
 
   const int vtype = style_manager::get_instance().get_startup_2d_view();
-  _view_type_ = static_cast<view_type>(vtype);
+  _view_type_ = static_cast<view_t>(vtype);
 
   _zoom_factor_ = 2.0;
   _zoom_index_ = 0;
@@ -89,23 +89,23 @@ void pad_embedded_viewer::reset() {
   // objects in a canvas in order to get them as big as possible
   // Here we calculate the scale factor given the dimensions of
   // the detector and the size of the embedded canvas
-  if (_view_dim_type == VIEW_2D) {
+  if (_view_dim_type == view_dim_t::_2D) {
     this->_set_scale_factors_();
   }
 
   TCanvas* canvas = this->get_canvas();
 
   switch (_view_dim_type) {
-    case VIEW_2D: {
+    case view_dim_t::_2D: {
       canvas->GetView()->SetParallel();
 
-      if (_view_type_ == TOP_VIEW) {
+      if (_view_type_ == view_t::TOP) {
         canvas->GetView()->TopView();
       }
-      if (_view_type_ == FRONT_VIEW) {
+      if (_view_type_ == view_t::FRONT) {
         canvas->GetView()->Front();
       }
-      if (_view_type_ == SIDE_VIEW) {
+      if (_view_type_ == view_t::SIDE) {
         canvas->GetView()->RotateView(180.0, 90.0);
       }
       // TView::Side() shows the other side
@@ -120,7 +120,7 @@ void pad_embedded_viewer::reset() {
                       1. / fudge_factor);
       }
     } break;
-    case VIEW_3D: {
+    case view_dim_t::_3D: {
       canvas->GetView()->SetPerspective();
       canvas->Range(-1, -1, 1, 1);
     } break;
@@ -135,12 +135,12 @@ void pad_embedded_viewer::reset() {
   canvas->Update();
 }
 
-void pad_embedded_viewer::set_view_type(const view_type view_type_) {
+void pad_embedded_viewer::set_view_type(const view_t view_type_) {
   _view_type_ = view_type_;
   this->reset();
 }
 
-view_type pad_embedded_viewer::get_view_type() const { return _view_type_; }
+view_t pad_embedded_viewer::get_view_type() const { return _view_type_; }
 
 void pad_embedded_viewer::update_detector() {
   // Set ROOT style here
@@ -178,7 +178,7 @@ void pad_embedded_viewer::update_scene(i_draw_manager* drawer_) {
     // Special use of font for TPad: since text size is static,
     // one has to rescale the text size with respect to zoom
     // factor used. This is done by update_font method.
-    if (_view_dim_type == VIEW_2D) {
+    if (_view_dim_type == view_dim_t::_2D) {
       _text_objects_ = drawer_->get_text_objects();
       this->_scale_text_();
       drawer_->draw_text();
@@ -298,7 +298,7 @@ void pad_embedded_viewer::optimize_range(const TVector3& min_bound_, const TVect
   TCanvas* canvas = this->get_canvas();
 
   switch (_view_dim_type) {
-    case VIEW_2D: {
+    case view_dim_t::_2D: {
       const double dw =
           static_cast<double>(this->GetWidth()) / static_cast<double>(this->GetHeight());
 
@@ -341,11 +341,11 @@ void pad_embedded_viewer::optimize_range(const TVector3& min_bound_, const TVect
       if (_text_objects_->GetEntriesFast() == 0) {
         zoom_factor = 2.0;
       } else {
-        if (_view_type_ == TOP_VIEW) {
+        if (_view_type_ == view_t::TOP) {
           zoom_factor = 3.0;
-        } else if (_view_type_ == FRONT_VIEW) {
+        } else if (_view_type_ == view_t::FRONT) {
           zoom_factor = 4.0;
-        } else if (_view_type_ == SIDE_VIEW) {
+        } else if (_view_type_ == view_t::SIDE) {
           zoom_factor = 2.0;
         }
       }
@@ -428,7 +428,7 @@ void pad_embedded_viewer::_convert_pixel_to_pad_coordinates_(const int xpixel_, 
 
 void pad_embedded_viewer::_convert_pixel_to_world_coordinates_(const int xpixel_, const int ypixel_,
                                                                double& xworld_, double& yworld_) {
-  if (_view_dim_type == VIEW_3D) {
+  if (_view_dim_type == view_dim_t::_3D) {
     DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(),
                    "This method only makes sense in 2D view!");
     return;
@@ -443,13 +443,13 @@ void pad_embedded_viewer::_convert_pixel_to_world_coordinates_(const int xpixel_
   double pw[3];
   canvas->GetView()->NDCtoWC(pn, pw);
 
-  if (_view_type_ == TOP_VIEW) {
+  if (_view_type_ == view_t::TOP) {
     xworld_ = pw[0];
     yworld_ = pw[1];
-  } else if (_view_type_ == FRONT_VIEW) {
+  } else if (_view_type_ == view_t::FRONT) {
     xworld_ = pw[0];
     yworld_ = pw[2];
-  } else if (_view_type_ == SIDE_VIEW) {
+  } else if (_view_type_ == view_t::SIDE) {
     xworld_ = pw[1];
     yworld_ = pw[2];
   }
@@ -459,7 +459,7 @@ void pad_embedded_viewer::_convert_world_to_pad_coordinates_(const double xworld
                                                              const double yworld_,
                                                              const double zworld, double& xpad_,
                                                              double& ypad_) {
-  if (_view_dim_type == VIEW_3D) {
+  if (_view_dim_type == view_dim_t::_3D) {
     DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(),
                    "This method only makes sense in 2D view!");
     return;
@@ -480,29 +480,29 @@ void pad_embedded_viewer::_set_scale_factors_() {
   // first scale wrt to the whole detector size
   const double* size_view = this->get_canvas()->GetView()->GetRmin();
 
-  _scale_factors_[TOP_VIEW] = size_view[1] / size_view[0];    // width/length;
-  _scale_factors_[FRONT_VIEW] = size_view[2] / size_view[0];  // height/length;
-  _scale_factors_[SIDE_VIEW] = size_view[2] / size_view[1];   // height/width;
+  _scale_factors_[view_t::TOP] = size_view[1] / size_view[0];    // width/length;
+  _scale_factors_[view_t::FRONT] = size_view[2] / size_view[0];  // height/length;
+  _scale_factors_[view_t::SIDE] = size_view[2] / size_view[1];   // height/width;
 
   const double dw = static_cast<double>(this->GetWidth()) / static_cast<double>(this->GetHeight());
 
   // then, scale wrt to the frame size
-  _scale_factors_[TOP_VIEW] *= dw;
-  _scale_factors_[FRONT_VIEW] *= dw;
-  _scale_factors_[SIDE_VIEW] *= dw;
+  _scale_factors_[view_t::TOP] *= dw;
+  _scale_factors_[view_t::FRONT] *= dw;
+  _scale_factors_[view_t::SIDE] *= dw;
 
   const detector::detector_manager& detector_mgr = detector::detector_manager::get_instance();
 
   if (detector_mgr.get_setup_label() == detector::detector_manager::setup::SNEMO ||
       detector_mgr.get_setup_label() == detector::detector_manager::setup::SNEMO_DEMONSTRATOR) {
     // fudge factors for SuperNEMO detector
-    _fudge_factors_[TOP_VIEW] = 1.6;
-    _fudge_factors_[FRONT_VIEW] = 1.6;
-    _fudge_factors_[SIDE_VIEW] = 0.83;
+    _fudge_factors_[view_t::TOP] = 1.6;
+    _fudge_factors_[view_t::FRONT] = 1.6;
+    _fudge_factors_[view_t::SIDE] = 0.83;
   } else {
-    _fudge_factors_[TOP_VIEW] = 1.0;
-    _fudge_factors_[FRONT_VIEW] = 1.0;
-    _fudge_factors_[SIDE_VIEW] = 1.0;
+    _fudge_factors_[view_t::TOP] = 1.0;
+    _fudge_factors_[view_t::FRONT] = 1.0;
+    _fudge_factors_[view_t::SIDE] = 1.0;
   }
 }
 
@@ -517,10 +517,6 @@ void pad_embedded_viewer::_scale_text_() {
   TIter iter(_text_objects_);
   utils::root_utilities::TLatex3D* itext;
   while ((itext = (utils::root_utilities::TLatex3D*)iter.Next()) != nullptr) {
-    DT_LOG_TRACE(local_priority, "text address " << itext << "world position (x, y, z) = ("
-                                                 << itext->GetX() << ", " << itext->GetY() << ", "
-                                                 << itext->GetZ() << ")");
-
     // If same geom_id has text (FindObject compare geom_id
     // coordinates) then TLatex "splitline" function is used
     // to show both information
@@ -551,8 +547,6 @@ void pad_embedded_viewer::_scale_text_() {
     double xpad, ypad;
     this->_convert_world_to_pad_coordinates_(xworld, yworld, zworld, xpad, ypad);
 
-    DT_LOG_TRACE(local_priority, "pad coordinates (x, y) = (" << xpad << ", " << ypad << ")");
-
     itext->SetPadCoordinates(xpad, ypad);
 
     // By default, centered text horizontally and vertically
@@ -572,7 +566,7 @@ void pad_embedded_viewer::_scale_text_() {
     if (detector_mgr.get_setup_label() == detector::detector_manager::setup::SNEMO ||
         detector_mgr.get_setup_label() == detector::detector_manager::setup::SNEMO_DEMONSTRATOR) {
       // Hard coded but specific code to SuperNEMO
-      if (_view_type_ != SIDE_VIEW && _zoom_index_ <= 2) {
+      if (_view_type_ != view_t::SIDE && _zoom_index_ <= 2) {
         const double xshift = 0.15;
         if (xpad > 0.0) {
           itext->SetTextAlign(12);
@@ -586,7 +580,7 @@ void pad_embedded_viewer::_scale_text_() {
                detector_mgr.get_setup_label() == detector::detector_manager::setup::BIPO3) {
       if (_zoom_index_ <= 2) {
         const double yshift = 0.10;
-        if (_view_type_ == TOP_VIEW) {
+        if (_view_type_ == view_t::TOP) {
           if (zworld > 0.0) {
             itext->SetPadCoordinates(xpad, ypad + yshift);
           } else {
@@ -925,7 +919,7 @@ bool pad_embedded_viewer::_move(const EKeySym key_pressed_) {
 bool pad_embedded_viewer::_rotate(const EKeySym key_pressed_) {
   TCanvas* canvas = this->get_canvas();
 
-  if (_view_dim_type == VIEW_2D) {
+  if (_view_dim_type == view_dim_t::_2D) {
     DT_LOG_WARNING(options_manager::get_instance().get_logging_priority(),
                    "Rotation can not be done in 2D view");
     return false;
@@ -1044,7 +1038,7 @@ bool pad_embedded_viewer::_handle_input(const int event_, const int x_, const in
     // Perform rotation
     //******************
     case kButton2Down: {
-      if (_view_dim_type != VIEW_3D) {
+      if (_view_dim_type != view_dim_t::_3D) {
         return false;
       }
       canvas->SetCursor(kRotate);
@@ -1066,7 +1060,7 @@ bool pad_embedded_viewer::_handle_input(const int event_, const int x_, const in
     }
 
     case kButton2Motion: {
-      if (_view_dim_type != VIEW_3D) {
+      if (_view_dim_type != view_dim_t::_3D) {
         return false;
       }
       canvas->SetCursor(kRotate);
@@ -1089,7 +1083,7 @@ bool pad_embedded_viewer::_handle_input(const int event_, const int x_, const in
     }
 
     case kButton2Up: {
-      if (_view_dim_type != VIEW_3D) {
+      if (_view_dim_type != view_dim_t::_3D) {
         return false;
       }
       // Recompute new view matrix and redraw

@@ -55,7 +55,7 @@ class i_embedded_viewer;
 
 class display_2d {
  public:
-  void set_view_type(const view_type vtype_ = TOP_VIEW);
+  void set_view_type(const view_t vtype_ = view_t::TOP);
 
   display_2d(TGCompositeFrame *main_, io::event_server *server_, const bool switch_mode = true);
   virtual ~display_2d();

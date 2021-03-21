@@ -43,7 +43,7 @@ namespace view {
 opengl_embedded_viewer::opengl_embedded_viewer(const std::string& name_, const TGFrame* frame_,
                                                const unsigned int width_,
                                                const unsigned int height_,
-                                               const view_dim_type view_dim_)
+                                               const view_dim_t view_dim_)
     : i_embedded_viewer(view_dim_),
       TGLEmbeddedViewer(frame_, 0, 0, 0),
       _opengl_global_scene_(0),
@@ -87,7 +87,7 @@ void opengl_embedded_viewer::clear() {
 void opengl_embedded_viewer::reset() {
   // this->ResetCurrentCamera ();
 
-  if (_view_dim_type == VIEW_3D) {
+  if (_view_dim_type == view_dim_t::_3D) {
     this->SetCurrentCamera(TGLViewer::kCameraPerspXOY);
     return;
   }

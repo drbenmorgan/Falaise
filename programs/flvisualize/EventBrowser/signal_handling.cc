@@ -150,7 +150,7 @@ bool signal_handling::process_message(long msg_, long parm1_, long parm2_) {
         _browser_->change_event(CURRENT_EVENT, parm2_);
       }
     } else if (get_sub_msg == kCM_TAB) {
-      _browser_->update_tab((event_browser::tab_id_index_type)parm1_);
+      _browser_->update_tab((event_browser::tab_display_t)parm1_);
     } else if (get_sub_msg == kCM_BUTTON) {
       this->_process_button_((button_signals_type)parm1_);
     } else if (get_sub_msg == kCM_CHECKBUTTON) {

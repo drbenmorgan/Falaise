@@ -126,17 +126,6 @@ class browser_tracks {
                                       const bool reverse_color_ = false);
 
  private:
-  /// Enum for icon entry
-  enum icon_type {
-    TRACK_CLOSED = 0,
-    TRACK_OPEN = 1,
-    CLUSTER_CLOSED = 2,
-    CLUSTER_OPEN = 3,
-    GEIGER_CLOSED = 4,
-    GEIGER_OPEN = 5,
-    BLANK = 6
-  };
-
   io::event_server *_server_;  //!< Pointer to event server
 
   event_browser *_browser_;  //!< Pointer to event browser

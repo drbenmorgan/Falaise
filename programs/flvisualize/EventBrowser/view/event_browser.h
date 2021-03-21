@@ -64,7 +64,7 @@ class event_browser_ctrl;
 class event_browser : public TGMainFrame {
  public:
   /// Tab enumeration
-  enum tab_id_index_type { EVENT_DISPLAY = 0, ONLINE_DISPLAY = 1, FULL_2D_DISPLAY = 2 };
+  enum class tab_display_t { EVENT = 0, ONLINE= 1, FULL_2D = 2 };
 
   /// Default constructor
   event_browser(const TGWindow *window_, const unsigned int width_, const unsigned int height_);
@@ -82,7 +82,7 @@ class event_browser : public TGMainFrame {
   void update_browser(const bool reset_view_ = true);
 
   /// Update a given browser tab
-  void update_tab(const tab_id_index_type index_, const bool reset_view_ = true);
+  void update_tab(const tab_display_t index_, const bool reset_view_ = true);
 
   /// Update browser menus
   void update_menu(const button_signals_type signal_);
@@ -168,7 +168,7 @@ class event_browser : public TGMainFrame {
   signal_handling *_handlers_;       //!< Signal handler
 
   TGTab *_tabs_;                                        //!< GUI tabs
-  std::map<tab_id_index_type, bool> _tab_is_uptodate_;  //!< GUI tab status
+  std::map<tab_display_t, bool> _tab_is_uptodate_;  //!< GUI tab status
 
   io::event_server *_event_server_;  //!< Event server
 

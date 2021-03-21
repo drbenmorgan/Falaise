@@ -58,7 +58,7 @@ class opengl_embedded_viewer : public i_embedded_viewer, public TGLEmbeddedViewe
  public:
   opengl_embedded_viewer(const std::string &name_, const TGFrame *frame_,
                          const unsigned int width_ = 0, const unsigned int height_ = 0,
-                         const view_dim_type view_dim_ = VIEW_3D);
+                         const view_dim_type view_dim_ = view_dim_t::_3D);
   virtual ~opengl_embedded_viewer();
 
   virtual void clear();
